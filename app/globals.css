@@ -134,9 +134,6 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
   body {
     @apply bg-background text-foreground;
     min-height: 100dvh;
@@ -145,15 +142,9 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     letter-spacing: 0.01em;
-  }
-  a {
-    color: var(--foreground);
-    text-decoration: none;
-    transition: color 220ms ease, text-shadow 220ms ease, box-shadow 220ms ease;
-  }
-  a:hover {
-    color: var(--accent);
-    text-shadow: 0 0 8px rgba(var(--glow-color), 0.35);
+
+    background: url("/bg.png") no-repeat center center fixed;
+    background-size: cover;
   }
 }
 
