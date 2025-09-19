@@ -1,6 +1,6 @@
 "use client"
 
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import { GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth"
 import { auth } from "@/lib/firebaseConfig"
 import { Button } from "@/components/ui/button"
 
@@ -8,12 +8,28 @@ export default function GoogleLoginButton() {
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider()
+      provider.setCustomParameters({ prompt: "select_account" })
       const result = await signInWithPopup(auth as any, provider)
       const user = result.user
       console.log("User Info:", user)
       alert(`Welcome ${user.displayName}!`)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google Sign-in Error:", error)
+      const popupIssues = [
+        "auth/popup-blocked",
+        "auth/cancelled-popup-request",
+        "auth/operation-not-supported-in-this-environment",
+      ]
+      if (error?.code && popupIssues.includes(error.code)) {
+        try {
+          const provider = new GoogleAuthProvider()
+          provider.setCustomParameters({ prompt: "select_account" })
+          await signInWithRedirect(auth as any, provider)
+          return
+        } catch (redirectErr) {
+          console.error("Google redirect sign-in failed:", redirectErr)
+        }
+      }
     }
   }
 
