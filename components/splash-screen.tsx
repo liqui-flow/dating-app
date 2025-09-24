@@ -42,7 +42,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             <Sparkles className="w-6 h-6 text-secondary absolute -top-2 -right-2 animate-bounce" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold text-foreground font-sans">HeartConnect</h1>
+            <h1 className="text-4xl font-bold text-foreground font-sans">Lovesathi</h1>
             <p className="text-muted-foreground text-lg">Where hearts meet traditions</p>
           </div>
           <div className="w-8 h-8 mx-auto">
@@ -74,7 +74,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             <Heart className="w-10 h-10 text-primary-foreground fill-current" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-foreground">Welcome to HeartConnect!</h1>
+            <h1 className="text-2xl font-bold text-foreground">Welcome to Lovesathi!</h1>
             <p className="text-muted-foreground">Your profile is ready. Let's find your perfect match.</p>
           </div>
           <Button size="lg" className="px-8" onClick={handleComplete}>
@@ -93,7 +93,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
             <Heart className="w-6 h-6 text-primary-foreground fill-current" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground font-sans">HeartConnect</h1>
+          <h1 className="text-3xl font-bold text-foreground font-sans">Lovesathi</h1>
         </div>
         <p className="text-muted-foreground text-lg">Where hearts meet traditions</p>
       </header>
@@ -127,7 +127,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
       {/* Footer */}
       <footer className="p-6 text-center">
-        <p className="text-xs text-muted-foreground">© 2024 HeartConnect. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground">© 2024 Lovesathi. All rights reserved.</p>
       </footer>
     </div>
   )

@@ -15,7 +15,7 @@ const robotoMono = Roboto_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "HeartConnect - Dating & Matrimony",
+  title: "Lovesathi - Dating & Matrimony",
   description: "Modern dating app for serious relationships and matrimony",
   generator: "v0.app",
 }

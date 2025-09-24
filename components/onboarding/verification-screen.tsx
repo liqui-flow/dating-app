@@ -48,7 +48,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
             <Shield className="w-8 h-8 text-primary" />
           </div>
           <CardTitle className="text-2xl">Verify Your Account</CardTitle>
-          <CardDescription>Help us keep HeartConnect safe and authentic for everyone</CardDescription>
+          <CardDescription>Help us keep Lovesathi safe and authentic for everyone</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">

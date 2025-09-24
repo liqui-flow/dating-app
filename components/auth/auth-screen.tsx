@@ -40,7 +40,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
               <Heart className="w-5 h-5 text-primary-foreground fill-current" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground font-sans">HeartConnect</h1>
+            <h1 className="text-2xl font-bold text-foreground font-sans">Lovesathi</h1>
           </div>
           <CardDescription className="text-base">Join thousands finding meaningful connections</CardDescription>
         </CardHeader>
