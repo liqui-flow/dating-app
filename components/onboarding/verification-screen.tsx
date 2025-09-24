@@ -12,16 +12,27 @@ interface VerificationScreenProps {
 }
 
 export function VerificationScreen({ onComplete }: VerificationScreenProps) {
-  const [step, setStep] = useState<"phone" | "photo" | "id">("phone")
-  const [phoneVerified, setPhoneVerified] = useState(false)
+  const [step, setStep] = useState<"contact" | "photo" | "id">("contact")
+  const [verificationMethod, setVerificationMethod] = useState<"phone" | "email">("phone")
+  const [contactValue, setContactValue] = useState("")
+  const [verificationCode, setVerificationCode] = useState("")
+  const [codeSent, setCodeSent] = useState(false)
+  const [contactVerified, setContactVerified] = useState(false)
   const [photoUploaded, setPhotoUploaded] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handlePhoneVerification = async () => {
+  const handleSendCode = async () => {
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setPhoneVerified(true)
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     setIsLoading(false)
+    setCodeSent(true)
+  }
+
+  const handleVerifyCode = async () => {
+    setIsLoading(true)
+    await new Promise((resolve) => setTimeout(resolve, 1200))
+    setIsLoading(false)
+    setContactVerified(true)
     setStep("photo")
   }
 
@@ -57,12 +68,12 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
             <div className="flex items-center space-x-2">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  phoneVerified ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  contactVerified ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                 }`}
               >
-                {phoneVerified ? <CheckCircle className="w-4 h-4" /> : "1"}
+                {contactVerified ? <CheckCircle className="w-4 h-4" /> : "1"}
               </div>
-              <span className="text-sm">Phone</span>
+              <span className="text-sm">Contact</span>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -92,32 +103,74 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
             </div>
           </div>
 
-          {/* Phone Verification */}
-          {step === "phone" && (
+          {/* Contact Verification (Phone or Email) */}
+          {step === "contact" && (
             <div className="space-y-4">
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Verify Phone Number</h3>
-                <p className="text-sm text-muted-foreground">We'll send you a verification code</p>
+                <h3 className="text-lg font-semibold mb-2">Verify Your Contact</h3>
+                <p className="text-sm text-muted-foreground">Choose phone or email and we'll send you a code</p>
               </div>
 
               <div className="space-y-4">
+                {/* Method selector */}
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={verificationMethod === "phone" ? "default" : "outline"}
+                    className="w-full"
+                    onClick={() => setVerificationMethod("phone")}
+                  >
+                    Phone
+                  </Button>
+                  <Button
+                    variant={verificationMethod === "email" ? "default" : "outline"}
+                    className="w-full"
+                    onClick={() => setVerificationMethod("email")}
+                  >
+                    Email
+                  </Button>
+                </div>
+
+                {/* Destination input */}
                 <div className="space-y-2">
-                  <Label htmlFor="verification-code">Verification Code</Label>
+                  <Label htmlFor="contact-value">{verificationMethod === "phone" ? "Phone Number" : "Email"}</Label>
                   <Input
-                    id="verification-code"
-                    placeholder="Enter 6-digit code"
-                    maxLength={6}
-                    className="text-center text-lg tracking-widest"
+                    id="contact-value"
+                    type={verificationMethod === "phone" ? "tel" : "email"}
+                    placeholder={verificationMethod === "phone" ? "Enter your phone number" : "Enter your email"}
+                    value={contactValue}
+                    onChange={(e) => setContactValue(e.target.value)}
                   />
                 </div>
 
-                <Button onClick={handlePhoneVerification} className="w-full" disabled={isLoading}>
-                  {isLoading ? "Verifying..." : "Verify Phone"}
-                </Button>
+                {!codeSent && (
+                  <Button onClick={handleSendCode} className="w-full" disabled={isLoading || !contactValue}>
+                    {isLoading ? "Sending..." : "Send Code"}
+                  </Button>
+                )}
 
-                <Button variant="link" className="w-full text-sm">
-                  Resend Code
-                </Button>
+                {codeSent && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="verification-code">Verification Code</Label>
+                      <Input
+                        id="verification-code"
+                        placeholder="Enter 6-digit code"
+                        maxLength={6}
+                        className="text-center text-lg tracking-widest"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                      />
+                    </div>
+
+                    <Button onClick={handleVerifyCode} className="w-full" disabled={isLoading || verificationCode.length < 4}>
+                      {isLoading ? "Verifying..." : "Verify"}
+                    </Button>
+
+                    <Button variant="link" className="w-full text-sm" onClick={handleSendCode} disabled={isLoading}>
+                      Resend Code
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           )}
