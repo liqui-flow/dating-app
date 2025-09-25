@@ -3,16 +3,24 @@
 import { useState } from "react"
 import { SplashScreen } from "@/components/splash-screen"
 import { AppMain } from "@/components/app-main"
+import { MatrimonyMain } from "@/components/matrimony/matrimony-main"
 
-export default function Home() {
+type AppMode = "dating" | "matrimony"
+	export default function Home() {
   const [appState, setAppState] = useState<"splash" | "main">("splash")
+  const [mode, setMode] = useState<AppMode>("dating")
 
-  const handleOnboardingComplete = () => {
+  const handleOnboardingComplete = (selectedMode?: AppMode) => {
+    if (selectedMode) setMode(selectedMode)
     setAppState("main")
   }
 
   if (appState === "splash") {
     return <SplashScreen onComplete={handleOnboardingComplete} />
+  }
+
+  if (mode === "matrimony") {
+    return <MatrimonyMain onExit={() => setMode("dating")} />
   }
 
   return <AppMain />
