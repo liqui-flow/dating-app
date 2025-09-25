@@ -5,20 +5,23 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Camera, Upload, Shield, CheckCircle } from "lucide-react"
+import { Shield, CheckCircle, Upload, Camera } from "lucide-react"
 
 interface VerificationScreenProps {
   onComplete?: () => void
 }
 
 export function VerificationScreen({ onComplete }: VerificationScreenProps) {
-  const [step, setStep] = useState<"contact" | "photo" | "id">("contact")
+  const [step, setStep] = useState<"contact" | "profile" | "id">("contact")
   const [verificationMethod, setVerificationMethod] = useState<"phone" | "email">("phone")
   const [contactValue, setContactValue] = useState("")
   const [verificationCode, setVerificationCode] = useState("")
   const [codeSent, setCodeSent] = useState(false)
   const [contactVerified, setContactVerified] = useState(false)
-  const [photoUploaded, setPhotoUploaded] = useState(false)
+  const [gender, setGender] = useState<"male" | "female" | null>(null)
+  const [dob, setDob] = useState("")
+  const [profileValid, setProfileValid] = useState(false)
+  const [underageMessage, setUnderageMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSendCode = async () => {
@@ -33,15 +36,33 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
     await new Promise((resolve) => setTimeout(resolve, 1200))
     setIsLoading(false)
     setContactVerified(true)
-    setStep("photo")
+    setStep("profile")
   }
 
-  const handlePhotoUpload = async () => {
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setPhotoUploaded(true)
-    setIsLoading(false)
-    setStep("id")
+  const calculateAge = (dateString: string) => {
+    const today = new Date()
+    const birth = new Date(dateString)
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    return age
+  }
+
+  const handleProfileContinue = () => {
+    setUnderageMessage(null)
+    const age = dob ? calculateAge(dob) : 0
+    // Treat below 17 as underage per requirement
+    if (age < 17) {
+      setUnderageMessage("You're underage to use a dating app.")
+      setProfileValid(false)
+      return
+    }
+    if (gender && dob) {
+      setProfileValid(true)
+      setStep("id")
+    }
   }
 
   const handleComplete = async () => {
@@ -79,16 +100,16 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
             <div className="flex items-center space-x-2">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  photoUploaded
+                  profileValid || step === "id"
                     ? "bg-primary text-primary-foreground"
-                    : step === "photo"
+                    : step === "profile"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                 }`}
               >
-                {photoUploaded ? <CheckCircle className="w-4 h-4" /> : "2"}
+                {profileValid ? <CheckCircle className="w-4 h-4" /> : "2"}
               </div>
-              <span className="text-sm">Photo</span>
+              <span className="text-sm">Profile</span>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -175,39 +196,55 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
             </div>
           )}
 
-          {/* Photo Upload */}
-          {step === "photo" && (
+          {/* Profile step (DOB + Gender) */}
+          {step === "profile" && (
             <div className="space-y-4">
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Upload Your Photo</h3>
-                <p className="text-sm text-muted-foreground">Add a clear photo of yourself to get started</p>
+                <h3 className="text-lg font-semibold mb-2">Your Basic Details</h3>
+                <p className="text-sm text-muted-foreground">Add your date of birth and gender</p>
               </div>
 
-              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center space-y-4">
-                <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-                  <Camera className="w-8 h-8 text-muted-foreground" />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dob">Date of Birth</Label>
+                  <Input
+                    id="dob"
+                    type="date"
+                    value={dob}
+                    onChange={(e) => setDob(e.target.value)}
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Upload a photo</p>
-                  <p className="text-xs text-muted-foreground">JPG, PNG up to 10MB</p>
+                  <Label>Gender</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant={gender === "male" ? "default" : "outline"}
+                      className="w-full"
+                      onClick={() => setGender("male")}
+                    >
+                      Male
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={gender === "female" ? "default" : "outline"}
+                      className="w-full"
+                      onClick={() => setGender("female")}
+                    >
+                      Female
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 bg-transparent">
-                    <Camera className="w-4 h-4 mr-2" />
-                    Camera
-                  </Button>
-                  <Button variant="outline" className="flex-1 bg-transparent">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Gallery
-                  </Button>
-                </div>
+                {underageMessage && (
+                  <div className="text-sm text-destructive">{underageMessage}</div>
+                )}
+
+                <Button onClick={handleProfileContinue} className="w-full" disabled={isLoading || !dob || !gender}>
+                  Continue
+                </Button>
               </div>
-
-              <Button onClick={handlePhotoUpload} className="w-full" disabled={isLoading}>
-                {isLoading ? "Uploading..." : "Continue"}
-              </Button>
             </div>
           )}
 
