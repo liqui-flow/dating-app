@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -23,6 +23,82 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
   const [profileValid, setProfileValid] = useState(false)
   const [underageMessage, setUnderageMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const uploadInputRef = useRef<HTMLInputElement | null>(null)
+  const cameraInputRef = useRef<HTMLInputElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const mediaStreamRef = useRef<MediaStream | null>(null)
+  const [showCameraOverlay, setShowCameraOverlay] = useState(false)
+
+  const handleUploadId = () => {
+    // Works on Web (desktop/mobile) and mobile browsers on Android/iOS
+    uploadInputRef.current?.click()
+  }
+
+  const handleTakePhoto = async () => {
+    // Mobile hint: try to force camera on supported mobile browsers
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : ""
+    const isMobile = /iphone|ipad|ipod|android/i.test(ua)
+
+    if (cameraInputRef.current) {
+      // Set attributes defensively for broadest support
+      cameraInputRef.current.setAttribute("accept", "image/*;capture=camera")
+      cameraInputRef.current.setAttribute("capture", "environment")
+    }
+
+    if (isMobile) {
+      cameraInputRef.current?.click()
+      return
+    }
+
+    // Try opening desktop/laptop camera using MediaDevices
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        mediaStreamRef.current = stream
+        setShowCameraOverlay(true)
+        // Defer attaching to next paint
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream
+            videoRef.current.play().catch(() => {})
+          }
+        }, 0)
+        return
+      }
+    } catch (err) {
+      // Permission denied or not available; fall back below
+    }
+
+    // Fallback: open file picker
+    uploadInputRef.current?.click()
+  }
+
+  const stopCamera = () => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((t) => t.stop())
+      mediaStreamRef.current = null
+    }
+    setShowCameraOverlay(false)
+  }
+
+  const handleCaptureFrame = async () => {
+    const video = videoRef.current
+    if (!video) return
+    const canvas = document.createElement("canvas")
+    canvas.width = video.videoWidth || 1280
+    canvas.height = video.videoHeight || 720
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], `capture-${Date.now()}.jpg`, { type: blob.type })
+        console.log("Captured photo file:", file.name)
+        // Integrate like upload flow if needed
+      }
+      stopCamera()
+    }, "image/jpeg", 0.92)
+  }
 
   const handleSendCode = async () => {
     setIsLoading(true)
@@ -109,7 +185,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
               >
                 {profileValid ? <CheckCircle className="w-4 h-4" /> : "2"}
               </div>
-              <span className="text-sm">Profile</span>
+              <span className="text-sm">Details</span>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -272,11 +348,40 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <Button variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent">
+                  {/* Hidden inputs for file picking and camera capture */}
+                  <input
+                    ref={uploadInputRef}
+                    type="file"
+                    accept="image/*,application/pdf"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        // Keep existing UI/logic intact; simply acknowledge selection
+                        console.log("Selected ID file:", file.name)
+                      }
+                    }}
+                  />
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*;capture=camera"
+                    // capture hints camera usage on supported mobile browsers
+                    capture="environment"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        console.log("Captured/Chosen photo:", file.name)
+                      }
+                    }}
+                  />
+
+                  <Button onClick={handleUploadId} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent">
                     <Upload className="w-6 h-6" />
                     <span className="text-sm">Upload ID</span>
                   </Button>
-                  <Button variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent">
+                  <Button onClick={handleTakePhoto} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent">
                     <Camera className="w-6 h-6" />
                     <span className="text-sm">Take Photo</span>
                   </Button>
@@ -286,16 +391,27 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   <Button onClick={handleComplete} className="w-full" disabled={isLoading}>
                     {isLoading ? "Processing..." : "Verify ID"}
                   </Button>
-
-                  <Button variant="ghost" onClick={handleComplete} className="w-full text-muted-foreground">
-                    Skip for now
-                  </Button>
                 </div>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Minimal camera overlay for desktop getUserMedia capture */}
+      {showCameraOverlay && (
+        <div className="fixed inset-0 bg-background/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-background rounded-lg shadow-lg p-4 space-y-4">
+            <div className="aspect-video bg-black rounded overflow-hidden">
+              <video ref={videoRef} playsInline className="w-full h-full object-contain" />
+            </div>
+            <div className="flex items-center justify-end space-x-2">
+              <Button variant="ghost" onClick={stopCamera}>Cancel</Button>
+              <Button onClick={handleCaptureFrame}>Capture</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

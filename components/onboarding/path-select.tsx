@@ -35,7 +35,7 @@ export function PathSelect({ onSelect, onBack }: PathSelectProps) {
           </Button>
 
           <Button
-            variant="default"
+            variant="outline"
             className="h-auto py-6 justify-start text-left"
             onClick={() => onSelect("matrimony")}
           >

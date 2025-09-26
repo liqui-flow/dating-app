@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter, Roboto_Mono } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { GlobalBackNavigator } from "@/components/navigation/global-back-navigator"
 
 const inter = Inter({
   variable: "--font-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {children}
+          <GlobalBackNavigator />
         </ThemeProvider>
       </body>
     </html>
