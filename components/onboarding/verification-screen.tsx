@@ -18,6 +18,8 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
   const [verificationCode, setVerificationCode] = useState("")
   const [codeSent, setCodeSent] = useState(false)
   const [contactVerified, setContactVerified] = useState(false)
+  const [phoneVerified, setPhoneVerified] = useState(false)
+  const [emailVerified, setEmailVerified] = useState(false)
   const [gender, setGender] = useState<"male" | "female" | null>(null)
   const [dob, setDob] = useState("")
   const [profileValid, setProfileValid] = useState(false)
@@ -111,8 +113,32 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
     setIsLoading(true)
     await new Promise((resolve) => setTimeout(resolve, 1200))
     setIsLoading(false)
-    setContactVerified(true)
-    setStep("profile")
+
+    if (verificationMethod === "phone") {
+      setPhoneVerified(true)
+      if (emailVerified) {
+        setContactVerified(true)
+        setStep("profile")
+      } else {
+        // Switch to email for second verification
+        setVerificationMethod("email")
+        setCodeSent(false)
+        setVerificationCode("")
+        setContactValue("")
+      }
+    } else {
+      setEmailVerified(true)
+      if (phoneVerified) {
+        setContactVerified(true)
+        setStep("profile")
+      } else {
+        // Switch to phone for second verification
+        setVerificationMethod("phone")
+        setCodeSent(false)
+        setVerificationCode("")
+        setContactValue("")
+      }
+    }
   }
 
   const calculateAge = (dateString: string) => {
