@@ -3,10 +3,14 @@
 import { GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth"
 import { auth } from "@/lib/firebaseConfig"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
 
 export default function GoogleLoginButton() {
+  const [isPressed, setIsPressed] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const handleGoogleLogin = async () => {
     try {
+      setIsLoading(true)
       const provider = new GoogleAuthProvider()
       provider.setCustomParameters({ prompt: "select_account" })
       const result = await signInWithPopup(auth as any, provider)
@@ -30,16 +34,23 @@ export default function GoogleLoginButton() {
           console.error("Google redirect sign-in failed:", redirectErr)
         }
       }
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
     <Button
       variant="outline"
-      className="w-full bg-transparent"
+      className="w-full bg-transparent text-black border-black/20"
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => setIsPressed(false)}
+      onTouchStart={() => setIsPressed(true)}
+      onTouchEnd={() => setIsPressed(false)}
       onClick={handleGoogleLogin}
     >
-      <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+      <svg className={`w-4 h-4 mr-2 ${isPressed || isLoading ? 'text-white' : ''}`} viewBox="0 0 24 24">
         <path
           fill="currentColor"
           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

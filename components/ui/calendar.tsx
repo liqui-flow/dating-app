@@ -66,7 +66,7 @@ function Calendar({
           defaultClassNames.month_caption,
         ),
         dropdowns: cn(
-          'w-full flex items-center text-sm font-medium justify-center h-(--cell-size) gap-1.5',
+          'w-full flex items-center text-sm font-medium justify-center h-(--cell-size) gap-3 px-2',
           defaultClassNames.dropdowns,
         ),
         dropdown_root: cn(
@@ -78,19 +78,19 @@ function Calendar({
           defaultClassNames.dropdown,
         ),
         caption_label: cn(
-          'select-none font-medium',
+          'select-none font-medium px-2',
           captionLayout === 'label'
             ? 'text-sm'
             : 'rounded-md pl-2 pr-1 flex items-center gap-1 text-sm h-8 [&>svg]:text-muted-foreground [&>svg]:size-3.5',
           defaultClassNames.caption_label,
         ),
         table: 'w-full border-collapse',
-        weekdays: cn('flex', defaultClassNames.weekdays),
+        weekdays: cn('grid grid-cols-7 gap-1', defaultClassNames.weekdays),
         weekday: cn(
-          'text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] select-none',
+          'text-muted-foreground rounded-md text-center font-normal text-[0.8rem] select-none',
           defaultClassNames.weekday,
         ),
-        week: cn('flex w-full mt-2', defaultClassNames.week),
+        week: cn('grid grid-cols-7 gap-1 w-full mt-2', defaultClassNames.week),
         week_number_header: cn(
           'select-none w-(--cell-size)',
           defaultClassNames.week_number_header,

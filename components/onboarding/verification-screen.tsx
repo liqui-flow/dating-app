@@ -2,25 +2,27 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Shield, CheckCircle, Upload, Camera } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface VerificationScreenProps {
   onComplete?: () => void
 }
 
 export function VerificationScreen({ onComplete }: VerificationScreenProps) {
-  const [step, setStep] = useState<"contact" | "profile" | "id">("contact")
+  const [step, setStep] = useState<"profile" | "gender" | "id">("profile")
   const [verificationMethod, setVerificationMethod] = useState<"phone" | "email">("phone")
   const [contactValue, setContactValue] = useState("")
   const [verificationCode, setVerificationCode] = useState("")
   const [codeSent, setCodeSent] = useState(false)
-  const [contactVerified, setContactVerified] = useState(false)
+  const [contactVerified, setContactVerified] = useState(true)
   const [phoneVerified, setPhoneVerified] = useState(false)
   const [emailVerified, setEmailVerified] = useState(false)
-  const [gender, setGender] = useState<"male" | "female" | null>(null)
+  const [gender, setGender] = useState<"male" | "female" | "prefer_not_to_say" | null>(null)
   const [dob, setDob] = useState("")
   const [profileValid, setProfileValid] = useState(false)
   const [underageMessage, setUnderageMessage] = useState<string | null>(null)
@@ -30,6 +32,23 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
   const [showCameraOverlay, setShowCameraOverlay] = useState(false)
+  const today = new Date()
+  const defaultMonth = new Date(new Date().setFullYear(today.getFullYear() - 20))
+  const [calendarMonth, setCalendarMonth] = useState<Date>(defaultMonth)
+
+  // Live underage validation when DOB changes
+  useEffect(() => {
+    if (!dob) {
+      setUnderageMessage(null)
+      return
+    }
+    const age = calculateAge(dob)
+    if (age < 17) {
+      setUnderageMessage("You are not eligible to use Lovesathi according to age criteria (17+).")
+    } else {
+      setUnderageMessage(null)
+    }
+  }, [dob])
 
   const handleUploadId = () => {
     // Works on Web (desktop/mobile) and mobile browsers on Android/iOS
@@ -155,15 +174,14 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
   const handleProfileContinue = () => {
     setUnderageMessage(null)
     const age = dob ? calculateAge(dob) : 0
-    // Treat below 17 as underage per requirement
     if (age < 17) {
       setUnderageMessage("You're underage to use a dating app.")
       setProfileValid(false)
       return
     }
-    if (gender && dob) {
+    if (dob) {
       setProfileValid(true)
-      setStep("id")
+      setStep("gender")
     }
   }
 
@@ -174,6 +192,28 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
     onComplete?.()
   }
 
+  // Progress indicator helpers
+  const currentStepIndex = step === "profile" ? 1 : step === "gender" ? 2 : 3
+  const renderStep = (index: number, label: string) => {
+    const state = currentStepIndex === index ? "active" : currentStepIndex > index ? "completed" : "inactive"
+    const base = "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+    const className =
+      state === "completed"
+        ? `bg-primary text-primary-foreground ${base}`
+        : state === "active"
+          ? `bg-black text-white ${base}`
+          : `bg-muted text-muted-foreground ${base}`
+
+    return (
+      <div className="flex items-center space-x-2">
+        <div className={className}>
+          {state === "completed" ? <CheckCircle className="w-4 h-4" /> : index}
+        </div>
+        <span className="text-sm text-black">{label}</span>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -181,172 +221,164 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
           <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
             <Shield className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Verify Your Account</CardTitle>
-          <CardDescription>Help us keep Lovesathi safe and authentic for everyone</CardDescription>
+          <CardTitle className="text-2xl text-black">Verify Your Account</CardTitle>
+          <CardDescription className="text-black">Help us keep Lovesathi safe and authentic for everyone</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {/* Progress Steps */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  contactVerified ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {contactVerified ? <CheckCircle className="w-4 h-4" /> : "1"}
-              </div>
-              <span className="text-sm">Contact</span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  profileValid || step === "id"
-                    ? "bg-primary text-primary-foreground"
-                    : step === "profile"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {profileValid ? <CheckCircle className="w-4 h-4" /> : "2"}
-              </div>
-              <span className="text-sm">Details</span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step === "id" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                }`}
-              >
-                3
-              </div>
-              <span className="text-sm">ID</span>
-            </div>
+            {renderStep(1, "DOB")}
+            {renderStep(2, "Details")}
+            {renderStep(3, "ID")}
           </div>
 
-          {/* Contact Verification (Phone or Email) */}
-          {step === "contact" && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Verify Your Contact</h3>
-                <p className="text-sm text-muted-foreground">Choose phone or email and we'll send you a code</p>
-              </div>
-
-              <div className="space-y-4">
-                {/* Method selector */}
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant={verificationMethod === "phone" ? "default" : "outline"}
-                    className="w-full"
-                    onClick={() => setVerificationMethod("phone")}
-                  >
-                    Phone
-                  </Button>
-                  <Button
-                    variant={verificationMethod === "email" ? "default" : "outline"}
-                    className="w-full"
-                    onClick={() => setVerificationMethod("email")}
-                  >
-                    Email
-                  </Button>
-                </div>
-
-                {/* Destination input */}
-                <div className="space-y-2">
-                  <Label htmlFor="contact-value">{verificationMethod === "phone" ? "Phone Number" : "Email"}</Label>
-                  <Input
-                    id="contact-value"
-                    type={verificationMethod === "phone" ? "tel" : "email"}
-                    placeholder={verificationMethod === "phone" ? "Enter your phone number" : "Enter your email"}
-                    value={contactValue}
-                    onChange={(e) => setContactValue(e.target.value)}
-                  />
-                </div>
-
-                {!codeSent && (
-                  <Button onClick={handleSendCode} className="w-full" disabled={isLoading || !contactValue}>
-                    {isLoading ? "Sending..." : "Send Code"}
-                  </Button>
-                )}
-
-                {codeSent && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="verification-code">Verification Code</Label>
-                      <Input
-                        id="verification-code"
-                        placeholder="Enter 6-digit code"
-                        maxLength={6}
-                        className="text-center text-lg tracking-widest"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                      />
-                    </div>
-
-                    <Button onClick={handleVerifyCode} className="w-full" disabled={isLoading || verificationCode.length < 4}>
-                      {isLoading ? "Verifying..." : "Verify"}
-                    </Button>
-
-                    <Button variant="link" className="w-full text-sm" onClick={handleSendCode} disabled={isLoading}>
-                      Resend Code
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Contact step removed – start at DOB */}
 
           {/* Profile step (DOB + Gender) */}
           {step === "profile" && (
             <div className="space-y-4">
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Your Basic Details</h3>
-                <p className="text-sm text-muted-foreground">Add your date of birth and gender</p>
+                <h3 className="text-lg font-semibold mb-2 text-black">When were you born?</h3>
+                <p className="text-sm text-black">Select your date of birth. Minimum age is 17.</p>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="dob">Date of Birth</Label>
-                  <Input
-                    id="dob"
-                    type="date"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Gender</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      type="button"
-                      variant={gender === "male" ? "default" : "outline"}
-                      className="w-full"
-                      onClick={() => setGender("male")}
-                    >
-                      Male
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={gender === "female" ? "default" : "outline"}
-                      className="w-full"
-                      onClick={() => setGender("female")}
-                    >
-                      Female
-                    </Button>
+                  <Label htmlFor="dob" className="text-black">Date of Birth</Label>
+                  <div className="rounded-2xl border bg-background p-3 max-w-sm mx-auto space-y-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <Select
+                        value={calendarMonth.getMonth().toString()}
+                        onValueChange={(val) => {
+                          const next = new Date(calendarMonth)
+                          next.setMonth(parseInt(val))
+                          setCalendarMonth(next)
+                        }}
+                      >
+                        <SelectTrigger className="h-9 min-w-[110px] text-black">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-56 overflow-y-auto text-black bg-background border shadow-md">
+                          {Array.from({ length: 12 }).map((_, i) => (
+                            <SelectItem key={i} value={i.toString()} className="text-black">
+                              {new Date(2000, i, 1).toLocaleString("default", { month: "short" })}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={calendarMonth.getFullYear().toString()}
+                        onValueChange={(val) => {
+                          const next = new Date(calendarMonth)
+                          next.setFullYear(parseInt(val))
+                          setCalendarMonth(next)
+                        }}
+                      >
+                        <SelectTrigger className="h-9 min-w-[110px] text-black">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-56 overflow-y-auto text-black bg-background border shadow-md">
+                          {Array.from({ length: today.getFullYear() - 1950 + 1 }).map((_, idx) => {
+                            const y = 1950 + idx
+                            return (
+                              <SelectItem key={y} value={y.toString()} className="text-black">{y}</SelectItem>
+                            )
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Calendar
+                      mode="single"
+                      captionLayout="label"
+                      month={calendarMonth}
+                      onMonthChange={setCalendarMonth}
+                      selected={dob ? new Date(dob) : undefined}
+                      onSelect={(date) => setDob(date ? new Date(date.getTime() - date.getTimezoneOffset()*60000).toISOString().slice(0,10) : "")}
+                      fromYear={1950}
+                      toYear={today.getFullYear()}
+                      defaultMonth={dob ? new Date(dob) : defaultMonth}
+                      disabled={(day) => {
+                        const max = new Date()
+                        max.setFullYear(max.getFullYear() - 17)
+                        max.setHours(0,0,0,0)
+                        const min = new Date(1950, 0, 1)
+                        return day > max || day < min
+                      }}
+                      className="w-full text-black [--cell-size:2.5rem]"
+                      classNames={{
+                        weekdays: "grid grid-cols-7 gap-1",
+                        week: "grid grid-cols-7 gap-1 w-full mt-2",
+                        weekday: "text-black text-[0.8rem] text-center",
+                        caption_label: "text-black hidden",
+                        week_number: "text-black",
+                      }}
+                    />
                   </div>
+                </div>
+                <div className="text-center text-sm text-black">
+                  {dob ? `Age: ${calculateAge(dob)}` : "Age: --"}
                 </div>
 
                 {underageMessage && (
-                  <div className="text-sm text-destructive">{underageMessage}</div>
+                  <div className="text-sm text-destructive text-center">{underageMessage}</div>
                 )}
 
-                <Button onClick={handleProfileContinue} className="w-full" disabled={isLoading || !dob || !gender}>
+                <Button onClick={handleProfileContinue} className="w-full" disabled={isLoading || !dob}>
                   Continue
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* Details step: user's gender only */}
+          {step === "gender" && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-2 text-black">Who are you?</h3>
+                <p className="text-sm text-black">Select your gender.</p>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={`w-full rounded-md px-4 py-2 text-sm border ${
+                    gender === "male"
+                      ? "!bg-black !text-white !border-black hover:!bg-black"
+                      : "bg-white text-black border-black hover:!bg-black hover:!text-white"
+                  }`}
+                  onClick={() => setGender("male")}
+                >
+                  Male
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={`w-full rounded-md px-4 py-2 text-sm border ${
+                    gender === "female"
+                      ? "!bg-black !text-white !border-black hover:!bg-black"
+                      : "bg-white text-black border-black hover:!bg-black hover:!text-white"
+                  }`}
+                  onClick={() => setGender("female")}
+                >
+                  Female
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={`w-full rounded-md px-4 py-2 text-sm border ${
+                    gender === "prefer_not_to_say"
+                      ? "!bg-black !text-white !border-black hover:!bg-black"
+                      : "bg-white text-black border-black hover:!bg-black hover:!text-white"
+                  }`}
+                  onClick={() => setGender("prefer_not_to_say")}
+                >
+                  Prefer not to say
+                </Button>
+              </div>
+              <Button className="w-full" onClick={() => setStep("id")} disabled={gender === null}>
+                Continue
+              </Button>
             </div>
           )}
 
@@ -354,7 +386,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
           {step === "id" && (
             <div className="space-y-4">
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">ID Verification</h3>
+                <h3 className="text-lg font-semibold mb-2 text-black">ID Verification</h3>
                 <p className="text-sm text-muted-foreground">Optional but recommended for enhanced trust</p>
               </div>
 
@@ -363,7 +395,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   <div className="flex items-start space-x-3">
                     <Shield className="w-5 h-5 text-primary mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Why verify your ID?</p>
+                      <p className="text-sm font-medium text-black">Why verify your ID?</p>
                       <ul className="text-xs text-muted-foreground space-y-1">
                         <li>• Get a verified badge on your profile</li>
                         <li>• Increase trust with potential matches</li>
@@ -403,11 +435,11 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                     }}
                   />
 
-                  <Button onClick={handleUploadId} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent">
+                  <Button onClick={handleUploadId} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-black">
                     <Upload className="w-6 h-6" />
                     <span className="text-sm">Upload ID</span>
                   </Button>
-                  <Button onClick={handleTakePhoto} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent">
+                  <Button onClick={handleTakePhoto} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-black">
                     <Camera className="w-6 h-6" />
                     <span className="text-sm">Take Photo</span>
                   </Button>

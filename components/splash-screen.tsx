@@ -30,7 +30,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false)
-    }, 2000)
+      setCurrentStep("auth")
+    }, 3000)
 
     return () => clearTimeout(timer)
   }, [])
@@ -43,22 +44,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center">
-        <div className="text-center space-y-6 animate-fade-in">
-          <div className="relative">
-            <div className="w-24 h-24 mx-auto bg-primary rounded-full flex items-center justify-center shadow-lg">
-              <Heart className="w-12 h-12 text-primary-foreground fill-current animate-pulse" />
-            </div>
-            <Sparkles className="w-6 h-6 text-secondary absolute -top-2 -right-2 animate-bounce" />
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold text-foreground font-sans">Lovesathi</h1>
-            <p className="text-muted-foreground text-lg">Where hearts meet traditions</p>
-          </div>
-          <div className="w-8 h-8 mx-auto">
-            <div className="w-full h-full border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <h1 className="text-5xl font-bold text-black tracking-wide">Lovesathi.</h1>
       </div>
     )
   }
@@ -105,12 +92,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center">
-      <div className="text-center space-y-6">
-        <h1 className="text-5xl font-bold">Lovesathi</h1>
-        <p className="text-muted-foreground">Find love your way</p>
-        <Button onClick={() => setCurrentStep("auth")}>Get Started</Button>
-      </div>
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <h1 className="text-5xl font-bold text-black tracking-wide">Lovesathi</h1>
     </div>
   )
 }
