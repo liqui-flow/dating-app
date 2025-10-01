@@ -31,7 +31,7 @@ export function MatrimonySwipeCard({
   onNotNow,
 }: MatrimonySwipeCardProps) {
   return (
-    <Card className="relative w-full max-w-sm h-[560px] overflow-hidden rounded-2xl shadow-xl">
+    <Card className="relative w-full max-w-sm h-[60vh] md:h-[480px] overflow-hidden rounded-2xl shadow-xl">
       <img src={avatar} alt={name} className="absolute inset-0 w-full h-full object-cover" />
 
       {/* Top-right chips (placeholders) */}

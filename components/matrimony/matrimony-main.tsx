@@ -103,8 +103,9 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       )}
 
       {currentScreen === "discover" && (
-        <div className="p-4 pb-20 mt-10 max-w-3xl mx-auto w-full">
-          <div className="relative h-[600px] flex items-center justify-center">
+        <div className="h-screen overflow-hidden flex flex-col">
+          <div className="p-4 pb-20 mt-10 max-w-3xl mx-auto w-full flex-1 overflow-hidden">
+            <div className="relative h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-14 md:-translate-y-16">
             {hasMoreProfiles && currentProfile ? (
               <MatrimonySwipeCard
                 name={currentProfile.name}
@@ -132,6 +133,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
                 </CardContent>
               </Card>
             )}
+            </div>
           </div>
         </div>
       )}

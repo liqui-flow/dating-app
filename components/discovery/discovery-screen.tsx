@@ -219,7 +219,7 @@ export function DiscoveryScreen() {
   const [passedProfiles, setPassedProfiles] = useState<string[]>([])
 
   const currentProfile = mockProfiles[currentCardIndex]
-  const hasMoreProfiles = currentCardIndex < mockProfiles.length - 1
+  const hasMoreProfiles = currentCardIndex < mockProfiles.length
 
   const handleLike = (profileId: string) => {
     setLikedProfiles((prev) => [...prev, profileId])
@@ -246,7 +246,7 @@ export function DiscoveryScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen overflow-hidden bg-background flex flex-col">
       {/* Floating header elements */}
       <div className="fixed top-3 left-4 z-40 text-xl font-semibold">Discover</div>
       <div className="fixed top-3 right-3 z-40">
@@ -260,18 +260,27 @@ export function DiscoveryScreen() {
         </Button>
       </div>
 
-      <div className="p-4 pb-20 mt-10">
+      <div className="p-4 pb-20 mt-10 flex-1 overflow-hidden">
         {viewMode === "cards" ? (
           <div className="space-y-6">
             {/* Card Stack */}
-            <div className="relative h-[600px] flex items-center justify-center">
+            <div className="relative h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-14 md:-translate-y-16">
               {hasMoreProfiles ? (
-                <SwipeCard
-                  profile={currentProfile}
-                  onLike={() => handleLike(currentProfile.id)}
-                  onPass={() => handlePass(currentProfile.id)}
-                  onProfileClick={() => setSelectedProfile(currentProfile)}
-                />
+                <div className="relative w-full max-w-sm h-full">
+                  {mockProfiles
+                    .slice(currentCardIndex, Math.min(currentCardIndex + 3, mockProfiles.length))
+                    .map((profile, index) => (
+                      <div key={profile.id} className="absolute inset-0 flex items-center justify-center">
+                        <SwipeCard
+                          profile={profile}
+                          stackIndex={index}
+                          onLike={() => handleLike(profile.id)}
+                          onPass={() => handlePass(profile.id)}
+                          onProfileClick={() => setSelectedProfile(profile)}
+                        />
+                      </div>
+                    ))}
+                </div>
               ) : (
                 <Card className="w-full max-w-sm h-96 flex items-center justify-center">
                   <CardContent className="text-center space-y-4">
