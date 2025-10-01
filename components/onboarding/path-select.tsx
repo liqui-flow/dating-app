@@ -18,21 +18,26 @@ export function PathSelect({ onSelect, onBack }: PathSelectProps) {
           <CardDescription>Select how you want to continue after verification</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4">
-          <Button
-            variant="outline"
-            className="h-auto py-6 justify-start text-left"
-            onClick={() => onSelect("dating")}
-          >
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Heart className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <div className="text-base font-medium">Dating</div>
-                <div className="text-xs text-muted-foreground">Swipe-based discovery with fun profiles</div>
-              </div>
-            </div>
-          </Button>
+        <Button
+  variant="outline"
+  className="h-auto py-6 justify-start text-left group"
+  onClick={() => onSelect("dating")}
+>
+  <div className="flex items-center space-x-4">
+    {/* same as Matrimony → grey background, only heart color changes */}
+    <div className="w-10 h-10 rounded-full bg-primary-foreground/10 flex items-center justify-center">
+      <Heart className="w-5 h-5 text-black group-hover:text-white" />
+    </div>
+    <div>
+      <div className="text-base font-medium">Dating</div>
+      <div className="text-xs text-muted-foreground">
+        Swipe-based discovery with fun profiles
+      </div>
+    </div>
+  </div>
+</Button>
+
+
 
           <Button
             variant="outline"
