@@ -1,262 +1,234 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { Sparkles, Heart, Zap } from "lucide-react"
 
 interface InterestQuestionnaireProps {
   onComplete?: () => void
 }
 
-const interests = [
-  "Travel",
-  "Cooking",
-  "Fitness",
-  "Reading",
-  "Music",
-  "Movies",
-  "Art",
-  "Sports",
-  "Photography",
-  "Dancing",
-  "Gaming",
-  "Hiking",
-  "Yoga",
-  "Fashion",
-  "Technology",
-  "Food",
+// Data sets
+const interestCategories = {
+  Art: ["Painting", "Photography", "Digital Art"],
+  Food: ["Foodie", "Cooking", "Trying new restaurants"],
+  Entertainment: ["Binge-watching", "Podcasts", "Stand-up comedy", "Live music"],
+  Lifestyle: ["Thrifting", "DIY Projects", "Volunteering", "Wellness", "Homebody"],
+}
+
+const prompts = [
+  "My ideal first date is...",
+  "I'm looking for someone who...",
+  "My love language is...",
+  "My most controversial opinion is...",
+  "I'm currently obsessed with...",
+  "My biggest green flag is...",
 ]
 
-const values = [
-  "Family-oriented",
-  "Career-focused",
-  "Spiritual",
-  "Adventurous",
-  "Traditional",
-  "Modern",
-  "Ambitious",
-  "Laid-back",
-  "Social",
-  "Introverted",
+const thisOrThatPairs = [
+  ["Stay in on a Friday night", "Go out and see where the night takes you"],
+  ["Long conversations", "Quick wit and banter"],
+  ["Ambitious and career-focused", "Laid-back and enjoy the journey"],
+  ["Big celebrations", "Small, intimate moments"],
+]
+
+const intentions = [
+  "Serious relationship leading to marriage",
+  "Long-term relationship",
+  "Dating to see where it goes",
+  "New friends and connections",
 ]
 
 export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps) {
-  const [currentStep, setCurrentStep] = useState(0)
+  // Interests
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
-  const [selectedValues, setSelectedValues] = useState<string[]>([])
-  const [ageRange, setAgeRange] = useState([25, 35])
-  const [distance, setDistance] = useState([50])
-  const [bio, setBio] = useState("")
-  const [relationshipGoal, setRelationshipGoal] = useState("")
 
-  const totalSteps = 5
-  const progress = ((currentStep + 1) / totalSteps) * 100
+  // Prompts answers
+  const [answers, setAnswers] = useState<Record<string, string>>({})
 
-  const handleInterestToggle = (interest: string) => {
-    setSelectedInterests((prev) => (prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest]))
-  }
+  // This or That
+  const [choices, setChoices] = useState<Record<number, 0 | 1 | null>>({ 0: null, 1: null, 2: null, 3: null })
 
-  const handleValueToggle = (value: string) => {
-    setSelectedValues((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]))
-  }
+  // Intentions
+  const [goal, setGoal] = useState<string>("")
 
-  const handleNext = () => {
-    if (currentStep < totalSteps - 1) {
-      setCurrentStep(currentStep + 1)
-    } else {
-      onComplete?.()
-    }
-  }
+  // Preferences sliders
+  const [ageRange, setAgeRange] = useState<[number, number]>([21, 35])
+  const [distance, setDistance] = useState([25])
 
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
+  const selectedCount = selectedInterests.length
+  const answeredCount = useMemo(() => Object.values(answers).filter(Boolean).length, [answers])
 
-  const canProceed = () => {
-    switch (currentStep) {
-      case 0:
-        return selectedInterests.length >= 3
-      case 1:
-        return selectedValues.length >= 2
-      case 2:
-        return true
-      case 3:
-        return relationshipGoal !== ""
-      case 4:
-        return bio.length >= 50
-      default:
-        return false
-    }
+  const canProceed = selectedCount >= 5 && answeredCount >= 3 && !!goal
+
+  const toggleInterest = (label: string) => {
+    setSelectedInterests((prev) => (prev.includes(label) ? prev.filter((i) => i !== label) : [...prev, label]))
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <div className="space-y-2">
-            <Progress value={progress} className="h-2" />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>
-                Step {currentStep + 1} of {totalSteps}
-              </span>
-              <span>{Math.round(progress)}% complete</span>
-            </div>
+      <Card className="w-full max-w-3xl">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold text-black">What's your vibe?</CardTitle>
+          <div className="mt-3">
+            <Progress value={(canProceed ? 100 : Math.min(100, (selectedCount/5)*40 + (answeredCount/3)*40 + (goal ? 20 : 0)))} />
           </div>
         </CardHeader>
-
-        <CardContent className="space-y-6">
-          {/* Step 0: Interests */}
-          {currentStep === 0 && (
-            <div className="space-y-4">
-              <div className="text-center space-y-2">
-                <CardTitle className="text-xl">What are you into?</CardTitle>
-                <CardDescription>Select at least 3 interests to help us find your perfect match</CardDescription>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                {interests.map((interest) => (
-                  <Button
-                    key={interest}
-                    variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleInterestToggle(interest)}
-                    className="justify-start"
-                  >
-                    {interest}
-                  </Button>
-                ))}
-              </div>
-
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Selected: {selectedInterests.length}/16</p>
-              </div>
+        <CardContent className="space-y-10">
+          {/* Interests */}
+          <section className="space-y-4">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-black">Pick at least 5 interests to help us find your perfect match.</h3>
             </div>
-          )}
-
-          {/* Step 1: Values */}
-          {currentStep === 1 && (
-            <div className="space-y-4">
-              <div className="text-center space-y-2">
-                <CardTitle className="text-xl">What matters to you?</CardTitle>
-                <CardDescription>Choose values that are important in a relationship</CardDescription>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                {values.map((value) => (
-                  <Button
-                    key={value}
-                    variant={selectedValues.includes(value) ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleValueToggle(value)}
-                    className="justify-start"
-                  >
-                    {value}
-                  </Button>
-                ))}
-              </div>
-
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Selected: {selectedValues.length}/10</p>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Preferences */}
-          {currentStep === 2 && (
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <CardTitle className="text-xl">Your preferences</CardTitle>
-                <CardDescription>Help us show you the most relevant matches</CardDescription>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <Label>
-                    Age range: {ageRange[0]} - {ageRange[1]} years
-                  </Label>
-                  <Slider value={ageRange} onValueChange={setAgeRange} max={60} min={18} step={1} className="w-full" />
+            <div className="grid sm:grid-cols-2 gap-4">
+              {Object.entries(interestCategories).map(([category, items]) => (
+                <div key={category} className="p-3 rounded-xl bg-white/60 border border-black/10">
+                  <div className="mb-2 flex items-center gap-2 text-black font-medium">
+                    <Sparkles className="w-4 h-4" /> {category}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {items.map((label) => {
+                      const active = selectedInterests.includes(label)
+                      return (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => toggleInterest(label)}
+                          className={`px-3 py-2 rounded-full text-sm transition transform active:scale-95 border ${
+                            active
+                              ? "bg-black text-white border-black"
+                              : "bg-white text-black border-black hover:bg-black hover:text-white"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
+              ))}
+            </div>
+            <div className="text-center text-sm text-black">Selected: {selectedCount}/10</div>
+          </section>
 
-                <div className="space-y-3">
-                  <Label>Maximum distance: {distance[0]} km</Label>
-                  <Slider value={distance} onValueChange={setDistance} max={100} min={5} step={5} className="w-full" />
+          {/* Prompts */}
+          <section className="space-y-4">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-black">Answer a few fun prompts to show your vibe.</h3>
+              <p className="text-sm text-black">Answer at least 3</p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {prompts.map((p) => (
+                <div key={p} className="p-4 rounded-xl border border-black/10 bg-white/60">
+                  <Label className="text-black text-sm mb-2 block">{p}</Label>
+                  <Textarea
+                    placeholder="Type a short answer..."
+                    value={answers[p] || ""}
+                    onChange={(e) => setAnswers((prev) => ({ ...prev, [p]: e.target.value }))}
+                    className="min-h-20 resize-none text-black placeholder:text-black"
+                    maxLength={140}
+                  />
+                  <div className="mt-1 text-xs text-black/70 text-right">{(answers[p] || "").length}/140</div>
                 </div>
-              </div>
+              ))}
             </div>
-          )}
+          </section>
 
-          {/* Step 3: Relationship Goals */}
-          {currentStep === 3 && (
-            <div className="space-y-4">
-              <div className="text-center space-y-2">
-                <CardTitle className="text-xl">What are you looking for?</CardTitle>
-                <CardDescription>Be honest about your relationship intentions</CardDescription>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  "Serious relationship leading to marriage",
-                  "Long-term relationship",
-                  "Dating to see where it goes",
-                  "New friends and connections",
-                ].map((goal) => (
-                  <Button
-                    key={goal}
-                    variant={relationshipGoal === goal ? "default" : "outline"}
-                    onClick={() => setRelationshipGoal(goal)}
-                    className="w-full justify-start text-left h-auto p-4"
-                  >
-                    {goal}
-                  </Button>
-                ))}
-              </div>
+          {/* This or That */}
+          <section className="space-y-4">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-black">Which one speaks to you more?</h3>
             </div>
-          )}
+            <div className="grid md:grid-cols-2 gap-4">
+              {thisOrThatPairs.map(([a, b], idx) => {
+                const pick = choices[idx]
+                return (
+                  <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                    {[a, b].map((label, i) => {
+                      const active = pick === i
+                      return (
+                        <Button
+                          key={label}
+                          variant="outline"
+                          className={`h-auto p-4 text-left border whitespace-normal break-words leading-relaxed min-h-12 ${
+                            active ? "bg-black text-white border-black" : "bg-white text-black border-black"
+                          }`}
+                          onClick={() =>
+                            setChoices((prev) => ({
+                              ...prev,
+                              [idx]: prev[idx] === (i as 0 | 1) ? null : (i as 0 | 1),
+                            }))
+                          }
+                        >
+                          <div className="flex items-start gap-2"><Heart className="w-4 h-4 shrink-0 mt-0.5" /> <span>{label}</span></div>
+                        </Button>
+                      )
+                    })}
+                  </div>
+                )
+              })}
+            </div>
+          </section>
 
-          {/* Step 4: Bio */}
-          {currentStep === 4 && (
-            <div className="space-y-4">
-              <div className="text-center space-y-2">
-                <CardTitle className="text-xl">Tell us about yourself</CardTitle>
-                <CardDescription>Write a brief bio to help others get to know you</CardDescription>
-              </div>
+          {/* Intentions */}
+          <section className="space-y-4">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-black">Be honest about your relationship intentions.</h3>
+            </div>
+            <div className="grid md:grid-cols-2 gap-3">
+              {intentions.map((g) => (
+                <Button
+                  key={g}
+                  variant="outline"
+                  onClick={() => setGoal(g)}
+                  className={`h-auto p-4 text-left border ${goal === g ? "bg-black text-white border-black" : "bg-white text-black border-black"}`}
+                >
+                  {g}
+                </Button>
+              ))}
+            </div>
+          </section>
 
+          {/* Preferences */}
+          <section className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-black">Help us show you the most relevant matches.</h3>
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="bio">Your bio</Label>
-                <Textarea
-                  id="bio"
-                  placeholder="I love exploring new places, trying different cuisines, and spending time with family. Looking for someone who shares similar values and is ready for a meaningful relationship..."
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  className="min-h-32 resize-none"
-                  maxLength={500}
+                <Label className="text-black">Age range: {ageRange[0]} - {ageRange[1]} years</Label>
+                <Slider
+                  value={ageRange as any}
+                  onValueChange={(val: number[]) => {
+                    const [min, max] = val as [number, number]
+                    // Enforce logical constraints and prevent cross-over
+                    const clampedMin = Math.max(18, Math.min(min, 60))
+                    const clampedMax = Math.max(18, Math.min(max, 60))
+                    if (clampedMin > clampedMax) return
+                    setAgeRange([clampedMin, clampedMax])
+                  }}
+                  min={18}
+                  max={60}
+                  step={1}
+                  className="w-full"
                 />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Minimum 50 characters</span>
-                  <span>{bio.length}/500</span>
-                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-black">Maximum distance: {distance[0]} km</Label>
+                <Slider value={distance} onValueChange={setDistance} max={100} min={5} step={5} />
               </div>
             </div>
-          )}
+          </section>
 
           {/* Navigation */}
-          <div className="flex justify-between pt-4">
-            <Button variant="outline" onClick={handleBack} disabled={currentStep === 0}>
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-
-            <Button onClick={handleNext} disabled={!canProceed()}>
-              {currentStep === totalSteps - 1 ? "Complete" : "Next"}
-              {currentStep !== totalSteps - 1 && <ChevronRight className="w-4 h-4 ml-2" />}
-            </Button>
+          <div className="flex justify-between pt-2">
+            <Button variant="outline" className="border-black text-black">Back</Button>
+            <Button disabled={!canProceed} onClick={() => onComplete?.()} className="bg-black text-white hover:bg-black/90">Next</Button>
           </div>
         </CardContent>
       </Card>

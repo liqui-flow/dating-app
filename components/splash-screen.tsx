@@ -7,6 +7,8 @@ import { AuthScreen } from "@/components/auth/auth-screen"
 import { VerificationScreen } from "@/components/onboarding/verification-screen"
 import { InterestQuestionnaire } from "@/components/onboarding/interest-questionnaire"
 import { PathSelect } from "@/components/onboarding/path-select"
+import { ProfileSetup } from "@/components/onboarding/profile-setup"
+import { DatingPreferences } from "@/components/onboarding/dating-preferences"
 import { MatrimonyOnboarding } from "@/components/profile/matrimony-onboarding"
 
 type OnboardingStep =
@@ -14,6 +16,8 @@ type OnboardingStep =
   | "auth"
   | "verification"
   | "path-select"
+  | "profile-setup"
+  | "dating-preferences"
   | "questionnaire"
   | "matrimony-onboarding"
   | "complete"
@@ -64,11 +68,19 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       <PathSelect
         onSelect={(selected) => {
           setMode(selected)
-          setCurrentStep(selected === "dating" ? "questionnaire" : "matrimony-onboarding")
+          setCurrentStep(selected === "dating" ? "profile-setup" : "matrimony-onboarding")
         }}
         onBack={() => setCurrentStep("verification")}
       />
     )
+  }
+
+  if (currentStep === "profile-setup") {
+    return <ProfileSetup onComplete={() => setCurrentStep("dating-preferences")} onBack={() => setCurrentStep("path-select")} />
+  }
+
+  if (currentStep === "dating-preferences") {
+    return <DatingPreferences onComplete={() => setCurrentStep("questionnaire")} onBack={() => setCurrentStep("profile-setup")} />
   }
 
   if (currentStep === "questionnaire") {
