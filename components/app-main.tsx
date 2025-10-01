@@ -12,6 +12,12 @@ import { ProfileSetup } from "@/components/profile/profile-setup"
 import { MatchNotification } from "@/components/chat/match-notification"
 import { SuperLikeModal } from "@/components/premium/super-like-modal"
 import { DiscoverySettings } from "@/components/settings/discovery-settings"
+import { QuickActions } from "@/components/navigation/quick-actions"
+import { BackFloatingButton } from "@/components/navigation/back-floating-button"
+import { PaymentScreen } from "./premium/payment-screen"
+import { VerificationStatus } from "./profile/verification-status"
+import { PremiumFeatures } from "./premium/premium-features"
+import { ProfileView } from "@/components/profile/profile-view"
 
 type Screen =
   | "discover"
@@ -23,6 +29,10 @@ type Screen =
   | "premium"
   | "profile-setup"
   | "discovery-settings"
+  | "payment"
+  | "verification-status"
+  | "premium-features"
+  | "my-profile"
 
 interface AppState {
   currentScreen: Screen
@@ -30,6 +40,7 @@ interface AppState {
   showMatch: boolean
   showSuperLike: boolean
   chatUserId?: string
+  selectedPlanId?: string
 }
 
 export function AppMain() {
@@ -89,40 +100,86 @@ export function AppMain() {
       case "search":
         return <SearchScreen />
       case "explore":
-        return (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center space-y-4">
-              <h2 className="text-2xl font-bold">Explore</h2>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </div>
-          </div>
-        )
+        return <DiscoveryScreen />
       case "messages":
         return <ChatListScreen />
       case "chat":
         return <ChatScreen />
       case "profile":
-        return <SettingsScreen />
+        return (
+          <SettingsScreen
+            onNavigate={(id) => {
+              if (id === "profile") handleNavigation("profile-setup")
+              else if (id === "premium") handleNavigation("premium")
+              else if (id === "verification") handleNavigation("verification-status")
+              else if (id === "help_faq") window.alert("FAQ coming soon")
+              else if (id === "help_contact") window.alert("Contact us at support@example.com")
+              else if (id === "help_report_bug") window.alert("Bug report submitted")
+              else if (id === "app_settings") window.alert("Open App Settings")
+            }
+            }
+            onLogout={() => {
+              window.location.href = "/auth"
+            }}
+          />
+        )
       case "premium":
-        return <PremiumScreen />
+        return (
+          <PremiumScreen
+            onPlanSelect={(planId) =>
+              setAppState((prev) => ({ ...prev, selectedPlanId: planId }))
+            }
+            onSubscribe={(planId) =>
+              setAppState((prev) => ({ ...prev, currentScreen: "payment", selectedPlanId: planId }))
+            }
+            onBack={() => handleNavigation("profile")}
+          />
+        )
       case "profile-setup":
-        return <ProfileSetup onComplete={() => handleNavigation("discover")} />
+        return <ProfileSetup onComplete={() => handleNavigation("discover")} onBack={() => handleNavigation("profile")} />
       case "discovery-settings":
         return <DiscoverySettings />
+      case "payment":
+        return (
+          <PaymentScreen
+            planId={appState.selectedPlanId || "monthly"}
+            onSuccess={() => handleNavigation("premium-features")}
+            onCancel={() => handleNavigation("premium")}
+          />
+        )
+      case "verification-status":
+        return <VerificationStatus onBack={() => handleNavigation("profile")} />
+      case "premium-features":
+        return <PremiumFeatures onBack={() => handleNavigation("profile")} />
+      case "my-profile":
+        return <ProfileView isOwnProfile onEdit={() => handleNavigation("profile-setup")} />
       default:
         return <DiscoveryScreen />
     }
   }
 
-  const shouldShowBottomTabs = !["chat", "premium", "profile-setup", "discovery-settings"].includes(
-    appState.currentScreen,
-  )
+  const shouldShowBottomTabs = false
 
   return (
     <>
       <AppLayout activeTab={appState.activeTab} onTabChange={handleTabChange} showBottomTabs={shouldShowBottomTabs}>
         {renderScreen()}
       </AppLayout>
+
+      {(appState.currentScreen === "messages" || appState.currentScreen === "profile") && (
+        <BackFloatingButton
+          onClick={() => setAppState((prev) => ({ ...prev, currentScreen: "discover", activeTab: "discover" }))}
+        />
+      )}
+
+      <QuickActions
+        onOpenChat={() =>
+          setAppState((prev) => ({ ...prev, currentScreen: "messages", activeTab: "messages" }))
+        }
+        onOpenProfile={() =>
+          setAppState((prev) => ({ ...prev, currentScreen: "profile", activeTab: "profile" }))
+        }
+      />
 
       {/* Match Notification */}
       {appState.showMatch && (

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { SwipeCard } from "@/components/discovery/swipe-card"
 import { FilterSheet } from "@/components/discovery/filter-sheet"
 import { ProfileModal } from "@/components/discovery/profile-modal"
-import { Heart, X, Filter, Grid, RotateCcw, Zap } from "lucide-react"
+import { Heart, Filter } from "lucide-react"
 
 // Mock profiles data
 const mockProfiles = [
@@ -247,22 +247,20 @@ export function DiscoveryScreen() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10">
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-semibold">Discover</h1>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === "cards" ? "grid" : "cards")}>
-              <Grid className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowFilters(true)}>
-              <Filter className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
+      {/* Floating header elements */}
+      <div className="fixed top-3 left-4 z-40 text-xl font-semibold">Discover</div>
+      <div className="fixed top-3 right-3 z-40">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-full px-4 py-3 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+          onClick={() => setShowFilters(true)}
+        >
+          <Filter className="w-4 h-4" />
+        </Button>
       </div>
 
-      <div className="p-4 pb-20">
+      <div className="p-4 pb-20 mt-10">
         {viewMode === "cards" ? (
           <div className="space-y-6">
             {/* Card Stack */}
@@ -292,41 +290,7 @@ export function DiscoveryScreen() {
               )}
             </div>
 
-            {/* Action Buttons */}
-            {hasMoreProfiles && (
-              <div className="flex items-center justify-center space-x-6">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-14 h-14 rounded-full p-0 bg-transparent"
-                  onClick={handleRewind}
-                  disabled={currentCardIndex === 0}
-                >
-                  <RotateCcw className="w-6 h-6" />
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-16 h-16 rounded-full p-0 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground bg-transparent"
-                  onClick={() => handlePass(currentProfile.id)}
-                >
-                  <X className="w-8 h-8" />
-                </Button>
-
-                <Button size="lg" className="w-16 h-16 rounded-full p-0" onClick={() => handleLike(currentProfile.id)}>
-                  <Heart className="w-8 h-8 fill-current" />
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-14 h-14 rounded-full p-0 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground bg-transparent"
-                >
-                  <Zap className="w-6 h-6" />
-                </Button>
-              </div>
-            )}
+            {/* Action Buttons removed as requested */}
           </div>
         ) : (
           /* Grid View */

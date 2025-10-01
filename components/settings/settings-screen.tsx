@@ -12,17 +12,18 @@ import {
   User,
   Bell,
   Shield,
-  Heart,
   Crown,
   HelpCircle,
   LogOut,
   ChevronRight,
   Settings,
-  Moon,
-  Globe,
-  Eye,
+  Power,
   MessageCircle,
+  Info,
+  Mail,
+  Bug,
 } from "lucide-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 interface SettingsSection {
   title: string
@@ -39,6 +40,8 @@ interface SettingsItem {
   badge?: string
   destructive?: boolean
 }
+
+type SettingsNavigateHandler = (id: string) => void
 
 const settingsSections: SettingsSection[] = [
   {
@@ -69,27 +72,6 @@ const settingsSections: SettingsSection[] = [
     ],
   },
   {
-    title: "Discovery",
-    items: [
-      {
-        id: "discovery",
-        label: "Discovery Settings",
-        description: "Age range, distance, and preferences",
-        icon: Heart,
-        type: "navigation",
-      },
-      {
-        id: "incognito",
-        label: "Incognito Mode",
-        description: "Browse profiles privately",
-        icon: Eye,
-        type: "toggle",
-        value: false,
-        badge: "Premium",
-      },
-    ],
-  },
-  {
     title: "Notifications",
     items: [
       {
@@ -111,37 +93,60 @@ const settingsSections: SettingsSection[] = [
     ],
   },
   {
-    title: "Preferences",
+    title: "App Settings",
     items: [
       {
-        id: "dark_mode",
-        label: "Dark Mode",
-        description: "Switch to dark theme",
-        icon: Moon,
+        id: "profile_visibility",
+        label: "Profile Visibility",
+        description: "Show or hide your profile",
+        icon: Power,
+        type: "toggle",
+        value: true,
+      },
+      {
+        id: "hide_age",
+        label: "Hide My Age",
+        description: "Don't show your age on profile",
+        icon: Info,
         type: "toggle",
         value: false,
       },
       {
-        id: "language",
-        label: "Language",
-        description: "English",
-        icon: Globe,
-        type: "navigation",
+        id: "hide_distance",
+        label: "Hide My Distance",
+        description: "Don't show distance on profile",
+        icon: Info,
+        type: "toggle",
+        value: false,
       },
     ],
   },
   {
-    title: "Support",
+    title: "Help & Support",
     items: [
       {
-        id: "help",
-        label: "Help & Support",
-        description: "Get help and contact support",
+        id: "help_faq",
+        label: "FAQ",
+        description: "Common questions about the app",
         icon: HelpCircle,
         type: "navigation",
       },
       {
-        id: "settings_general",
+        id: "help_contact",
+        label: "Contact Us",
+        description: "Reach out to our team",
+        icon: Mail,
+        type: "navigation",
+      },
+      {
+        id: "help_report_bug",
+        label: "Report a Bug",
+        description: "Found an issue? Tell us",
+        icon: Bug,
+        type: "navigation",
+      },
+      {
+        id: "app_settings",
         label: "App Settings",
         description: "Privacy, safety, and more",
         icon: Settings,
@@ -153,6 +158,14 @@ const settingsSections: SettingsSection[] = [
     title: "Account Actions",
     items: [
       {
+        id: "delete_account",
+        label: "Delete Account",
+        description: "Permanently delete your account",
+        icon: Settings,
+        type: "action",
+        destructive: true,
+      },
+      {
         id: "logout",
         label: "Log Out",
         icon: LogOut,
@@ -163,12 +176,13 @@ const settingsSections: SettingsSection[] = [
   },
 ]
 
-export function SettingsScreen() {
+export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: SettingsNavigateHandler; onLogout?: () => void }) {
   const [settings, setSettings] = useState<Record<string, boolean>>({
     push_notifications: true,
     message_notifications: true,
-    incognito: false,
-    dark_mode: false,
+    profile_visibility: true,
+    hide_age: false,
+    hide_distance: false,
   })
 
   const handleToggle = (id: string) => {
@@ -179,12 +193,16 @@ export function SettingsScreen() {
   }
 
   const handleNavigation = (id: string) => {
-    console.log(`Navigate to: ${id}`)
+    if (onNavigate) onNavigate(id)
   }
 
   const handleAction = (id: string) => {
     if (id === "logout") {
-      console.log("Logging out...")
+      onLogout?.()
+    }
+    if (id === "delete_account") {
+      const trigger = document.getElementById("delete-account-trigger") as HTMLButtonElement | null
+      trigger?.click()
     }
   }
 
@@ -214,7 +232,7 @@ export function SettingsScreen() {
             <div key={section.title} className="space-y-3">
               <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{section.title}</h2>
 
-              <Card>
+              <Card className="overflow-hidden">
                 <CardContent className="p-0">
                   {section.items.map((item, index) => (
                     <div key={item.id}>
@@ -264,7 +282,7 @@ export function SettingsScreen() {
                         </div>
                       </div>
 
-                      {index < section.items.length - 1 && <Separator className="ml-16" />}
+                      {index < section.items.length - 1 && <Separator className="ml-16 mr-4" />}
                     </div>
                   ))}
                 </CardContent>
@@ -273,6 +291,33 @@ export function SettingsScreen() {
           ))}
         </div>
       </div>
+
+      {/* Delete Account Confirmation */}
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <button className="hidden" id="delete-account-trigger" />
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your account and all data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                // Simulate deletion success
+                alert("Your account has been deleted.")
+                onLogout?.()
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

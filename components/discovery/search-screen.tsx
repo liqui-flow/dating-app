@@ -244,15 +244,7 @@ export function SearchScreen() {
                           </div>
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm" className="w-8 h-8 p-0 rounded-full bg-transparent">
-                            <X className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" className="w-8 h-8 p-0 rounded-full">
-                            <Heart className="w-4 h-4" />
-                          </Button>
-                        </div>
+                        {/* Inline action buttons removed as requested */}
                       </div>
 
                       {/* Interests */}

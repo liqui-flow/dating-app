@@ -13,9 +13,6 @@ interface TabItem {
 }
 
 const tabs: TabItem[] = [
-  { id: "discover", label: "Discover", icon: Heart },
-  { id: "search", label: "Search", icon: Search },
-  { id: "explore", label: "Explore", icon: Compass },
   { id: "messages", label: "Messages", icon: MessageCircle },
   { id: "profile", label: "Profile", icon: User },
 ]
@@ -34,7 +31,7 @@ export function BottomTabs({ activeTab = "discover", onTabChange }: BottomTabsPr
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border hidden">
       <div className="flex items-center justify-around py-2">
         {tabs.map((tab) => {
           const Icon = tab.icon

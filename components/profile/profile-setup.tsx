@@ -11,12 +11,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PhotoGrid } from "@/components/profile/photo-grid"
 import { MatrimonyPreferences } from "@/components/profile/matrimony-preferences"
 import { User, Camera } from "lucide-react"
+import { BackFloatingButton } from "@/components/navigation/back-floating-button"
 
 interface ProfileSetupProps {
   onComplete?: () => void
+  onBack?: () => void
 }
 
-export function ProfileSetup({ onComplete }: ProfileSetupProps) {
+export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
   const [activeTab, setActiveTab] = useState("basic")
   const [profile, setProfile] = useState({
     name: "",
@@ -296,6 +298,8 @@ export function ProfileSetup({ onComplete }: ProfileSetupProps) {
           </TabsContent>
         </Tabs>
       </div>
+
+      <BackFloatingButton onClick={onBack} />
     </div>
   )
 }

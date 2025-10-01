@@ -4,6 +4,19 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AppLayout } from "@/components/layout/app-layout"
+import { QuickActions } from "@/components/navigation/quick-actions"
+// Removed TopBackButton usage
+import { Heart, Filter } from "lucide-react"
+import { MatrimonySwipeCard } from "@/components/matrimony/matrimony-swipe-card"
+import { MatrimonyChatList } from "@/components/matrimony/matrimony-chat-list"
+import { FilterSheet } from "@/components/discovery/filter-sheet"
+import { BackFloatingButton } from "@/components/navigation/back-floating-button"
+import { SettingsScreen } from "@/components/settings/settings-screen"
+import { ProfileSetup } from "@/components/profile/profile-setup"
+import { PremiumScreen } from "@/components/premium/premium-screen"
+import { PaymentScreen } from "@/components/premium/payment-screen"
+import { PremiumFeatures } from "@/components/premium/premium-features"
+import { VerificationStatus } from "@/components/profile/verification-status"
 
 interface MatrimonyMainProps {
   onExit?: () => void
@@ -45,48 +58,157 @@ const SAMPLE_PROFILES: MatrimonyProfile[] = [
 
 export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
   const [profiles] = useState<MatrimonyProfile[]>(SAMPLE_PROFILES)
+  const [currentScreen, setCurrentScreen] = useState<
+    | "discover"
+    | "messages"
+    | "profile"
+    | "profile-setup"
+    | "premium"
+    | "payment"
+    | "premium-features"
+    | "verification-status"
+  >("discover")
+  const [currentCardIndex, setCurrentCardIndex] = useState(0)
+  const [showFilters, setShowFilters] = useState(false)
+  const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
+  const currentProfile = profiles[currentCardIndex]
+  const hasMoreProfiles = currentCardIndex < profiles.length
+
+  const handleLike = () => {
+    if (currentCardIndex < profiles.length - 1) setCurrentCardIndex((p) => p + 1)
+    else setCurrentCardIndex(profiles.length)
+  }
+  const handlePass = () => {
+    if (currentCardIndex < profiles.length - 1) setCurrentCardIndex((p) => p + 1)
+    else setCurrentCardIndex(profiles.length)
+  }
 
   return (
     <AppLayout activeTab="discover" onTabChange={() => {}} showBottomTabs={false}>
-      <div className="p-4 max-w-3xl mx-auto w-full">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">Matrimony Matches</h2>
-            <p className="text-sm text-muted-foreground">Curated profiles aligned with your preferences</p>
-          </div>
-          {onExit && (
-            <Button variant="outline" onClick={onExit}>
-              Switch to Dating
+      {/* Floating header elements */}
+      {currentScreen === "discover" && (
+        <>
+          <div className="fixed top-3 left-4 z-40 text-xl font-semibold">Discover</div>
+          <div className="fixed top-3 right-3 z-40">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="rounded-full px-4 py-3 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+              onClick={() => setShowFilters(true)}
+            >
+              <Filter className="w-4 h-4" />
             </Button>
-          )}
-        </div>
+          </div>
+        </>
+      )}
 
-        <div className="grid grid-cols-1 gap-4">
-          {profiles.map((p) => (
-            <Card key={p.id} className="overflow-hidden">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">{p.name} • {p.age}</CardTitle>
-                <CardDescription>
-                  {p.education} • {p.profession} • {p.location}
-                  {p.community ? ` • ${p.community}` : ""}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <img src={p.avatar || "/placeholder-user.jpg"} alt={p.name} className="w-20 h-20 rounded-md object-cover" />
-                  <div className="text-sm text-muted-foreground">
-                    Looking for a compatible life partner. Family-oriented and career-focused.
+      {currentScreen === "discover" && (
+        <div className="p-4 pb-20 mt-10 max-w-3xl mx-auto w-full">
+          <div className="relative h-[600px] flex items-center justify-center">
+            {hasMoreProfiles && currentProfile ? (
+              <MatrimonySwipeCard
+                name={currentProfile.name}
+                age={currentProfile.age}
+                height={"5'6\""}
+                profession={`${currentProfile.education} • ${currentProfile.profession}`}
+                community={currentProfile.community}
+                location={currentProfile.location}
+                avatar={currentProfile.avatar || "/placeholder-user.jpg"}
+                verified
+                onConnect={handleLike}
+                onNotNow={handlePass}
+              />
+            ) : (
+              <Card className="w-full max-w-sm h-96 flex items-center justify-center">
+                <CardContent className="text-center space-y-4">
+                  <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+                    <Heart className="w-8 h-8 text-muted-foreground" />
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline">Shortlist</Button>
-                  <Button>Express Interest</Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold">No more profiles</h3>
+                    <p className="text-sm text-muted-foreground">Check back later for new matches</p>
+                  </div>
+                  <Button onClick={() => setCurrentCardIndex(0)}>Start Over</Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {currentScreen === "messages" && (
+        <div className="p-4 pb-20 mt-2 w-full">
+          <MatrimonyChatList />
+        </div>
+      )}
+
+      {currentScreen === "profile" && (
+        <div className="p-4 pb-20 mt-2 w-full">
+          <SettingsScreen
+            onNavigate={(id) => {
+              if (id === "profile") setCurrentScreen("profile-setup")
+              else if (id === "premium") setCurrentScreen("premium")
+              else if (id === "verification") setCurrentScreen("verification-status")
+            }}
+            onLogout={() => {
+              window.location.href = "/auth"
+            }}
+          />
+        </div>
+      )}
+
+      {currentScreen === "profile-setup" && (
+        <div className="p-0 pb-0 mt-0">
+          <ProfileSetup onComplete={() => setCurrentScreen("discover")} onBack={() => setCurrentScreen("profile")} />
+        </div>
+      )}
+
+      {currentScreen === "premium" && (
+        <div className="p-0 pb-0 mt-0">
+          <PremiumScreen
+            onPlanSelect={(planId) => setSelectedPlanId(planId)}
+            onSubscribe={(planId) => {
+              setSelectedPlanId(planId)
+              setCurrentScreen("payment")
+            }}
+            onBack={() => setCurrentScreen("profile")}
+          />
+        </div>
+      )}
+
+      {currentScreen === "payment" && (
+        <div className="p-0 pb-0 mt-0">
+          <PaymentScreen
+            planId={selectedPlanId || "monthly"}
+            onSuccess={() => setCurrentScreen("premium-features")}
+            onCancel={() => setCurrentScreen("premium")}
+          />
+        </div>
+      )}
+
+      {currentScreen === "premium-features" && (
+        <div className="p-0 pb-0 mt-0">
+          <PremiumFeatures onBack={() => setCurrentScreen("profile")} />
+        </div>
+      )}
+
+      {currentScreen === "verification-status" && (
+        <div className="p-0 pb-0 mt-0">
+          <VerificationStatus onBack={() => setCurrentScreen("profile")} />
+        </div>
+      )}
+
+      {(currentScreen === "messages" || currentScreen === "profile") && (
+        <BackFloatingButton onClick={() => setCurrentScreen("discover")} />
+      )}
+
+      <QuickActions
+        onOpenChat={() => setCurrentScreen("messages")}
+        onOpenProfile={() => setCurrentScreen("profile")}
+      />
+
+      {/* Filter Sheet */}
+      <FilterSheet open={showFilters} onOpenChange={setShowFilters} />
     </AppLayout>
   )
 }

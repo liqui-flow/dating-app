@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Crown, Heart, Eye, MessageCircle, Zap, Star, Check } from "lucide-react"
+import { BackFloatingButton } from "@/components/navigation/back-floating-button"
 
 interface PremiumPlan {
   id: string
@@ -99,7 +100,7 @@ const premiumFeatures = [
   },
 ]
 
-export function PremiumScreen() {
+export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSelect?: (planId: string) => void; onSubscribe?: (planId: string) => void; onBack?: () => void }) {
   const [selectedPlan, setSelectedPlan] = useState<string>("quarterly")
 
   return (
@@ -185,6 +186,19 @@ export function PremiumScreen() {
                           <span className="text-sm">{feature}</span>
                         </div>
                       ))}
+                      <div className="pt-2">
+                        <Button
+                          variant={selectedPlan === plan.id ? "default" : "outline"}
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedPlan(plan.id)
+                            onPlanSelect?.(plan.id)
+                          }}
+                        >
+                          {selectedPlan === plan.id ? "Selected" : "Select"}
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -196,7 +210,7 @@ export function PremiumScreen() {
         {/* Bottom Action */}
         <div className="p-6 border-t border-border bg-background/95 backdrop-blur-sm">
           <div className="space-y-4">
-            <Button size="lg" className="w-full">
+            <Button size="lg" className="w-full" onClick={() => onSubscribe?.(selectedPlan)}>
               <Crown className="w-5 h-5 mr-2" />
               Subscribe to {premiumPlans.find((p) => p.id === selectedPlan)?.name}
             </Button>
@@ -211,6 +225,7 @@ export function PremiumScreen() {
           </div>
         </div>
       </div>
+      <BackFloatingButton onClick={onBack} />
     </div>
   )
 }
