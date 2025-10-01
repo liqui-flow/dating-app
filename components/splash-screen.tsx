@@ -7,6 +7,7 @@ import { AuthScreen } from "@/components/auth/auth-screen"
 import { VerificationScreen } from "@/components/onboarding/verification-screen"
 import { InterestQuestionnaire } from "@/components/onboarding/interest-questionnaire"
 import { PathSelect } from "@/components/onboarding/path-select"
+import { useRouter } from "next/navigation"
 import { ProfileSetup } from "@/components/onboarding/profile-setup"
 import { DatingPreferences } from "@/components/onboarding/dating-preferences"
 import { MatrimonyOnboarding } from "@/components/profile/matrimony-onboarding"
@@ -27,9 +28,22 @@ interface SplashScreenProps {
 }
 
 export function SplashScreen({ onComplete }: SplashScreenProps) {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("splash")
   const [mode, setMode] = useState<"dating" | "matrimony">("dating")
+
+  useEffect(() => {
+    try {
+      const completeMode = localStorage.getItem("onboardingCompleteMode") as "dating" | "matrimony" | null
+      const showComplete = localStorage.getItem("onboardingShowComplete")
+      if (completeMode && showComplete) {
+        localStorage.removeItem("onboardingShowComplete")
+        onComplete?.(completeMode)
+        return
+      }
+    } catch {}
+  }, [onComplete])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -68,7 +82,11 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       <PathSelect
         onSelect={(selected) => {
           setMode(selected)
-          setCurrentStep(selected === "dating" ? "profile-setup" : "matrimony-onboarding")
+          if (selected === "dating") {
+            setCurrentStep("profile-setup")
+          } else {
+            router.push("/onboarding/matrimony-setup")
+          }
         }}
         onBack={() => setCurrentStep("verification")}
       />
