@@ -60,11 +60,10 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
 
       <div className="p-4 pb-20">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="photos" className="text-xs">Photos</TabsTrigger>
             <TabsTrigger value="basic" className="text-xs">Basic</TabsTrigger>
             <TabsTrigger value="lifestyle" className="text-xs">Lifestyle</TabsTrigger>
-            <TabsTrigger value="matrimony" className="text-xs">Matrimony</TabsTrigger>
           </TabsList>
 
           {/* Photos Tab */}
