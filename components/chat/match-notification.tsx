@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Heart, MessageCircle, X } from "lucide-react"
+import { MessageCircle, X } from "lucide-react"
 
 interface MatchNotificationProps {
   match: {
@@ -40,14 +40,7 @@ export function MatchNotification({ match, onStartChat, onKeepSwiping, onClose }
             </Button>
 
             <div className="space-y-4">
-              <div className="flex justify-center">
-                <div className="relative">
-                  <Heart className="w-16 h-16 fill-current animate-pulse" />
-                  <div className="absolute inset-0 animate-ping">
-                    <Heart className="w-16 h-16 fill-current opacity-75" />
-                  </div>
-                </div>
-              </div>
+              <div className="h-8" />
 
               <div>
                 <h2 className="text-2xl font-bold mb-1">It's a Match!</h2>
@@ -64,9 +57,7 @@ export function MatchNotification({ match, onStartChat, onKeepSwiping, onClose }
                   <AvatarImage src={match.avatar || "/placeholder.svg"} alt={match.name} />
                   <AvatarFallback className="text-xl">{match.name[0]}</AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <Heart className="w-4 h-4 text-primary-foreground fill-current" />
-                </div>
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-full" />
               </div>
             </div>
 

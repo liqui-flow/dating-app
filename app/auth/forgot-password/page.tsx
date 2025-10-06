@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
           <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
             <Lock className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-black">{step === "request" ? "Forgot password" : "Set new password"}</h1>
+          <h1 className="text-2xl font-bold text-primary">{step === "request" ? "Forgot password" : "Set new password"}</h1>
           <CardDescription>
             {step === "request"
               ? "Enter your email to receive a reset link."
@@ -47,8 +47,8 @@ export default function ForgotPasswordPage() {
           {step === "request" ? (
             <form onSubmit={handleRequest} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="fp-email" className="text-black">Email</Label>
-                <Input id="fp-email" type="email" placeholder="Enter your email" required className="text-black placeholder:text-black" />
+                <Label htmlFor="fp-email" className="text-primary">Email</Label>
+                <Input id="fp-email" type="email" placeholder="Enter your email" required className="text-primary placeholder:text-primary" />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Sending..." : "Send reset link"}
@@ -62,14 +62,14 @@ export default function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleReset} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="new-password" className="text-black">New password</Label>
+                <Label htmlFor="new-password" className="text-primary">New password</Label>
                 <div className="relative">
                   <Input
                     id="new-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a new password"
                     required
-                    className="text-black placeholder:text-black"
+                    className="text-primary placeholder:text-primary"
                   />
                   <Button
                     type="button"
@@ -83,14 +83,14 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="text-black">Confirm password</Label>
+                <Label htmlFor="confirm-password" className="text-primary">Confirm password</Label>
                 <div className="relative">
                   <Input
                     id="confirm-password"
                     type={showConfirm ? "text" : "password"}
                     placeholder="Re-enter the new password"
                     required
-                    className="text-black placeholder:text-black"
+                    className="text-primary placeholder:text-primary"
                   />
                   <Button
                     type="button"

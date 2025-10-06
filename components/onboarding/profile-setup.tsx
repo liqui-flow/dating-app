@@ -83,29 +83,29 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-black">Let's build your profile</CardTitle>
+          <CardTitle className="text-3xl font-bold text-primary">Let's build your profile</CardTitle>
         </CardHeader>
         
         <CardContent className="space-y-8">
           {/* Name Section */}
           <div className="space-y-4">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-black">
+              <h2 className="text-xl font-semibold text-primary">
                 Welcome{name ? `, ${name}` : ""}! Now, let's add some photos.
               </h2>
-              <p className="text-sm text-black mt-2">
+              <p className="text-sm text-primary mt-2">
                 Show us who you are. Add at least 3 photos to stand out.
               </p>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-black">What should we call you?</Label>
+              <Label htmlFor="name" className="text-primary">What should we call you?</Label>
               <Input
                 id="name"
                 placeholder="Enter your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="text-black placeholder:text-black"
+                className="text-primary placeholder:text-primary"
               />
             </div>
           </div>
@@ -132,7 +132,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 variant="outline"
-                className="border-black text-black hover:bg-black hover:text-white"
+                className="border-primary text-primary hover:bg-primary hover:text-white"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Photo

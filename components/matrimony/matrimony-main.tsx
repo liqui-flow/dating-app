@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { AppLayout } from "@/components/layout/app-layout"
 import { QuickActions } from "@/components/navigation/quick-actions"
 // Removed TopBackButton usage
-import { Heart, Filter } from "lucide-react"
+import { Filter } from "lucide-react"
 import { MatrimonySwipeCard } from "@/components/matrimony/matrimony-swipe-card"
 import { MatrimonyChatList } from "@/components/matrimony/matrimony-chat-list"
 import { FilterSheet } from "@/components/discovery/filter-sheet"
@@ -122,9 +122,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
             ) : (
               <Card className="w-full max-w-sm h-96 flex items-center justify-center">
                 <CardContent className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-                    <Heart className="w-8 h-8 text-muted-foreground" />
-                  </div>
+                  <div className="w-16 h-16 mx-auto bg-muted rounded-full" />
                   <div className="space-y-2">
                     <h3 className="text-lg font-semibold">No more profiles</h3>
                     <p className="text-sm text-muted-foreground">Check back later for new matches</p>

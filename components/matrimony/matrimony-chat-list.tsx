@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, MoreVertical, Heart, Star } from "lucide-react"
+import { Search, MoreVertical, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ChatPreview {
@@ -120,7 +120,7 @@ export function MatrimonyChatList() {
                               Premium
                             </Badge>
                           )}
-                          {chat.isMatch && <Heart className="w-3 h-3 text-primary fill-current" />}
+                          {chat.isMatch && <Star className="w-3 h-3 text-primary fill-current" />}
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="text-xs text-muted-foreground">{formatTimestamp(chat.timestamp)}</span>

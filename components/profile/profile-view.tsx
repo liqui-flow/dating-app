@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Heart, MapPin, Briefcase, GraduationCap, Users, Edit, Share, MoreVertical } from "lucide-react"
+import { MapPin, Briefcase, GraduationCap, Users, Edit, Share, MoreVertical } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ProfileViewProps {
@@ -116,10 +116,7 @@ export function ProfileView({ isOwnProfile = false, onEdit }: ProfileViewProps) 
                   {mockProfile.name}, {mockProfile.age}
                 </h2>
                 {!isOwnProfile && (
-                  <Button size="sm" className="rounded-full">
-                    <Heart className="w-4 h-4 mr-2" />
-                    Like
-                  </Button>
+                  <Button size="sm" className="rounded-full">Like</Button>
                 )}
               </div>
 

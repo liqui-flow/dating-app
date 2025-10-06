@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
-import { Sparkles, Heart, Zap } from "lucide-react"
+import { Sparkles, Zap } from "lucide-react"
 
 interface InterestQuestionnaireProps {
   onComplete?: () => void
@@ -165,7 +165,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                             }))
                           }
                         >
-                          <div className="flex items-start gap-2"><Heart className="w-4 h-4 shrink-0 mt-0.5" /> <span>{label}</span></div>
+                          <div className="flex items-start gap-2"><span className="w-4 h-4 shrink-0 mt-0.5" /> <span>{label}</span></div>
                         </Button>
                       )
                     })}

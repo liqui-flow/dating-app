@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, MapPin, Users, Heart, Filter } from "lucide-react"
+import { ArrowLeft, MapPin, Users, Filter } from "lucide-react"
 
 interface DiscoverySettings {
   ageRange: [number, number]
@@ -189,7 +189,6 @@ export function DiscoverySettings() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Heart className="w-5 h-5" />
               <span>Advanced Filters</span>
               <Badge variant="secondary" className="text-xs">
                 Premium

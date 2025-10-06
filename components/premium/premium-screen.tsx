@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Crown, Heart, Eye, MessageCircle, Zap, Star, Check } from "lucide-react"
+import { Crown, Eye, MessageCircle, Zap, Star, Check } from "lucide-react"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
 
 interface PremiumPlan {
@@ -74,7 +74,7 @@ const premiumPlans: PremiumPlan[] = [
 
 const premiumFeatures = [
   {
-    icon: Heart,
+    icon: Star,
     title: "Unlimited Likes",
     description: "Like as many profiles as you want without daily limits",
   },

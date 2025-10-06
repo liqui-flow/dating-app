@@ -78,7 +78,7 @@ export function PhotoGrid() {
               )}
 
               {/* Photo controls */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+              <div className="absolute inset-0 bg-primary/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
                 {!photo.isMain && (
                   <Button
                     size="sm"

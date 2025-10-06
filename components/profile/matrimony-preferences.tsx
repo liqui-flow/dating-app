@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { Heart, Users, Home } from "lucide-react"
+import { Users, Home } from "lucide-react"
 
 export function MatrimonyPreferences() {
   const [preferences, setPreferences] = useState({
@@ -169,7 +169,6 @@ export function MatrimonyPreferences() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Heart className="w-5 h-5" />
             <span>Partner Preferences</span>
           </CardTitle>
           <CardDescription>What are you looking for in a life partner?</CardDescription>
@@ -190,7 +189,6 @@ export function MatrimonyPreferences() {
 
           <div className="p-4 bg-muted/50 rounded-lg">
             <div className="flex items-start space-x-3">
-              <Heart className="w-5 h-5 text-primary mt-0.5" />
               <div className="space-y-1">
                 <p className="text-sm font-medium">Matrimony Focus</p>
                 <p className="text-xs text-muted-foreground">

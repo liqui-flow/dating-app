@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import GoogleLoginButton from "@/components/auth/GoogleLoginButton"
 import AppleLoginButton from "@/components/auth/AppleLoginButton"
-import { Heart, Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 interface AuthScreenProps {
   onAuthSuccess?: () => void
 }
@@ -34,43 +34,40 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
-          <div className="flex items-center justify-center space-x-3">
-            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-              <Heart className="w-5 h-5 text-primary-foreground fill-current" />
-            </div>
-            <h1 className="text-2xl font-bold text-black font-sans">Lovesathi</h1>
+          <div className="flex items-center justify-center">
+            <h1 className="text-2xl font-bold text-primary font-sans">Lovesathi</h1>
           </div>
           <CardDescription className="text-base">Join thousands finding meaningful connections</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signup" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signup" className="text-black">Sign Up</TabsTrigger>
-              <TabsTrigger value="login" className="text-black">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="text-primary">Sign Up</TabsTrigger>
+              <TabsTrigger value="login" className="text-primary">Login</TabsTrigger>
             </TabsList>
             <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-black">Full Name</Label>
-                  <Input id="name" placeholder="Enter your full name" required className="text-black placeholder:text-black" />
+                  <Label htmlFor="name" className="text-primary">Full Name</Label>
+                  <Input id="name" placeholder="Enter your full name" required className="text-primary placeholder:text-primary" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-black">Email</Label>
-                  <Input id="email" type="email" placeholder="Enter your email" required className="text-black placeholder:text-black" />
+                  <Label htmlFor="email" className="text-primary">Email</Label>
+                  <Input id="email" type="email" placeholder="Enter your email" required className="text-primary placeholder:text-primary" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-black">Phone Number</Label>
-                  <Input id="phone" type="tel" placeholder="Enter your phone number" required className="text-black placeholder:text-black" />
+                  <Label htmlFor="phone" className="text-primary">Phone Number</Label>
+                  <Input id="phone" type="tel" placeholder="Enter your phone number" required className="text-primary placeholder:text-primary" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-black">Password</Label>
+                  <Label htmlFor="password" className="text-primary">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Create a password"
                       required
-                      className="text-black placeholder:text-black"
+                      className="text-primary placeholder:text-primary"
                     />
                     <Button
                       type="button"
@@ -109,18 +106,18 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
             <TabsContent value="login" className="space-y-4">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email" className="text-black">Email or Phone</Label>
-                  <Input id="signin-email" placeholder="Enter your email or phone" required className="text-black placeholder:text-black" />
+                  <Label htmlFor="signin-email" className="text-primary">Email or Phone</Label>
+                  <Input id="signin-email" placeholder="Enter your email or phone" required className="text-primary placeholder:text-primary" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password" className="text-black">Password</Label>
+                  <Label htmlFor="signin-password" className="text-primary">Password</Label>
                   <div className="relative">
                     <Input
                       id="signin-password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       required
-                      className="text-black placeholder:text-black"
+                      className="text-primary placeholder:text-primary"
                     />
                     <Button
                       type="button"

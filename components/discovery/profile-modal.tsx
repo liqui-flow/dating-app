@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
-import { Heart, X, MapPin, Briefcase, GraduationCap, Users, Share, Flag } from "lucide-react"
+import { X, MapPin, Briefcase, GraduationCap, Users, Share, Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Profile {
@@ -165,7 +165,7 @@ export function ProfileModal({ profile, open, onOpenChange, onLike, onPass }: Pr
               </Button>
 
               <Button size="lg" className="w-16 h-16 rounded-full p-0" onClick={onLike}>
-                <Heart className="w-8 h-8 fill-current" />
+                Like
               </Button>
             </div>
           </div>

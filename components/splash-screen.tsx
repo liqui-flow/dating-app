@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Heart, Sparkles } from "lucide-react"
+import { Sparkles } from "lucide-react"
 import { AuthScreen } from "@/components/auth/auth-screen"
 import { VerificationScreen } from "@/components/onboarding/verification-screen"
 import { InterestQuestionnaire } from "@/components/onboarding/interest-questionnaire"
@@ -63,7 +63,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <h1 className="text-5xl font-bold text-black tracking-wide">Lovesathi.</h1>
+        <h1 className="text-5xl font-bold text-primary tracking-wide">Lovesathi.</h1>
       </div>
     )
   }
@@ -123,7 +123,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
-      <h1 className="text-5xl font-bold text-black tracking-wide">Lovesathi</h1>
+      <h1 className="text-5xl font-bold text-primary tracking-wide">Lovesathi</h1>
     </div>
   )
 }

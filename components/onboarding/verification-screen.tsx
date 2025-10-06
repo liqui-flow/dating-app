@@ -201,7 +201,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
       state === "completed"
         ? `bg-primary text-primary-foreground ${base}`
         : state === "active"
-          ? `bg-black text-white ${base}`
+          ? `bg-primary text-primary-foreground ${base}`
           : `bg-muted text-muted-foreground ${base}`
 
     return (
@@ -209,7 +209,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
         <div className={className}>
           {state === "completed" ? <CheckCircle className="w-4 h-4" /> : index}
         </div>
-        <span className="text-sm text-black">{label}</span>
+        <span className="text-sm text-primary">{label}</span>
       </div>
     )
   }
@@ -221,8 +221,8 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
           <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
             <Shield className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl text-black">Verify Your Account</CardTitle>
-          <CardDescription className="text-black">Help us keep Lovesathi safe and authentic for everyone</CardDescription>
+          <CardTitle className="text-2xl text-primary">Verify Your Account</CardTitle>
+          <CardDescription className="text-primary">Help us keep Lovesathi safe and authentic for everyone</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -239,13 +239,13 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
           {step === "profile" && (
             <div className="space-y-4">
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2 text-black">When were you born?</h3>
-                <p className="text-sm text-black">Select your date of birth. Minimum age is 17.</p>
+                <h3 className="text-lg font-semibold mb-2 text-primary">When were you born?</h3>
+                <p className="text-sm text-primary">Select your date of birth. Minimum age is 17.</p>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="dob" className="text-black">Date of Birth</Label>
+                  <Label htmlFor="dob" className="text-primary">Date of Birth</Label>
                   <div className="rounded-2xl border bg-background p-3 max-w-sm mx-auto space-y-3">
                     <div className="flex items-center justify-center gap-2">
                       <Select
@@ -256,12 +256,12 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                           setCalendarMonth(next)
                         }}
                       >
-                        <SelectTrigger className="h-9 min-w-[110px] text-black">
+                        <SelectTrigger className="h-9 min-w-[110px] text-primary">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="max-h-56 overflow-y-auto text-black bg-background border shadow-md">
+                        <SelectContent className="max-h-56 overflow-y-auto text-primary bg-background border shadow-md">
                           {Array.from({ length: 12 }).map((_, i) => (
-                            <SelectItem key={i} value={i.toString()} className="text-black">
+                            <SelectItem key={i} value={i.toString()} className="text-primary">
                               {new Date(2000, i, 1).toLocaleString("default", { month: "short" })}
                             </SelectItem>
                           ))}
@@ -275,14 +275,14 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                           setCalendarMonth(next)
                         }}
                       >
-                        <SelectTrigger className="h-9 min-w-[110px] text-black">
+                        <SelectTrigger className="h-9 min-w-[110px] text-primary">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="max-h-56 overflow-y-auto text-black bg-background border shadow-md">
+                        <SelectContent className="max-h-56 overflow-y-auto text-primary bg-background border shadow-md">
                           {Array.from({ length: today.getFullYear() - 1950 + 1 }).map((_, idx) => {
                             const y = 1950 + idx
                             return (
-                              <SelectItem key={y} value={y.toString()} className="text-black">{y}</SelectItem>
+                              <SelectItem key={y} value={y.toString()} className="text-primary">{y}</SelectItem>
                             )
                           })}
                         </SelectContent>
@@ -305,18 +305,18 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                         const min = new Date(1950, 0, 1)
                         return day > max || day < min
                       }}
-                      className="w-full text-black [--cell-size:2.5rem]"
+                      className="w-full text-primary [--cell-size:2.5rem]"
                       classNames={{
                         weekdays: "grid grid-cols-7 gap-1",
                         week: "grid grid-cols-7 gap-1 w-full mt-2",
-                        weekday: "text-black text-[0.8rem] text-center",
-                        caption_label: "text-black hidden",
-                        week_number: "text-black",
+                        weekday: "text-primary text-[0.8rem] text-center",
+                        caption_label: "text-primary hidden",
+                        week_number: "text-primary",
                       }}
                     />
                   </div>
                 </div>
-                <div className="text-center text-sm text-black">
+                <div className="text-center text-sm text-primary">
                   {dob ? `Age: ${calculateAge(dob)}` : "Age: --"}
                 </div>
 
@@ -335,8 +335,8 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
           {step === "gender" && (
             <div className="space-y-6">
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2 text-black">Who are you?</h3>
-                <p className="text-sm text-black">Select your gender.</p>
+                <h3 className="text-lg font-semibold mb-2 text-primary">Who are you?</h3>
+                <p className="text-sm text-primary">Select your gender.</p>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <Button
@@ -344,8 +344,8 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   variant="outline"
                   className={`w-full rounded-md px-4 py-2 text-sm border ${
                     gender === "male"
-                      ? "!bg-black !text-white !border-black hover:!bg-black"
-                      : "bg-white text-black border-black hover:!bg-black hover:!text-white"
+                      ? "!bg-primary !text-primary-foreground !border-primary hover:!bg-primary"
+                      : "bg-white text-primary border-primary hover:!bg-primary hover:!text-primary-foreground"
                   }`}
                   onClick={() => setGender("male")}
                 >
@@ -356,8 +356,8 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   variant="outline"
                   className={`w-full rounded-md px-4 py-2 text-sm border ${
                     gender === "female"
-                      ? "!bg-black !text-white !border-black hover:!bg-black"
-                      : "bg-white text-black border-black hover:!bg-black hover:!text-white"
+                      ? "!bg-primary !text-primary-foreground !border-primary hover:!bg-primary"
+                      : "bg-white text-primary border-primary hover:!bg-primary hover:!text-primary-foreground"
                   }`}
                   onClick={() => setGender("female")}
                 >
@@ -368,8 +368,8 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   variant="outline"
                   className={`w-full rounded-md px-4 py-2 text-sm border ${
                     gender === "prefer_not_to_say"
-                      ? "!bg-black !text-white !border-black hover:!bg-black"
-                      : "bg-white text-black border-black hover:!bg-black hover:!text-white"
+                      ? "!bg-primary !text-primary-foreground !border-primary hover:!bg-primary"
+                      : "bg-white text-primary border-primary hover:!bg-primary hover:!text-primary-foreground"
                   }`}
                   onClick={() => setGender("prefer_not_to_say")}
                 >
@@ -386,7 +386,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
           {step === "id" && (
             <div className="space-y-4">
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2 text-black">ID Verification</h3>
+                <h3 className="text-lg font-semibold mb-2 text-primary">ID Verification</h3>
                 <p className="text-sm text-muted-foreground">Optional but recommended for enhanced trust</p>
               </div>
 
@@ -395,7 +395,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   <div className="flex items-start space-x-3">
                     <Shield className="w-5 h-5 text-primary mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-black">Why verify your ID?</p>
+                      <p className="text-sm font-medium text-primary">Why verify your ID?</p>
                       <ul className="text-xs text-muted-foreground space-y-1">
                         <li>• Get a verified badge on your profile</li>
                         <li>• Increase trust with potential matches</li>
@@ -435,11 +435,11 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                     }}
                   />
 
-                  <Button onClick={handleUploadId} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-black">
+                  <Button onClick={handleUploadId} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-primary">
                     <Upload className="w-6 h-6" />
                     <span className="text-sm">Upload ID</span>
                   </Button>
-                  <Button onClick={handleTakePhoto} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-black">
+                  <Button onClick={handleTakePhoto} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-primary">
                     <Camera className="w-6 h-6" />
                     <span className="text-sm">Take Photo</span>
                   </Button>
@@ -460,7 +460,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
       {showCameraOverlay && (
         <div className="fixed inset-0 bg-background/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-2xl bg-background rounded-lg shadow-lg p-4 space-y-4">
-            <div className="aspect-video bg-black rounded overflow-hidden">
+            <div className="aspect-video bg-primary rounded overflow-hidden">
               <video ref={videoRef} playsInline className="w-full h-full object-contain" />
             </div>
             <div className="flex items-center justify-end space-x-2">
