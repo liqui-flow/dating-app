@@ -106,7 +106,7 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 bg-gradient-to-br from-amber-500 to-orange-500 text-white p-6">
+      <div className="flex-shrink-0 glass-apple bg-gradient-to-br from-amber-500 to-orange-500 text-white p-6">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
             <Crown className="w-16 h-16 fill-current" />
@@ -208,7 +208,7 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
         </div>
 
         {/* Bottom Action */}
-        <div className="p-6 border-t border-border bg-background/95 backdrop-blur-sm">
+        <div className="p-6 border-t border-border glass-apple">
           <div className="space-y-4">
             <Button size="lg" className="w-full" onClick={() => onSubscribe?.(selectedPlan)}>
               <Crown className="w-5 h-5 mr-2" />

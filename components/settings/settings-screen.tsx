@@ -209,7 +209,7 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 p-6 border-b border-border">
+      <div className="flex-shrink-0 p-6 border-b border-border glass-apple">
         <div className="flex items-center space-x-4">
           <Avatar className="w-16 h-16">
             <AvatarImage src="/professional-headshot.png" alt="Profile" />

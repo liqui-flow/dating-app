@@ -44,7 +44,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10">
+      <div className="sticky top-0 glass-apple border-b border-border z-10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">

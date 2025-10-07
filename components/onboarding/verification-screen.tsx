@@ -2,12 +2,10 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Shield, CheckCircle, Upload, Camera } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface VerificationScreenProps {
   onComplete?: () => void
@@ -247,72 +245,14 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                 <div className="space-y-2">
                   <Label htmlFor="dob" className="text-primary">Date of Birth</Label>
                   <div className="rounded-2xl border bg-background p-3 max-w-sm mx-auto space-y-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <Select
-                        value={calendarMonth.getMonth().toString()}
-                        onValueChange={(val) => {
-                          const next = new Date(calendarMonth)
-                          next.setMonth(parseInt(val))
-                          setCalendarMonth(next)
-                        }}
-                      >
-                        <SelectTrigger className="h-9 min-w-[110px] text-primary">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-56 overflow-y-auto text-primary bg-background border shadow-md">
-                          {Array.from({ length: 12 }).map((_, i) => (
-                            <SelectItem key={i} value={i.toString()} className="text-primary">
-                              {new Date(2000, i, 1).toLocaleString("default", { month: "short" })}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={calendarMonth.getFullYear().toString()}
-                        onValueChange={(val) => {
-                          const next = new Date(calendarMonth)
-                          next.setFullYear(parseInt(val))
-                          setCalendarMonth(next)
-                        }}
-                      >
-                        <SelectTrigger className="h-9 min-w-[110px] text-primary">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-56 overflow-y-auto text-primary bg-background border shadow-md">
-                          {Array.from({ length: today.getFullYear() - 1950 + 1 }).map((_, idx) => {
-                            const y = 1950 + idx
-                            return (
-                              <SelectItem key={y} value={y.toString()} className="text-primary">{y}</SelectItem>
-                            )
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Calendar
-                      mode="single"
-                      captionLayout="label"
-                      month={calendarMonth}
-                      onMonthChange={setCalendarMonth}
-                      selected={dob ? new Date(dob) : undefined}
-                      onSelect={(date) => setDob(date ? new Date(date.getTime() - date.getTimezoneOffset()*60000).toISOString().slice(0,10) : "")}
-                      fromYear={1950}
-                      toYear={today.getFullYear()}
-                      defaultMonth={dob ? new Date(dob) : defaultMonth}
-                      disabled={(day) => {
-                        const max = new Date()
-                        max.setFullYear(max.getFullYear() - 17)
-                        max.setHours(0,0,0,0)
-                        const min = new Date(1950, 0, 1)
-                        return day > max || day < min
-                      }}
-                      className="w-full text-primary [--cell-size:2.5rem]"
-                      classNames={{
-                        weekdays: "grid grid-cols-7 gap-1",
-                        week: "grid grid-cols-7 gap-1 w-full mt-2",
-                        weekday: "text-primary text-[0.8rem] text-center",
-                        caption_label: "text-primary hidden",
-                        week_number: "text-primary",
-                      }}
+                    <Input
+                      id="dob"
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
+                      min="1950-01-01"
+                      max={`${today.getFullYear() - 17}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`}
+                      className="text-primary"
                     />
                   </div>
                 </div>

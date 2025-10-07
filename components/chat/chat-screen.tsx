@@ -125,7 +125,7 @@ export function ChatScreen() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-border bg-background/95 backdrop-blur-sm">
+      <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="sm" className="p-2">
@@ -220,7 +220,7 @@ export function ChatScreen() {
       </div>
 
       {/* Message Input */}
-      <div className="flex-shrink-0 p-4 border-t border-border bg-background/95 backdrop-blur-sm">
+      <div className="flex-shrink-0 p-4 border-t border-border glass-apple">
         <div className="flex items-end space-x-3">
           <div className="flex space-x-2">
             <Button variant="ghost" size="sm" className="p-2">

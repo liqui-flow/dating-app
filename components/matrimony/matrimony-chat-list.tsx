@@ -61,7 +61,7 @@ export function MatrimonyChatList() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-border">
+      <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Messages</h1>
@@ -96,7 +96,7 @@ export function MatrimonyChatList() {
         ) : (
           <div className="divide-y divide-border">
             {filteredChats.map((chat) => (
-              <Card key={chat.id} className="border-0 rounded-none shadow-none">
+              <Card key={chat.id} className="border-0 rounded-none shadow-none glass-apple">
                 <CardContent className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
                   <div className="flex items-center space-x-3">
                     {/* Avatar */}

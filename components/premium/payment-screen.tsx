@@ -50,7 +50,7 @@ export function PaymentScreen({ planId, onSuccess, onCancel }: { planId: string;
         </Card>
       </div>
 
-      <div className="p-6 border-t border-border bg-background/95 backdrop-blur-sm space-y-3">
+      <div className="p-6 border-t border-border glass-apple space-y-3">
         <Button size="lg" className="w-full" onClick={handlePay} disabled={loading}>
           {loading ? "Processing..." : "Pay Now"}
         </Button>

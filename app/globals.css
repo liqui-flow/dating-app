@@ -310,6 +310,73 @@
   .glass-input:focus { box-shadow: 0 0 0 3px rgba(74, 14, 14, 0.06); }
   .dark .glass-input { background: rgba(0,0,0,0.35); color: #fff; border-color: rgba(255,255,255,0.25); }
   .dark .glass-input:focus { box-shadow: 0 0 0 3px rgba(255,255,255,0.15); }
+
+  /* Swipe Animation - Hearts & X Burst */
+  @keyframes swipe-burst {
+    0% {
+      transform: translate(0, 0) rotate(0deg) scale(0.3);
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+      transform: translate(
+        calc(var(--particle-x) * 0.3), 
+        calc(var(--particle-y) * -0.3)
+      ) 
+      rotate(calc(var(--particle-rotation) * 0.5)) 
+      scale(var(--particle-scale));
+    }
+    100% {
+      transform: translate(
+        var(--particle-x), 
+        calc(var(--particle-y) * -3)
+      ) 
+      rotate(var(--particle-rotation)) 
+      scale(calc(var(--particle-scale) * 1.2));
+      opacity: 0;
+    }
+  }
+
+  .animate-swipe-burst {
+    animation: swipe-burst 0.8s ease-out forwards;
+  }
+
+  /* Card flash animation for full-screen effect */
+  @keyframes card-flash {
+    0% {
+      opacity: 0;
+    }
+    30% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .animate-card-flash {
+    animation: card-flash 0.6s ease-out forwards;
+  }
+
+  /* 3D Floating Card Effects */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .transform-gpu {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Enhanced card hover glow */
+  @keyframes card-glow {
+    0%, 100% {
+      box-shadow: 0 20px 60px -15px rgba(0,0,0,0.4), 0 10px 30px -10px rgba(0,0,0,0.3);
+    }
+    50% {
+      box-shadow: 0 25px 70px -15px rgba(0,0,0,0.5), 0 15px 40px -10px rgba(0,0,0,0.35);
+    }
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   * {
