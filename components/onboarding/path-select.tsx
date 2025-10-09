@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users } from "lucide-react"
+import { Users, Heart } from "lucide-react"
 
 interface PathSelectProps {
   onSelect: (path: "dating" | "matrimony") => void
@@ -24,7 +24,9 @@ export function PathSelect({ onSelect, onBack }: PathSelectProps) {
   onClick={() => onSelect("dating")}
 >
   <div className="flex items-center space-x-4">
-    <div className="w-10 h-10 rounded-full bg-primary-foreground/10 flex items-center justify-center" />
+    <div className="w-10 h-10 rounded-full bg-primary-foreground/10 flex items-center justify-center">
+      <Heart className="w-5 h-5" />
+    </div>
     <div>
       <div className="text-base font-medium">Dating</div>
       <div className="text-xs text-muted-foreground">

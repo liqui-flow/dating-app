@@ -106,7 +106,7 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 glass-apple bg-gradient-to-br from-amber-500 to-orange-500 text-white p-6">
+      <div className="flex-shrink-0 glass-apple bg-gradient-to-br from-[#4A0E0E] to-[#6E1414] text-white p-6">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
             <Crown className="w-16 h-16 fill-current" />

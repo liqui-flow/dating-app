@@ -260,15 +260,15 @@ export function DiscoveryScreen() {
 				</Button>
 			</div>
 
-			<div className="p-4 pb-20 mt-10 flex-1 overflow-hidden">
+			<div className="p-4 pb-20 mt-10 flex-1 overflow-visible">
 				{viewMode === "cards" ? (
 					<div className="space-y-6">
 						{/* Card Stack */}
-						<div className="relative h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-14 md:-translate-y-16">
+						<div className="relative h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-14 md:-translate-y-16 overflow-visible">
 							{hasMoreProfiles ? (
-								<div className="relative w-full max-w-sm h-full">
+								<div className="relative w-full max-w-sm h-full overflow-visible">
 									{mockProfiles
-										.slice(currentCardIndex, Math.min(currentCardIndex + 3, mockProfiles.length))
+										.slice(currentCardIndex, Math.min(currentCardIndex + 4, mockProfiles.length))
 										.map((profile, index) => (
 											<div key={profile.id} className="absolute inset-0 flex items-center justify-center">
 												<SwipeCard

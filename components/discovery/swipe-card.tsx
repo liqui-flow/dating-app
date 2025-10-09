@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import { motion, useMotionValue, useTransform, animate } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,27 +37,42 @@ interface SwipeCardProps {
 
 export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex = 0 }: SwipeCardProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [showInfo, setShowInfo] = useState(false)
-  const startingPoint = useRef<{ x: number; y: number } | null>(null)
-  const cardRef = useRef<HTMLDivElement | null>(null)
   const { animation, showHeartBurst, showXBurst, hideAnimation } = useSwipeAnimation()
 
-  const rotation = dragOffset.x * 0.06
-  const likeOpacity = Math.max(0, Math.min(1, dragOffset.x / 120))
-  const passOpacity = Math.max(0, Math.min(1, -dragOffset.x / 120))
+  // Framer Motion values for smooth dragging
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  
+  // Transform motion values to rotation and opacity
+  const rotate = useTransform(x, [-300, 300], [-30, 30])
+  const likeOpacity = useTransform(x, [0, 120], [0, 1])
+  const passOpacity = useTransform(x, [-120, 0], [1, 0])
 
   const depthStyles = useMemo(() => {
-    // Visual stacking for cards under the top card
-    const scale = 1 - stackIndex * 0.05
-    const translateY = stackIndex * 16
-    const opacity = Math.max(0, 1 - stackIndex * 0.35)
-    return { scale, translateY, opacity, zIndex: 30 - stackIndex }
+    // Enhanced visual stacking for realistic deck-of-cards effect
+    const scale = 1 - stackIndex * 0.04 // Slightly less scaling for more subtle effect
+    const translateY = stackIndex * 12 // Vertical offset - cards stack downward
+    const translateX = stackIndex * 8  // Horizontal offset - cards shift right
+    const opacity = Math.max(0.3, 1 - stackIndex * 0.25) // Keep cards more visible
+    const rotate = stackIndex * 1.5 // Slight rotation for natural look
+    
+    return { 
+      scale, 
+      translateY, 
+      translateX, 
+      opacity, 
+      rotate,
+      zIndex: 30 - stackIndex 
+    }
   }, [stackIndex])
 
   const handlePhotoClick = (e: React.MouseEvent) => {
     e.stopPropagation()
+    
+    // Prevent photo click if dragging or if drag offset is significant
+    if (Math.abs(x.get()) > 8) return
+    
     const rect = e.currentTarget.getBoundingClientRect()
     const clickX = e.clientX - rect.left
     const cardWidth = rect.width
@@ -74,52 +90,30 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
     }
   }
 
-  // Gesture handlers (mouse + touch)
-  useEffect(() => {
-    const el = cardRef.current
-    if (!el) return
-
-    const onPointerDown = (e: PointerEvent) => {
-      startingPoint.current = { x: e.clientX, y: e.clientY }
-      setIsDragging(true)
-      ;(e.target as Element).setPointerCapture?.(e.pointerId)
+  const handleDragEnd = (event: any, info: any) => {
+    const threshold = 120
+    const velocity = info.velocity.x
+    
+    if (info.offset.x > threshold || velocity > 500) {
+      // Like - trigger heart animation and swipe out
+      showHeartBurst()
+      animate(x, 1000, { duration: 0.4, ease: "easeInOut" })
+      setTimeout(() => {
+        onLike()
+      }, 400)
+    } else if (info.offset.x < -threshold || velocity < -500) {
+      // Pass - trigger X animation and swipe out
+      showXBurst()
+      animate(x, -1000, { duration: 0.4, ease: "easeInOut" })
+      setTimeout(() => {
+        onPass()
+      }, 400)
+    } else {
+      // Reset card position smoothly with spring animation
+      animate(x, 0, { duration: 0.6, ease: "easeOut" })
+      animate(y, 0, { duration: 0.6, ease: "easeOut" })
     }
-    const onPointerMove = (e: PointerEvent) => {
-      if (!isDragging || !startingPoint.current) return
-      const dx = e.clientX - startingPoint.current.x
-      const dy = e.clientY - startingPoint.current.y
-      setDragOffset({ x: dx, y: dy })
-    }
-    const onPointerUp = () => {
-      if (!isDragging) return
-      const threshold = 120
-      if (dragOffset.x > threshold) {
-        // Like - trigger heart animation
-        showHeartBurst()
-        setTimeout(() => {
-          onLike()
-        }, 300) // Delay to show animation
-      } else if (dragOffset.x < -threshold) {
-        // Pass - trigger X animation
-        showXBurst()
-        setTimeout(() => {
-          onPass()
-        }, 300) // Delay to show animation
-      }
-      setIsDragging(false)
-      setDragOffset({ x: 0, y: 0 })
-    }
-
-    el.addEventListener("pointerdown", onPointerDown)
-    window.addEventListener("pointermove", onPointerMove)
-    window.addEventListener("pointerup", onPointerUp)
-
-    return () => {
-      el.removeEventListener("pointerdown", onPointerDown)
-      window.removeEventListener("pointermove", onPointerMove)
-      window.removeEventListener("pointerup", onPointerUp)
-    }
-  }, [isDragging, dragOffset.x, dragOffset.y, onLike, onPass])
+  }
 
   return (
     <>
@@ -130,38 +124,53 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
         onComplete={hideAnimation}
       />
 
-      <Card
-        ref={cardRef as any}
+      <motion.div
         className={cn(
-          "w-full max-w-sm h-[60vh] md:h-[480px] overflow-hidden cursor-grab active:cursor-grabbing select-none",
+          "w-full max-w-sm h-[60vh] md:h-[480px] overflow-hidden cursor-grab active:cursor-grabbing select-none touch-none",
           "rounded-3xl",
           "relative",
           // 3D floating effect
           "transform-gpu perspective-1000",
-          // Elevated shadows for depth
+          // Enhanced shadows for realistic depth
           stackIndex === 0 && "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)]",
-          stackIndex === 1 && "shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)]",
-          stackIndex > 1 && "shadow-[0_10px_25px_-5px_rgba(0,0,0,0.2)]",
+          stackIndex === 1 && "shadow-[0_15px_45px_-12px_rgba(0,0,0,0.35),0_8px_25px_-8px_rgba(0,0,0,0.25)]",
+          stackIndex === 2 && "shadow-[0_12px_35px_-10px_rgba(0,0,0,0.3),0_6px_20px_-6px_rgba(0,0,0,0.2)]",
+          stackIndex > 2 && "shadow-[0_8px_25px_-8px_rgba(0,0,0,0.25),0_4px_15px_-4px_rgba(0,0,0,0.15)]",
           // Hover effect for top card
           stackIndex === 0 && "hover:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.5),0_15px_40px_-10px_rgba(0,0,0,0.35)] hover:scale-[1.02] transition-all duration-300",
         )}
         style={{
-          transform: `translate(${dragOffset.x}px, ${dragOffset.y}px) rotate(${rotation}deg) scale(${depthStyles.scale}) translateY(${depthStyles.translateY}px) translateZ(${stackIndex === 0 ? '20px' : '0px'})` as any,
+          x,
+          y,
+          rotate: stackIndex === 0 ? rotate : depthStyles.rotate,
+          scale: depthStyles.scale,
+          translateY: depthStyles.translateY,
+          translateX: depthStyles.translateX,
           zIndex: depthStyles.zIndex,
           opacity: depthStyles.opacity,
-          transition: isDragging ? "none" : "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 200ms ease, box-shadow 300ms ease",
           background: "transparent",
-          transformStyle: "preserve-3d",
         }}
+        drag={stackIndex === 0 ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={handleDragEnd}
         onClick={handlePhotoClick}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 30,
+          mass: 0.8
+        }}
       >
       {/* Background photo fills the card */}
       <img
         src={profile.photos[currentPhotoIndex] || "/placeholder.svg"}
         alt=""
         className={cn(
-          "absolute inset-0 w-full h-full object-cover",
-          stackIndex > 0 && "blur-[3px] brightness-70 contrast-85",
+          "absolute inset-0 w-full h-full object-cover transition-all duration-300",
+          stackIndex === 1 && "blur-[2px] brightness-75 contrast-90",
+          stackIndex === 2 && "blur-[4px] brightness-65 contrast-80",
+          stackIndex > 2 && "blur-[6px] brightness-60 contrast-75",
         )}
       />
 
@@ -184,18 +193,18 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
       {/* Like/Pass hint while dragging */}
       {stackIndex === 0 && (
         <>
-          <div
+          <motion.div
             className="absolute top-6 left-6 text-2xl font-extrabold tracking-wider text-emerald-400"
             style={{ opacity: likeOpacity }}
           >
             LIKE
-          </div>
-          <div
+          </motion.div>
+          <motion.div
             className="absolute top-6 right-6 text-2xl font-extrabold tracking-wider text-rose-400"
             style={{ opacity: passOpacity }}
           >
             NOPE
-          </div>
+          </motion.div>
         </>
       )}
 
@@ -282,9 +291,19 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
         </div>
       )}
 
+      {/* Visible card edges for stacked cards */}
+      {stackIndex > 0 && (
+        <>
+          {/* Right edge highlight */}
+          <div className="absolute -right-1 top-2 bottom-2 w-2 bg-gradient-to-b from-blue-400/60 via-blue-500/70 to-blue-400/60 rounded-r-full shadow-lg" />
+          {/* Bottom edge highlight */}
+          <div className="absolute -bottom-1 left-2 right-2 h-2 bg-gradient-to-r from-blue-400/40 via-blue-500/50 to-blue-400/40 rounded-b-full shadow-lg" />
+        </>
+      )}
+
       {/* Dim overlay for behind cards to hide details */}
-      {stackIndex > 0 && <div className="absolute inset-0 bg-black/30" />}
-    </Card>
+      {stackIndex > 0 && <div className="absolute inset-0 bg-black/20" />}
+    </motion.div>
     </>
   )
 }

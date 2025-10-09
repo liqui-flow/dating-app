@@ -17,9 +17,10 @@ interface SwipeAnimationsProps {
   show: boolean
   type: 'heart' | 'x'
   onComplete?: () => void
+  hideOverlay?: boolean // New prop to hide the color overlay
 }
 
-export function SwipeAnimations({ show, type, onComplete }: SwipeAnimationsProps) {
+export function SwipeAnimations({ show, type, onComplete, hideOverlay = false }: SwipeAnimationsProps) {
   const [particles, setParticles] = useState<AnimationParticle[]>([])
 
   useEffect(() => {
@@ -51,15 +52,17 @@ export function SwipeAnimations({ show, type, onComplete }: SwipeAnimationsProps
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
-      {/* Full card overlay with color tint */}
-      <div 
-        className={cn(
-          "absolute inset-0 animate-card-flash",
-          type === 'heart' 
-            ? "bg-gradient-to-br from-emerald-500/20 via-green-400/10 to-transparent" 
-            : "bg-gradient-to-br from-rose-500/20 via-red-400/10 to-transparent"
-        )}
-      />
+      {/* Full card overlay with color tint - conditionally rendered */}
+      {!hideOverlay && (
+        <div 
+          className={cn(
+            "absolute inset-0 animate-card-flash",
+            type === 'heart' 
+              ? "bg-gradient-to-br from-emerald-500/20 via-green-400/10 to-transparent" 
+              : "bg-gradient-to-br from-rose-500/20 via-red-400/10 to-transparent"
+          )}
+        />
+      )}
       
       {/* Particles scattered across the card */}
       {particles.map((particle) => (

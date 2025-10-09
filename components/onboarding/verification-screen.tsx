@@ -264,9 +264,18 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   <div className="text-sm text-destructive text-center">{underageMessage}</div>
                 )}
 
-                <Button onClick={handleProfileContinue} className="w-full" disabled={isLoading || !dob}>
-                  Continue
-                </Button>
+                <div className="space-y-3">
+                  <Button onClick={handleProfileContinue} className="w-full" disabled={isLoading || !dob}>
+                    Continue
+                  </Button>
+                  <Button 
+                    onClick={() => window.location.href = '/'} 
+                    variant="outline" 
+                    className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                  >
+                    Back
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -316,9 +325,18 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   Prefer not to say
                 </Button>
               </div>
-              <Button className="w-full" onClick={() => setStep("id")} disabled={gender === null}>
-                Continue
-              </Button>
+              <div className="space-y-3">
+                <Button className="w-full" onClick={() => setStep("id")} disabled={gender === null}>
+                  Continue
+                </Button>
+                <Button 
+                  onClick={() => setStep("profile")} 
+                  variant="outline" 
+                  className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                >
+                  Back
+                </Button>
+              </div>
             </div>
           )}
 
@@ -388,6 +406,13 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                 <div className="space-y-3">
                   <Button onClick={handleComplete} className="w-full" disabled={isLoading}>
                     {isLoading ? "Processing..." : "Verify ID"}
+                  </Button>
+                  <Button 
+                    onClick={() => setStep("gender")} 
+                    variant="outline" 
+                    className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                  >
+                    Back
                   </Button>
                 </div>
               </div>

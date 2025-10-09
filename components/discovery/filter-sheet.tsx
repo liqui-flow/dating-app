@@ -20,34 +20,24 @@ export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
   const [filters, setFilters] = useState({
     ageRange: [22, 35],
     distance: [25],
-    education: "any",
-    occupation: "any",
-    religion: "any",
-    smoking: "any",
-    drinking: "any",
-    diet: "any",
+    interests: [] as string[],
+    relationshipGoal: "any",
     verifiedOnly: false,
     premiumOnly: false,
-    interests: [] as string[],
   })
 
-  const availableInterests = [
-    "Travel",
-    "Cooking",
-    "Fitness",
-    "Reading",
-    "Music",
-    "Movies",
-    "Art",
-    "Sports",
-    "Photography",
-    "Dancing",
-    "Gaming",
-    "Hiking",
-    "Yoga",
-    "Fashion",
-    "Technology",
-    "Food",
+  const interestCategories = {
+    Art: ["Painting", "Photography", "Digital Art"],
+    Food: ["Foodie", "Cooking", "Trying new restaurants"],
+    Entertainment: ["Binge-watching", "Podcasts", "Stand-up comedy", "Live music"],
+    Lifestyle: ["Thrifting", "DIY Projects", "Volunteering", "Wellness", "Homebody"],
+  }
+
+  const relationshipGoals = [
+    "Serious relationship leading to marriage",
+    "Long-term relationship",
+    "Dating to see where it goes",
+    "New friends and connections",
   ]
 
   const handleInterestToggle = (interest: string) => {
@@ -63,15 +53,10 @@ export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
     setFilters({
       ageRange: [22, 35],
       distance: [25],
-      education: "any",
-      occupation: "any",
-      religion: "any",
-      smoking: "any",
-      drinking: "any",
-      diet: "any",
+      interests: [],
+      relationshipGoal: "any",
       verifiedOnly: false,
       premiumOnly: false,
-      interests: [],
     })
   }
 
@@ -126,126 +111,56 @@ export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
 
           <Separator />
 
-          {/* Education & Occupation */}
+          {/* Interests */}
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Education</Label>
-              <Select onValueChange={(value) => setFilters((prev) => ({ ...prev, education: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any education level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any education level</SelectItem>
-                  <SelectItem value="high-school">High School</SelectItem>
-                  <SelectItem value="some-college">Some College</SelectItem>
-                  <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
-                  <SelectItem value="masters">Master's Degree</SelectItem>
-                  <SelectItem value="phd">PhD</SelectItem>
-                  <SelectItem value="professional">Professional Degree</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Interests</h3>
+              <span className="text-sm text-muted-foreground">{filters.interests.length} selected</span>
             </div>
 
-            <div className="space-y-2">
-              <Label>Occupation</Label>
-              <Select onValueChange={(value) => setFilters((prev) => ({ ...prev, occupation: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any occupation" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any occupation</SelectItem>
-                  <SelectItem value="technology">Technology</SelectItem>
-                  <SelectItem value="healthcare">Healthcare</SelectItem>
-                  <SelectItem value="finance">Finance</SelectItem>
-                  <SelectItem value="education">Education</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
-                  <SelectItem value="creative">Creative</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-3">
+              {Object.entries(interestCategories).map(([category, items]) => (
+                <div key={category} className="space-y-2">
+                  <Label className="text-sm font-medium">{category}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {items.map((interest) => (
+                      <Badge
+                        key={interest}
+                        variant={filters.interests.includes(interest) ? "default" : "outline"}
+                        className="cursor-pointer"
+                        onClick={() => handleInterestToggle(interest)}
+                      >
+                        {interest}
+                        {filters.interests.includes(interest) && <X className="w-3 h-3 ml-1" />}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
           <Separator />
 
-          {/* Cultural Preferences */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Cultural Preferences</h3>
-
-            <div className="space-y-2">
-              <Label>Religion</Label>
-              <Select onValueChange={(value) => setFilters((prev) => ({ ...prev, religion: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any religion" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any religion</SelectItem>
-                  <SelectItem value="hindu">Hindu</SelectItem>
-                  <SelectItem value="muslim">Muslim</SelectItem>
-                  <SelectItem value="christian">Christian</SelectItem>
-                  <SelectItem value="sikh">Sikh</SelectItem>
-                  <SelectItem value="buddhist">Buddhist</SelectItem>
-                  <SelectItem value="jain">Jain</SelectItem>
-                  <SelectItem value="jewish">Jewish</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Lifestyle */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Lifestyle</h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Smoking</Label>
-                <Select onValueChange={(value) => setFilters((prev) => ({ ...prev, smoking: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any</SelectItem>
-                    <SelectItem value="never">Never</SelectItem>
-                    <SelectItem value="socially">Socially</SelectItem>
-                    <SelectItem value="regularly">Regularly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Drinking</Label>
-                <Select onValueChange={(value) => setFilters((prev) => ({ ...prev, drinking: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any</SelectItem>
-                    <SelectItem value="never">Never</SelectItem>
-                    <SelectItem value="socially">Socially</SelectItem>
-                    <SelectItem value="regularly">Regularly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Diet</Label>
-              <Select onValueChange={(value) => setFilters((prev) => ({ ...prev, diet: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any diet" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any diet</SelectItem>
-                  <SelectItem value="vegetarian">Vegetarian</SelectItem>
-                  <SelectItem value="vegan">Vegan</SelectItem>
-                  <SelectItem value="non-vegetarian">Non-Vegetarian</SelectItem>
-                  <SelectItem value="pescatarian">Pescatarian</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Relationship Goals */}
+          <div className="space-y-3">
+            <Label>Relationship Goal</Label>
+            <Select 
+              value={filters.relationshipGoal}
+              onValueChange={(value) => setFilters((prev) => ({ ...prev, relationshipGoal: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Any relationship goal" />
+              </SelectTrigger>
+              <SelectContent className="bg-white/80 backdrop-blur-md border-primary/20">
+                <SelectItem value="any">Any relationship goal</SelectItem>
+                {relationshipGoals.map((goal) => (
+                  <SelectItem key={goal} value={goal}>
+                    {goal}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Separator />
@@ -275,29 +190,6 @@ export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
             </div>
           </div>
 
-          <Separator />
-
-          {/* Interests */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Interests</h3>
-              <span className="text-sm text-muted-foreground">{filters.interests.length} selected</span>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {availableInterests.map((interest) => (
-                <Badge
-                  key={interest}
-                  variant={filters.interests.includes(interest) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => handleInterestToggle(interest)}
-                >
-                  {interest}
-                  {filters.interests.includes(interest) && <X className="w-3 h-3 ml-1" />}
-                </Badge>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Apply Button */}

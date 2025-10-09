@@ -1,9 +1,11 @@
 "use client"
 
+import React, { useState, useRef, useEffect, useMemo } from "react"
+import { motion, useMotionValue, useTransform, animate } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Check, X } from "lucide-react"
+import { Check, X, Info } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "../discovery/swipe-animations"
 
 interface MatrimonySwipeCardProps {
@@ -13,10 +15,16 @@ interface MatrimonySwipeCardProps {
   profession: string
   community?: string
   location: string
-  avatar: string
+  photos: string[] // Changed from avatar to photos array
   verified?: boolean
+  premium?: boolean
+  bio?: string
+  interests?: string[]
+  education?: string
   onConnect: () => void
   onNotNow: () => void
+  onProfileClick?: () => void
+  stackIndex?: number // 0 is top, then 1,2 for depth visuals
 }
 
 export function MatrimonySwipeCard({
@@ -26,25 +34,94 @@ export function MatrimonySwipeCard({
   profession,
   community,
   location,
-  avatar,
+  photos,
   verified,
+  premium,
+  bio,
+  interests,
+  education,
   onConnect,
   onNotNow,
+  onProfileClick,
+  stackIndex = 0,
 }: MatrimonySwipeCardProps) {
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [showInfo, setShowInfo] = useState(false)
   const { animation, showHeartBurst, showXBurst, hideAnimation } = useSwipeAnimation()
 
-  const handleConnect = () => {
-    showHeartBurst()
-    setTimeout(() => {
-      onConnect()
-    }, 300)
+  // Framer Motion values for smooth dragging
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  
+  // Transform motion values to rotation and opacity
+  const rotate = useTransform(x, [-300, 300], [-30, 30])
+  const likeOpacity = useTransform(x, [0, 120], [0, 1])
+  const passOpacity = useTransform(x, [-120, 0], [1, 0])
+
+  const depthStyles = useMemo(() => {
+    // Enhanced visual stacking for realistic deck-of-cards effect
+    const scale = 1 - stackIndex * 0.04 // Slightly less scaling for more subtle effect
+    const translateY = stackIndex * 12 // Vertical offset - cards stack downward
+    const translateX = stackIndex * 8  // Horizontal offset - cards shift right
+    const opacity = Math.max(0.3, 1 - stackIndex * 0.25) // Keep cards more visible
+    const rotate = stackIndex * 1.5 // Slight rotation for natural look
+    
+    return { 
+      scale, 
+      translateY, 
+      translateX, 
+      opacity, 
+      rotate,
+      zIndex: 30 - stackIndex 
+    }
+  }, [stackIndex])
+
+  const handlePhotoClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    
+    // Prevent photo click if dragging or if drag offset is significant
+    if (Math.abs(x.get()) > 8) return
+    
+    const rect = e.currentTarget.getBoundingClientRect()
+    const clickX = e.clientX - rect.left
+    const cardWidth = rect.width
+
+    if (clickX > cardWidth / 2) {
+      // Right side - next photo
+      if (currentPhotoIndex < photos.length - 1) {
+        setCurrentPhotoIndex((prev) => prev + 1)
+      }
+    } else {
+      // Left side - previous photo
+      if (currentPhotoIndex > 0) {
+        setCurrentPhotoIndex((prev) => prev - 1)
+      }
+    }
   }
 
-  const handleNotNow = () => {
-    showXBurst()
-    setTimeout(() => {
-      onNotNow()
-    }, 300)
+  const handleDragEnd = (event: any, info: any) => {
+    const threshold = 120
+    const velocity = info.velocity.x
+    
+    if (info.offset.x > threshold || velocity > 500) {
+      // Connect - trigger heart animation and swipe out
+      showHeartBurst()
+      animate(x, 1000, { duration: 0.4, ease: "easeInOut" })
+      setTimeout(() => {
+        onConnect()
+      }, 400)
+    } else if (info.offset.x < -threshold || velocity < -500) {
+      // Not Now - trigger X animation and swipe out
+      showXBurst()
+      animate(x, -1000, { duration: 0.4, ease: "easeInOut" })
+      setTimeout(() => {
+        onNotNow()
+      }, 400)
+    } else {
+      // Reset card position smoothly with spring animation
+      animate(x, 0, { duration: 0.6, ease: "easeOut" })
+      animate(y, 0, { duration: 0.6, ease: "easeOut" })
+    }
   }
 
   return (
@@ -54,57 +131,201 @@ export function MatrimonySwipeCard({
         show={animation.show} 
         type={animation.type} 
         onComplete={hideAnimation}
+        hideOverlay={true}
       />
 
-      <Card className="relative w-full max-w-sm h-[60vh] md:h-[480px] overflow-hidden rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)] hover:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.5),0_15px_40px_-10px_rgba(0,0,0,0.35)] hover:scale-[1.02] transition-all duration-300 transform-gpu">
-      <img src={avatar} alt={name} className="absolute inset-0 w-full h-full object-cover" />
-      
+      <motion.div
+        className={cn(
+          "w-full max-w-sm h-[60vh] md:h-[480px] overflow-hidden cursor-grab active:cursor-grabbing select-none touch-none",
+          "rounded-3xl",
+          "relative",
+          // 3D floating effect
+          "transform-gpu perspective-1000",
+          // Enhanced shadows for realistic depth
+          stackIndex === 0 && "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)]",
+          stackIndex === 1 && "shadow-[0_15px_45px_-12px_rgba(0,0,0,0.35),0_8px_25px_-8px_rgba(0,0,0,0.25)]",
+          stackIndex === 2 && "shadow-[0_12px_35px_-10px_rgba(0,0,0,0.3),0_6px_20px_-6px_rgba(0,0,0,0.2)]",
+          stackIndex > 2 && "shadow-[0_8px_25px_-8px_rgba(0,0,0,0.25),0_4px_15px_-4px_rgba(0,0,0,0.15)]",
+          // Hover effect for top card
+          stackIndex === 0 && "hover:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.5),0_15px_40px_-10px_rgba(0,0,0,0.35)] hover:scale-[1.02] transition-all duration-300",
+        )}
+        style={{
+          x,
+          y,
+          rotate: stackIndex === 0 ? rotate : depthStyles.rotate,
+          scale: depthStyles.scale,
+          translateY: depthStyles.translateY,
+          translateX: depthStyles.translateX,
+          zIndex: depthStyles.zIndex,
+          opacity: depthStyles.opacity,
+          background: "transparent",
+        }}
+        drag={stackIndex === 0 ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={handleDragEnd}
+        onClick={handlePhotoClick}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 30,
+          mass: 0.8
+        }}
+      >
+      {/* Background photo fills the card */}
+      <img
+        src={photos[currentPhotoIndex] || "/placeholder.svg"}
+        alt=""
+        className={cn(
+          "absolute inset-0 w-full h-full object-cover transition-all duration-300",
+          stackIndex === 1 && "blur-[2px] brightness-75 contrast-90",
+          stackIndex === 2 && "blur-[4px] brightness-65 contrast-80",
+          stackIndex > 2 && "blur-[6px] brightness-60 contrast-75",
+        )}
+      />
+
       {/* Frosted glass overlay with gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/60" />
       
       {/* Subtle frosted glass effect on top portion */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] via-transparent to-transparent backdrop-blur-[0.5px]" />
+      {stackIndex === 0 && (
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] via-transparent to-transparent backdrop-blur-[0.5px]" />
+      )}
 
-      {/* Top-right chips (placeholders) */}
-      <div className="absolute top-3 right-3 space-y-2 text-white/90">
-        <div className="w-9 h-9 rounded-full bg-black/40 backdrop-blur flex items-center justify-center">⋮</div>
-        <div className="w-9 h-9 rounded-full bg-black/40 backdrop-blur flex items-center justify-center">10</div>
-      </div>
+      {/* Top-right status badges */}
+      {stackIndex === 0 && (
+        <div className="absolute top-4 right-4 flex flex-col space-y-2 z-20">
+          {verified && <Badge className="bg-primary text-primary-foreground">Verified</Badge>}
+          {premium && <Badge className="bg-secondary text-secondary-foreground">Premium</Badge>}
+        </div>
+      )}
 
-      {/* Bottom overlay - Enhanced glassmorphic */}
-      <div className="absolute inset-x-0 bottom-0 p-5 pt-10 bg-gradient-to-t from-black/85 via-black/60 to-transparent backdrop-blur-sm">
-        <div className="flex items-center gap-2 text-white">
-          {verified && <Badge className="bg-emerald-500 text-white shadow-lg">✓</Badge>}
-          <h3 className="text-2xl font-bold drop-shadow-lg">{name}</h3>
-        </div>
-        <div className="mt-2 text-sm text-white/95 flex items-center gap-3 font-medium">
-          <span>{age} yrs{height ? `, ${height}` : ""}</span>
-        </div>
-        <div className="mt-1.5 text-sm text-white/90 truncate">
-          {profession}
-        </div>
-        <div className="mt-1 text-sm text-white/85 truncate">
-          {community ? `${community} · ` : ""}{location}
-        </div>
-
-        {/* Action row - Enhanced 3D buttons */}
-        <div className="mt-4 flex items-center gap-3">
-          <Button 
-            onClick={handleNotNow} 
-            variant="outline" 
-            className="flex-1 bg-white/15 border-white/40 text-white hover:bg-white/25 shadow-lg backdrop-blur-xl hover:scale-105 transition-all duration-200 font-medium"
+      {/* Like/Pass hint while dragging */}
+      {stackIndex === 0 && (
+        <>
+          <motion.div
+            className="absolute top-6 left-6 text-2xl font-extrabold tracking-wider text-emerald-400"
+            style={{ opacity: likeOpacity }}
           >
-            <X className="w-4 h-4 mr-1.5" /> Not Now
-          </Button>
-          <Button 
-            onClick={handleConnect} 
-            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 font-medium"
+            CONNECT
+          </motion.div>
+          <motion.div
+            className="absolute top-6 right-6 text-2xl font-extrabold tracking-wider text-rose-400"
+            style={{ opacity: passOpacity }}
           >
-            <Check className="w-4 h-4 mr-1.5" /> Connect
+            NOT NOW
+          </motion.div>
+        </>
+      )}
+
+      {/* Bottom glassmorphic bar with name/age and info button - Enhanced 3D */}
+      {stackIndex === 0 && (
+        <div
+          className={cn(
+            "absolute left-4 right-4 bottom-4 z-20",
+            "rounded-2xl p-4 flex items-center justify-between",
+            "bg-white/[0.15] border border-white/30",
+            "backdrop-blur-xl supports-[backdrop-filter]:bg-white/[0.15]",
+            // Enhanced shadow for floating effect
+            "shadow-[0_8px_32px_rgba(0,0,0,0.3),0_2px_8px_rgba(0,0,0,0.2)]",
+            // Subtle inner glow
+            "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-white/20 before:to-transparent before:pointer-events-none",
+            "relative overflow-hidden",
+          )}
+        >
+          <div className="min-w-0 relative z-10">
+            <h2 className="text-white text-xl font-bold truncate drop-shadow-lg">
+              {name}, {age}
+            </h2>
+            <p className="text-white/90 text-sm truncate">
+              {height && `${height} • `}{profession}
+            </p>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="rounded-full w-9 h-9 p-0 shadow-lg bg-white/25 border border-white/40 backdrop-blur-xl hover:bg-white/35 hover:scale-110 transition-all duration-200 relative z-10"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowInfo((v) => !v)
+            }}
+          >
+            <Info className="w-4 h-4 text-white drop-shadow" />
           </Button>
         </div>
-      </div>
-    </Card>
+      )}
+
+      {/* Expandable glass info panel */}
+      {stackIndex === 0 && (
+        <div
+          className={cn(
+            "absolute left-4 right-4 z-10 overflow-hidden transition-all duration-300",
+            showInfo ? "bottom-24" : "bottom-24 max-h-0 opacity-0",
+          )}
+          style={{ opacity: showInfo ? 1 : 0 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="rounded-2xl bg-white/[0.15] border border-white/30 backdrop-blur-xl p-5 text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)] relative overflow-hidden">
+            {/* Inner glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+            <div className="relative z-10">
+              <div className="space-y-2 text-sm">
+                <div className="font-semibold text-base">About</div>
+                <div className="text-white/90 line-clamp-5 leading-relaxed">
+                  {bio || `${name} is looking for a life partner who shares similar values and dreams.`}
+                </div>
+                <div className="pt-2 flex flex-wrap gap-2">
+                  {education && (
+                    <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
+                      {education}
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
+                    {profession}
+                  </Badge>
+                  {community && (
+                    <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
+                      {community}
+                    </Badge>
+                  )}
+                  {interests?.slice(0, 3).map((interest) => (
+                    <Badge key={interest} variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
+                      {interest}
+                    </Badge>
+                  ))}
+                </div>
+                <div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-white/25 font-medium"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onProfileClick?.()
+                    }}
+                  >
+                    View full profile
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Visible card edges for stacked cards */}
+      {stackIndex > 0 && (
+        <>
+          {/* Right edge highlight */}
+          <div className="absolute -right-1 top-2 bottom-2 w-2 bg-gradient-to-b from-blue-400/60 via-blue-500/70 to-blue-400/60 rounded-r-full shadow-lg" />
+          {/* Bottom edge highlight */}
+          <div className="absolute -bottom-1 left-2 right-2 h-2 bg-gradient-to-r from-blue-400/40 via-blue-500/50 to-blue-400/40 rounded-b-full shadow-lg" />
+        </>
+      )}
+
+      {/* Dim overlay for behind cards to hide details */}
+      {stackIndex > 0 && <div className="absolute inset-0 bg-black/20" />}
+    </motion.div>
     </>
   )
 }

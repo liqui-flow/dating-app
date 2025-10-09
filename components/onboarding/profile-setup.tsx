@@ -80,7 +80,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
   const isComplete = name.trim() && photos.length >= 3
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-primary">Let's build your profile</CardTitle>
@@ -143,7 +143,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
           {/* Photo Thumbnails */}
           {photos.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-black text-center">Your Photos</h3>
+              <h3 className="text-lg font-semibold text-primary text-center">Your Photos</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {photos.map((photo, index) => (
                   <div key={photo.id} className="space-y-2">
@@ -166,7 +166,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
                       placeholder={photoPrompts[index] || "Add a caption..."}
                       value={photo.caption || ""}
                       onChange={(e) => updatePhotoCaption(photo.id, e.target.value)}
-                      className="text-xs text-black placeholder:text-black"
+                      className="text-xs text-primary placeholder:text-primary"
                     />
                   </div>
                 ))}
@@ -177,21 +177,21 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
           {/* Video Section */}
           <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-lg font-semibold text-black">Add a video (optional)</h3>
-              <p className="text-sm text-black">Add a 15-second video to bring your profile to life!</p>
+              <h3 className="text-lg font-semibold text-primary">Add a video (optional)</h3>
+              <p className="text-sm text-primary">Add a 15-second video to bring your profile to life!</p>
             </div>
             
             <div className="text-center">
               <Button
                 onClick={() => videoInputRef.current?.click()}
                 variant="outline"
-                className="border-black text-black hover:bg-black hover:text-white"
+                className="border-primary text-primary hover:bg-primary hover:text-white"
               >
                 <Video className="w-4 h-4 mr-2" />
                 {video ? "Change Video" : "Add Video"}
               </Button>
               {video && (
-                <p className="text-xs text-black mt-2">{video.name}</p>
+                <p className="text-xs text-primary mt-2">{video.name}</p>
               )}
             </div>
           </div>
@@ -215,13 +215,13 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
 
           {/* Navigation */}
           <div className="flex justify-between pt-6">
-            <Button variant="ghost" onClick={onBack} className="text-black">
+            <Button variant="ghost" onClick={onBack} className="text-primary">
               Back
             </Button>
             <Button 
               onClick={handleNext}
               disabled={!isComplete}
-              className="bg-black text-white hover:bg-black/90 disabled:opacity-50"
+              className="bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
             >
               Next
             </Button>

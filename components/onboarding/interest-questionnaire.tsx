@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
-import { Sparkles, Zap } from "lucide-react"
+import { Sparkles, Zap, Heart } from "lucide-react"
 
 interface InterestQuestionnaireProps {
   onComplete?: () => void
@@ -71,10 +71,10 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
       <Card className="w-full max-w-3xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-black">What's your vibe?</CardTitle>
+          <CardTitle className="text-3xl font-bold text-primary">What's your vibe?</CardTitle>
           <div className="mt-3">
             <Progress value={(canProceed ? 100 : Math.min(100, (selectedCount/5)*40 + (answeredCount/3)*40 + (goal ? 20 : 0)))} />
           </div>
@@ -83,12 +83,12 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
           {/* Interests */}
           <section className="space-y-4">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-black">Pick at least 5 interests to help us find your perfect match.</h3>
+              <h3 className="text-xl font-semibold text-primary">Pick at least 5 interests to help us find your perfect match.</h3>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               {Object.entries(interestCategories).map(([category, items]) => (
-                <div key={category} className="p-3 rounded-xl bg-white/60 border border-black/10">
-                  <div className="mb-2 flex items-center gap-2 text-black font-medium">
+                <div key={category} className="p-3 rounded-xl bg-white/60 border border-primary/10">
+                  <div className="mb-2 flex items-center gap-2 text-primary font-medium">
                     <Sparkles className="w-4 h-4" /> {category}
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -101,8 +101,8 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                           onClick={() => toggleInterest(label)}
                           className={`px-3 py-2 rounded-full text-sm transition transform active:scale-95 border ${
                             active
-                              ? "bg-black text-white border-black"
-                              : "bg-white text-black border-black hover:bg-black hover:text-white"
+                              ? "bg-primary text-white border-primary"
+                              : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
                           }`}
                         >
                           {label}
@@ -113,27 +113,27 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                 </div>
               ))}
             </div>
-            <div className="text-center text-sm text-black">Selected: {selectedCount}/10</div>
+            <div className="text-center text-sm text-primary">Selected: {selectedCount}/10</div>
           </section>
 
           {/* Prompts */}
           <section className="space-y-4">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-black">Answer a few fun prompts to show your vibe.</h3>
-              <p className="text-sm text-black">Answer at least 3</p>
+              <h3 className="text-xl font-semibold text-primary">Answer a few fun prompts to show your vibe.</h3>
+              <p className="text-sm text-primary">Answer at least 3</p>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               {prompts.map((p) => (
-                <div key={p} className="p-4 rounded-xl border border-black/10 bg-white/60">
-                  <Label className="text-black text-sm mb-2 block">{p}</Label>
+                <div key={p} className="p-4 rounded-xl border border-primary/10 bg-white/60">
+                  <Label className="text-primary text-sm mb-2 block">{p}</Label>
                   <Textarea
                     placeholder="Type a short answer..."
                     value={answers[p] || ""}
                     onChange={(e) => setAnswers((prev) => ({ ...prev, [p]: e.target.value }))}
-                    className="min-h-20 resize-none text-black placeholder:text-black"
+                    className="min-h-20 resize-none text-primary placeholder:text-primary"
                     maxLength={140}
                   />
-                  <div className="mt-1 text-xs text-black/70 text-right">{(answers[p] || "").length}/140</div>
+                  <div className="mt-1 text-xs text-primary/70 text-right">{(answers[p] || "").length}/140</div>
                 </div>
               ))}
             </div>
@@ -142,7 +142,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
           {/* This or That */}
           <section className="space-y-4">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-black">Which one speaks to you more?</h3>
+              <h3 className="text-xl font-semibold text-primary">Which one speaks to you more?</h3>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               {thisOrThatPairs.map(([a, b], idx) => {
@@ -156,7 +156,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                           key={label}
                           variant="outline"
                           className={`h-auto p-4 text-left border whitespace-normal break-words leading-relaxed min-h-12 ${
-                            active ? "bg-black text-white border-black" : "bg-white text-black border-black"
+                            active ? "bg-primary text-white border-primary" : "bg-white text-primary border-primary"
                           }`}
                           onClick={() =>
                             setChoices((prev) => ({
@@ -165,7 +165,10 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                             }))
                           }
                         >
-                          <div className="flex items-start gap-2"><span className="w-4 h-4 shrink-0 mt-0.5" /> <span>{label}</span></div>
+                          <div className="flex items-center gap-2">
+                            <Heart className={`w-4 h-4 shrink-0 ${active ? "fill-white" : "fill-primary"}`} />
+                            <span>{label}</span>
+                          </div>
                         </Button>
                       )
                     })}
@@ -178,7 +181,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
           {/* Intentions */}
           <section className="space-y-4">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-black">Be honest about your relationship intentions.</h3>
+              <h3 className="text-xl font-semibold text-primary">Be honest about your relationship intentions.</h3>
             </div>
             <div className="grid md:grid-cols-2 gap-3">
               {intentions.map((g) => (
@@ -186,7 +189,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                   key={g}
                   variant="outline"
                   onClick={() => setGoal(g)}
-                  className={`h-auto p-4 text-left border ${goal === g ? "bg-black text-white border-black" : "bg-white text-black border-black"}`}
+                  className={`h-auto p-4 text-left border ${goal === g ? "bg-primary text-white border-primary" : "bg-white text-primary border-primary"}`}
                 >
                   {g}
                 </Button>
@@ -197,11 +200,11 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
           {/* Preferences */}
           <section className="space-y-6">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-black">Help us show you the most relevant matches.</h3>
+              <h3 className="text-xl font-semibold text-primary">Help us show you the most relevant matches.</h3>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-black">Age range: {ageRange[0]} - {ageRange[1]} years</Label>
+                <Label className="text-primary">Age range: {ageRange[0]} - {ageRange[1]} years</Label>
                 <Slider
                   value={ageRange as any}
                   onValueChange={(val: number[]) => {
@@ -219,7 +222,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-black">Maximum distance: {distance[0]} km</Label>
+                <Label className="text-primary">Maximum distance: {distance[0]} km</Label>
                 <Slider value={distance} onValueChange={setDistance} max={100} min={5} step={5} />
               </div>
             </div>
@@ -227,8 +230,8 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
 
           {/* Navigation */}
           <div className="flex justify-between pt-2">
-            <Button variant="outline" className="border-black text-black">Back</Button>
-            <Button disabled={!canProceed} onClick={() => onComplete?.()} className="bg-black text-white hover:bg-black/90">Next</Button>
+            <Button variant="outline" className="border-primary text-primary">Back</Button>
+            <Button disabled={!canProceed} onClick={() => onComplete?.()} className="bg-primary text-white hover:bg-primary/90">Next</Button>
           </div>
         </CardContent>
       </Card>

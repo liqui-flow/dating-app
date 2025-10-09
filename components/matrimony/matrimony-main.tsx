@@ -30,7 +30,11 @@ interface MatrimonyProfile {
   profession: string
   location: string
   community?: string
-  avatar?: string
+  photos: string[]
+  bio?: string
+  interests?: string[]
+  verified?: boolean
+  premium?: boolean
 }
 
 const SAMPLE_PROFILES: MatrimonyProfile[] = [
@@ -42,7 +46,11 @@ const SAMPLE_PROFILES: MatrimonyProfile[] = [
     profession: "Product Manager",
     location: "Bengaluru, India",
     community: "Brahmin",
-    avatar: "/professional-woman-smiling.png",
+    photos: ["/professional-woman-smiling.png", "/woman-hiking.png"],
+    bio: "Family-oriented person who loves traveling and cooking. Looking for someone who values traditions and is ready for marriage.",
+    interests: ["Travel", "Cooking", "Dancing", "Reading"],
+    verified: true,
+    premium: false,
   },
   {
     id: "m2",
@@ -52,7 +60,11 @@ const SAMPLE_PROFILES: MatrimonyProfile[] = [
     profession: "Senior Software Engineer",
     location: "Pune, India",
     community: "Vaishya",
-    avatar: "/professional-headshot.png",
+    photos: ["/professional-headshot.png", "/casual-outdoor-photo.jpg"],
+    bio: "Tech enthusiast who enjoys hiking and photography. Seeking a life partner who shares similar values and dreams.",
+    interests: ["Technology", "Photography", "Hiking", "Music"],
+    verified: true,
+    premium: true,
   },
 ]
 
@@ -105,32 +117,49 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       {currentScreen === "discover" && (
         <div className="h-screen overflow-hidden flex flex-col">
           <div className="p-4 pb-20 mt-10 max-w-3xl mx-auto w-full flex-1 overflow-hidden">
-            <div className="relative h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-14 md:-translate-y-16">
-            {hasMoreProfiles && currentProfile ? (
-              <MatrimonySwipeCard
-                name={currentProfile.name}
-                age={currentProfile.age}
-                height={"5'6\""}
-                profession={`${currentProfile.education} • ${currentProfile.profession}`}
-                community={currentProfile.community}
-                location={currentProfile.location}
-                avatar={currentProfile.avatar || "/placeholder-user.jpg"}
-                verified
-                onConnect={handleLike}
-                onNotNow={handlePass}
-              />
-            ) : (
-              <Card className="w-full max-w-sm h-96 flex items-center justify-center">
-                <CardContent className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-muted rounded-full" />
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">No more profiles</h3>
-                    <p className="text-sm text-muted-foreground">Check back later for new matches</p>
-                  </div>
-                  <Button onClick={() => setCurrentCardIndex(0)}>Start Over</Button>
-                </CardContent>
-              </Card>
-            )}
+            <div className="relative h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-14 md:-translate-y-16 overflow-visible">
+              {hasMoreProfiles ? (
+                <div className="relative w-full max-w-sm h-full overflow-visible">
+                  {profiles
+                    .slice(currentCardIndex, Math.min(currentCardIndex + 4, profiles.length))
+                    .map((profile, index) => (
+                      <div key={profile.id} className="absolute inset-0 flex items-center justify-center">
+                        <MatrimonySwipeCard
+                          name={profile.name}
+                          age={profile.age}
+                          height={"5'6\""}
+                          profession={profile.profession}
+                          community={profile.community}
+                          location={profile.location}
+                          photos={profile.photos}
+                          verified={profile.verified}
+                          premium={profile.premium}
+                          bio={profile.bio}
+                          interests={profile.interests}
+                          education={profile.education}
+                          onConnect={index === 0 ? () => handleLike() : () => {}}
+                          onNotNow={index === 0 ? () => handlePass() : () => {}}
+                          onProfileClick={() => {
+                            // TODO: Implement profile modal for matrimony
+                            console.log("Profile clicked:", profile.name)
+                          }}
+                          stackIndex={index}
+                        />
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <Card className="w-full max-w-sm h-96 flex items-center justify-center">
+                  <CardContent className="text-center space-y-4">
+                    <div className="w-16 h-16 mx-auto bg-muted rounded-full" />
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold">No more profiles</h3>
+                      <p className="text-sm text-muted-foreground">Check back later for new matches</p>
+                    </div>
+                    <Button onClick={() => setCurrentCardIndex(0)}>Start Over</Button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>

@@ -50,16 +50,16 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-black">Who do you prefer to date?</CardTitle>
+          <CardTitle className="text-3xl font-bold text-primary">Who do you prefer to date?</CardTitle>
         </CardHeader>
         
         <CardContent className="space-y-8">
           {/* Main Question */}
           <div className="text-center">
-            <h2 className="text-xl font-semibold text-black mb-8">
+            <h2 className="text-xl font-semibold text-primary mb-8">
               I'd like to date...
             </h2>
           </div>
@@ -76,14 +76,14 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
                   variant="outline"
                   className={`h-auto p-6 flex flex-col items-center space-y-3 transition-all duration-200 ${
                     isSelected
-                      ? "bg-black text-white border-black hover:bg-black"
-                      : "bg-white text-black border-black hover:bg-black hover:text-white"
+                      ? "bg-primary text-white border-primary hover:bg-primary"
+                      : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
                   }`}
                   onClick={() => handlePreferenceSelect(option.id)}
                 >
                   <div className="w-12 h-12 rounded-full bg-current/10 flex items-center justify-center">
                     <Icon className={`w-6 h-6 ${
-                      isSelected ? "text-white" : "text-black group-hover:text-white"
+                      isSelected ? "text-white" : "text-primary group-hover:text-white"
                     }`} />
                   </div>
                   <div className="text-center">
@@ -101,22 +101,22 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
               id="show-preference"
               checked={showOnProfile}
               onCheckedChange={(checked) => setShowOnProfile(checked as boolean)}
-              className="border-black"
+              className="border-primary"
             />
-            <Label htmlFor="show-preference" className="text-black text-sm">
+            <Label htmlFor="show-preference" className="text-primary text-sm">
               Show my preference on my profile
             </Label>
           </div>
 
           {/* Navigation */}
           <div className="flex justify-between pt-6">
-            <Button variant="ghost" onClick={onBack} className="text-black">
+            <Button variant="ghost" onClick={onBack} className="text-primary">
               Back
             </Button>
             <Button 
               onClick={handleNext}
               disabled={!selectedPreference}
-              className="bg-black text-white hover:bg-black/90 disabled:opacity-50"
+              className="bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
             >
               Next
             </Button>

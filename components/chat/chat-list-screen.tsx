@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, MoreVertical, Heart, Star } from "lucide-react"
+import { Search, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ChatPreview {
@@ -70,7 +70,6 @@ const mockChats: ChatPreview[] = [
 
 export function ChatListScreen() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedTab, setSelectedTab] = useState<"all" | "matches" | "likes">("all")
 
   const filteredChats = mockChats.filter(
     (chat) =>
@@ -89,9 +88,6 @@ export function ChatListScreen() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Messages</h1>
-            <Button variant="ghost" size="sm">
-              <MoreVertical className="w-5 h-5" />
-            </Button>
           </div>
 
           {/* Search */}
@@ -103,36 +99,6 @@ export function ChatListScreen() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
-          </div>
-
-          {/* Tabs */}
-          <div className="flex space-x-1 bg-muted p-1 rounded-lg">
-            <Button
-              variant={selectedTab === "all" ? "default" : "ghost"}
-              size="sm"
-              className="flex-1"
-              onClick={() => setSelectedTab("all")}
-            >
-              All
-            </Button>
-            <Button
-              variant={selectedTab === "matches" ? "default" : "ghost"}
-              size="sm"
-              className="flex-1"
-              onClick={() => setSelectedTab("matches")}
-            >
-              <Heart className="w-4 h-4 mr-1" />
-              Matches
-            </Button>
-            <Button
-              variant={selectedTab === "likes" ? "default" : "ghost"}
-              size="sm"
-              className="flex-1"
-              onClick={() => setSelectedTab("likes")}
-            >
-              <Star className="w-4 h-4 mr-1" />
-              Likes
-            </Button>
           </div>
         </div>
       </div>
