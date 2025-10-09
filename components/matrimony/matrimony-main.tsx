@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 import { AppLayout } from "@/components/layout/app-layout"
 import { QuickActions } from "@/components/navigation/quick-actions"
 // Removed TopBackButton usage
-import { Filter } from "lucide-react"
+import { Filter, Check, X } from "lucide-react"
 import { MatrimonySwipeCard } from "@/components/matrimony/matrimony-swipe-card"
 import { MatrimonyChatList } from "@/components/matrimony/matrimony-chat-list"
-import { FilterSheet } from "@/components/discovery/filter-sheet"
+import { MatrimonyFilterSheet } from "@/components/matrimony/matrimony-filter-sheet"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
 import { SettingsScreen } from "@/components/settings/settings-screen"
 import { ProfileSetup } from "@/components/profile/profile-setup"
@@ -117,49 +117,53 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       {currentScreen === "discover" && (
         <div className="h-screen overflow-hidden flex flex-col">
           <div className="p-4 pb-20 mt-10 max-w-3xl mx-auto w-full flex-1 overflow-hidden">
-            <div className="relative h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-14 md:-translate-y-16 overflow-visible">
-              {hasMoreProfiles ? (
-                <div className="relative w-full max-w-sm h-full overflow-visible">
-                  {profiles
-                    .slice(currentCardIndex, Math.min(currentCardIndex + 4, profiles.length))
-                    .map((profile, index) => (
-                      <div key={profile.id} className="absolute inset-0 flex items-center justify-center">
-                        <MatrimonySwipeCard
-                          name={profile.name}
-                          age={profile.age}
-                          height={"5'6\""}
-                          profession={profile.profession}
-                          community={profile.community}
-                          location={profile.location}
-                          photos={profile.photos}
-                          verified={profile.verified}
-                          premium={profile.premium}
-                          bio={profile.bio}
-                          interests={profile.interests}
-                          education={profile.education}
-                          onConnect={index === 0 ? () => handleLike() : () => {}}
-                          onNotNow={index === 0 ? () => handlePass() : () => {}}
-                          onProfileClick={() => {
-                            // TODO: Implement profile modal for matrimony
-                            console.log("Profile clicked:", profile.name)
-                          }}
-                          stackIndex={index}
-                        />
+            <div className="space-y-6">
+              {/* Card Stack */}
+              <div className="relative h-[60vh] md:h-[500px] flex items-center justify-center transform -translate-y-2 md:-translate-y-4 overflow-visible">
+                {hasMoreProfiles ? (
+                  <div className="relative w-full max-w-sm h-full overflow-visible">
+                    {profiles
+                      .slice(currentCardIndex, Math.min(currentCardIndex + 4, profiles.length))
+                      .map((profile, index) => (
+                        <div key={profile.id} className="absolute inset-0 flex items-center justify-center">
+                          <MatrimonySwipeCard
+                            name={profile.name}
+                            age={profile.age}
+                            height={"5'6\""}
+                            profession={profile.profession}
+                            community={profile.community}
+                            location={profile.location}
+                            photos={profile.photos}
+                            verified={profile.verified}
+                            premium={profile.premium}
+                            bio={profile.bio}
+                            interests={profile.interests}
+                            education={profile.education}
+                            onConnect={index === 0 ? () => handleLike() : () => {}}
+                            onNotNow={index === 0 ? () => handlePass() : () => {}}
+                            onProfileClick={() => {
+                              // TODO: Implement profile modal for matrimony
+                              console.log("Profile clicked:", profile.name)
+                            }}
+                            stackIndex={index}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <Card className="w-full max-w-sm h-96 flex items-center justify-center">
+                    <CardContent className="text-center space-y-4">
+                      <div className="w-16 h-16 mx-auto bg-muted rounded-full" />
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold">No more profiles</h3>
+                        <p className="text-sm text-muted-foreground">Check back later for new matches</p>
                       </div>
-                    ))}
-                </div>
-              ) : (
-                <Card className="w-full max-w-sm h-96 flex items-center justify-center">
-                  <CardContent className="text-center space-y-4">
-                    <div className="w-16 h-16 mx-auto bg-muted rounded-full" />
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold">No more profiles</h3>
-                      <p className="text-sm text-muted-foreground">Check back later for new matches</p>
-                    </div>
-                    <Button onClick={() => setCurrentCardIndex(0)}>Start Over</Button>
-                  </CardContent>
-                </Card>
-              )}
+                      <Button onClick={() => setCurrentCardIndex(0)}>Start Over</Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
             </div>
           </div>
         </div>
@@ -236,8 +240,8 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         onOpenProfile={() => setCurrentScreen("profile")}
       />
 
-      {/* Filter Sheet */}
-      <FilterSheet open={showFilters} onOpenChange={setShowFilters} />
+      {/* Matrimony Filter Sheet */}
+      <MatrimonyFilterSheet open={showFilters} onOpenChange={setShowFilters} />
     </AppLayout>
   )
 }

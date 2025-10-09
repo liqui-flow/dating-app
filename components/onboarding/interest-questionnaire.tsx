@@ -230,7 +230,12 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
 
           {/* Navigation */}
           <div className="flex justify-between pt-2">
-            <Button variant="outline" className="border-primary text-primary">Back</Button>
+            <Button 
+              variant="outline" 
+              className="bg-white/10 backdrop-blur-md border-white/20 text-primary hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+            >
+              Back
+            </Button>
             <Button disabled={!canProceed} onClick={() => onComplete?.()} className="bg-primary text-white hover:bg-primary/90">Next</Button>
           </div>
         </CardContent>

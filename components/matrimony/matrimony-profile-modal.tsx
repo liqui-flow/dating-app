@@ -1,40 +1,40 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
-import { X, MapPin, Briefcase, GraduationCap, Users, Share, Flag } from "lucide-react"
+import { X, MapPin, Briefcase, GraduationCap, Users, Share, Flag, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface Profile {
+interface MatrimonyProfile {
   id: string
   name: string
   age: number
+  height?: string
+  profession: string
+  community?: string
   location: string
-  occupation: string
-  education: string
   photos: string[]
-  bio: string
-  interests: string[]
-  religion: string
-  verified: boolean
-  premium: boolean
-  distance: string
+  bio?: string
+  interests?: string[]
+  education?: string
+  religion?: string
+  verified?: boolean
+  premium?: boolean
 }
 
-interface ProfileModalProps {
-  profile: Profile
+interface MatrimonyProfileModalProps {
+  profile: MatrimonyProfile
   open: boolean
   onOpenChange: (open: boolean) => void
-  onLike: () => void
-  onPass: () => void
+  onConnect: () => void
+  onNotNow: () => void
 }
 
-export function ProfileModal({ profile, open, onOpenChange, onLike, onPass }: ProfileModalProps) {
+export function MatrimonyProfileModal({ profile, open, onOpenChange, onConnect, onNotNow }: MatrimonyProfileModalProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
 
   const handlePhotoClick = (e: React.MouseEvent) => {
@@ -109,47 +109,62 @@ export function ProfileModal({ profile, open, onOpenChange, onLike, onPass }: Pr
                 </h1>
                 <div className="flex items-center space-x-1 text-muted-foreground">
                   <MapPin className="w-4 h-4" />
-                  <span className="text-sm">{profile.distance}</span>
+                  <span className="text-sm">{profile.location}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center space-x-3">
                   <Briefcase className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{profile.occupation}</span>
+                  <span className="text-sm">{profile.profession}</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <GraduationCap className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{profile.education}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{profile.religion}</span>
-                </div>
+                {profile.education && (
+                  <div className="flex items-center space-x-3">
+                    <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{profile.education}</span>
+                  </div>
+                )}
+                {profile.religion && (
+                  <div className="flex items-center space-x-3">
+                    <Users className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{profile.religion}</span>
+                  </div>
+                )}
+                {profile.community && (
+                  <div className="flex items-center space-x-3">
+                    <Users className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{profile.community}</span>
+                  </div>
+                )}
               </div>
             </div>
 
             <Separator />
 
             {/* Bio */}
-            <div className="space-y-2">
-              <h3 className="font-semibold">About</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
-            </div>
-
-            <Separator />
+            {profile.bio && (
+              <>
+                <div className="space-y-2">
+                  <h3 className="font-semibold">About</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
+                </div>
+                <Separator />
+              </>
+            )}
 
             {/* Interests */}
-            <div className="space-y-3">
-              <h3 className="font-semibold">Interests</h3>
-              <div className="flex flex-wrap gap-2">
-                {profile.interests.map((interest) => (
-                  <Badge key={interest} variant="secondary">
-                    {interest}
-                  </Badge>
-                ))}
+            {profile.interests && profile.interests.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-semibold">Interests</h3>
+                <div className="flex flex-wrap gap-2">
+                  {profile.interests.map((interest) => (
+                    <Badge key={interest} variant="secondary">
+                      {interest}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -159,13 +174,13 @@ export function ProfileModal({ profile, open, onOpenChange, onLike, onPass }: Pr
                 variant="outline"
                 size="lg"
                 className="w-16 h-16 rounded-full p-0 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground bg-transparent"
-                onClick={onPass}
+                onClick={onNotNow}
               >
                 <X className="w-8 h-8" />
               </Button>
 
-              <Button size="lg" className="w-16 h-16 rounded-full p-0" onClick={onLike}>
-                Like
+              <Button size="lg" className="w-16 h-16 rounded-full p-0" onClick={onConnect}>
+                <Heart className="w-8 h-8" />
               </Button>
             </div>
           </div>

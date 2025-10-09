@@ -4,9 +4,10 @@ import React, { useState, useRef, useEffect, useMemo } from "react"
 import { motion, useMotionValue, useTransform, animate } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Check, X, Info } from "lucide-react"
+import { Check, X, Info, MoreHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "../discovery/swipe-animations"
+import { MatrimonyProfileModal } from "./matrimony-profile-modal"
 
 interface MatrimonySwipeCardProps {
   name: string
@@ -45,6 +46,7 @@ export function MatrimonySwipeCard({
   onProfileClick,
   stackIndex = 0,
 }: MatrimonySwipeCardProps) {
+  const [showProfileModal, setShowProfileModal] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [showInfo, setShowInfo] = useState(false)
   const { animation, showHeartBurst, showXBurst, hideAnimation } = useSwipeAnimation()
@@ -192,126 +194,45 @@ export function MatrimonySwipeCard({
         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] via-transparent to-transparent backdrop-blur-[0.5px]" />
       )}
 
-      {/* Top-right status badges */}
+      {/* Top-right menu dots */}
       {stackIndex === 0 && (
-        <div className="absolute top-4 right-4 flex flex-col space-y-2 z-20">
-          {verified && <Badge className="bg-primary text-primary-foreground">Verified</Badge>}
-          {premium && <Badge className="bg-secondary text-secondary-foreground">Premium</Badge>}
-        </div>
-      )}
-
-      {/* Like/Pass hint while dragging */}
-      {stackIndex === 0 && (
-        <>
-          <motion.div
-            className="absolute top-6 left-6 text-2xl font-extrabold tracking-wider text-emerald-400"
-            style={{ opacity: likeOpacity }}
-          >
-            CONNECT
-          </motion.div>
-          <motion.div
-            className="absolute top-6 right-6 text-2xl font-extrabold tracking-wider text-rose-400"
-            style={{ opacity: passOpacity }}
-          >
-            NOT NOW
-          </motion.div>
-        </>
-      )}
-
-      {/* Bottom glassmorphic bar with name/age and info button - Enhanced 3D */}
-      {stackIndex === 0 && (
-        <div
-          className={cn(
-            "absolute left-4 right-4 bottom-4 z-20",
-            "rounded-2xl p-4 flex items-center justify-between",
-            "bg-white/[0.15] border border-white/30",
-            "backdrop-blur-xl supports-[backdrop-filter]:bg-white/[0.15]",
-            // Enhanced shadow for floating effect
-            "shadow-[0_8px_32px_rgba(0,0,0,0.3),0_2px_8px_rgba(0,0,0,0.2)]",
-            // Subtle inner glow
-            "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-white/20 before:to-transparent before:pointer-events-none",
-            "relative overflow-hidden",
-          )}
-        >
-          <div className="min-w-0 relative z-10">
-            <h2 className="text-white text-xl font-bold truncate drop-shadow-lg">
-              {name}, {age}
-            </h2>
-            <p className="text-white/90 text-sm truncate">
-              {height && `${height} • `}{profession}
-            </p>
-          </div>
+        <div className="absolute top-4 right-4 z-20">
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
-            className="rounded-full w-9 h-9 p-0 shadow-lg bg-white/25 border border-white/40 backdrop-blur-xl hover:bg-white/35 hover:scale-110 transition-all duration-200 relative z-10"
+            className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full p-0 hover:bg-white/30"
             onClick={(e) => {
               e.stopPropagation()
-              setShowInfo((v) => !v)
+              setShowProfileModal(true)
             }}
           >
-            <Info className="w-4 h-4 text-white drop-shadow" />
+            <MoreHorizontal className="w-4 h-4 text-white" />
           </Button>
         </div>
       )}
 
-      {/* Expandable glass info panel */}
+
+      {/* Bottom profile information overlay */}
       {stackIndex === 0 && (
-        <div
-          className={cn(
-            "absolute left-4 right-4 z-10 overflow-hidden transition-all duration-300",
-            showInfo ? "bottom-24" : "bottom-24 max-h-0 opacity-0",
-          )}
-          style={{ opacity: showInfo ? 1 : 0 }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="rounded-2xl bg-white/[0.15] border border-white/30 backdrop-blur-xl p-5 text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)] relative overflow-hidden">
-            {/* Inner glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-            <div className="relative z-10">
-              <div className="space-y-2 text-sm">
-                <div className="font-semibold text-base">About</div>
-                <div className="text-white/90 line-clamp-5 leading-relaxed">
-                  {bio || `${name} is looking for a life partner who shares similar values and dreams.`}
-                </div>
-                <div className="pt-2 flex flex-wrap gap-2">
-                  {education && (
-                    <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
-                      {education}
-                    </Badge>
-                  )}
-                  <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
-                    {profession}
-                  </Badge>
-                  {community && (
-                    <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
-                      {community}
-                    </Badge>
-                  )}
-                  {interests?.slice(0, 3).map((interest) => (
-                    <Badge key={interest} variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
-                      {interest}
-                    </Badge>
-                  ))}
-                </div>
-                <div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:bg-white/25 font-medium"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onProfileClick?.()
-                    }}
-                  >
-                    View full profile
-                  </Button>
-                </div>
-              </div>
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          {/* Dark overlay background */}
+          <div className="bg-gradient-to-t from-black/80 via-black/60 to-transparent h-32 rounded-b-3xl" />
+          
+          {/* Profile information */}
+          <div className="absolute bottom-20 left-4 right-4 z-10">
+            <h2 className="text-white text-2xl font-bold drop-shadow-lg mb-2">
+              {name}
+            </h2>
+            
+            <div className="space-y-1">
+              <p className="text-white/90 text-sm">
+                {age} yrs{height && `, ${height}`}
+              </p>
             </div>
           </div>
         </div>
       )}
+
 
       {/* Visible card edges for stacked cards */}
       {stackIndex > 0 && (
@@ -326,6 +247,36 @@ export function MatrimonySwipeCard({
       {/* Dim overlay for behind cards to hide details */}
       {stackIndex > 0 && <div className="absolute inset-0 bg-black/20" />}
     </motion.div>
+
+    {/* Profile Modal */}
+    <MatrimonyProfileModal
+      profile={{
+        id: `${name}-${age}`,
+        name,
+        age,
+        height,
+        profession,
+        community,
+        location,
+        photos,
+        bio,
+        interests,
+        education,
+        religion: community, // Using community as religion for now
+        verified,
+        premium,
+      }}
+      open={showProfileModal}
+      onOpenChange={setShowProfileModal}
+      onConnect={() => {
+        setShowProfileModal(false)
+        onConnect()
+      }}
+      onNotNow={() => {
+        setShowProfileModal(false)
+        onNotNow()
+      }}
+    />
     </>
   )
 }
