@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
 import { saveDraft } from "@/lib/matrimonyService"
+import { Check } from "lucide-react"
 
 type FormValues = z.infer<typeof familySchema>
 
@@ -131,7 +132,19 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
             <FormField control={form.control} name="showOnProfile" render={({ field }) => (
               <FormItem>
                 <FormLabel>Show family information on profile</FormLabel>
-                <FormControl><Input type="checkbox" checked={!!field.value} onChange={(e)=>field.onChange(e.target.checked)} /></FormControl>
+                <FormControl>
+                  <button
+                    type="button"
+                    onClick={() => field.onChange(!field.value)}
+                    className={`w-12 h-10 rounded-lg flex items-center justify-center transition-all ${
+                      field.value
+                        ? "bg-[#4A0E0E] text-white"
+                        : "bg-white text-gray-700 border border-gray-300"
+                    }`}
+                  >
+                    {field.value && <Check className="w-5 h-5" />}
+                  </button>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />

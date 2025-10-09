@@ -212,6 +212,46 @@ export function MatrimonySwipeCard({
       )}
 
 
+      {/* Glass circle with X mark in bottom left corner */}
+      {stackIndex === 0 && (
+        <div className="absolute bottom-4 left-16 z-30">
+          <div 
+            className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-lg hover:bg-white/30 transition-all duration-200 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation()
+              // Trigger X animation and swipe out
+              showXBurst()
+              animate(x, -1000, { duration: 0.4, ease: "easeInOut" })
+              setTimeout(() => {
+                onNotNow()
+              }, 400)
+            }}
+          >
+            <X className="w-6 h-6 text-white drop-shadow-sm" />
+          </div>
+        </div>
+      )}
+
+      {/* Glass circle with tick mark in bottom right corner */}
+      {stackIndex === 0 && (
+        <div className="absolute bottom-4 right-16 z-30">
+          <div 
+            className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-lg hover:bg-white/30 transition-all duration-200 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation()
+              // Trigger heart animation and swipe out
+              showHeartBurst()
+              animate(x, 1000, { duration: 0.4, ease: "easeInOut" })
+              setTimeout(() => {
+                onConnect()
+              }, 400)
+            }}
+          >
+            <Check className="w-6 h-6 text-white drop-shadow-sm" />
+          </div>
+        </div>
+      )}
+
       {/* Bottom profile information overlay */}
       {stackIndex === 0 && (
         <div className="absolute bottom-0 left-0 right-0 z-20">

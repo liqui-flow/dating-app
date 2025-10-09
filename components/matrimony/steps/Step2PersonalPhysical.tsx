@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
+import { Check } from "lucide-react"
 
 type FormValues = z.infer<typeof personalPhysicalSchema>
 
@@ -148,7 +149,17 @@ export function Step2PersonalPhysical({ onNext, onBack }: { onNext: () => void; 
                     <FormItem>
                       <FormLabel>Smoker</FormLabel>
                       <FormControl>
-                        <Input type="checkbox" checked={!!field.value} onChange={(e) => field.onChange(e.target.checked)} />
+                        <button
+                          type="button"
+                          onClick={() => field.onChange(!field.value)}
+                          className={`w-12 h-10 rounded-lg flex items-center justify-center transition-all ${
+                            field.value
+                              ? "bg-[#4A0E0E] text-white"
+                              : "bg-white text-gray-700 border border-gray-300"
+                          }`}
+                        >
+                          {field.value && <Check className="w-5 h-5" />}
+                        </button>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -161,7 +172,17 @@ export function Step2PersonalPhysical({ onNext, onBack }: { onNext: () => void; 
                     <FormItem>
                       <FormLabel>Drinker</FormLabel>
                       <FormControl>
-                        <Input type="checkbox" checked={!!field.value} onChange={(e) => field.onChange(e.target.checked)} />
+                        <button
+                          type="button"
+                          onClick={() => field.onChange(!field.value)}
+                          className={`w-12 h-10 rounded-lg flex items-center justify-center transition-all ${
+                            field.value
+                              ? "bg-[#4A0E0E] text-white"
+                              : "bg-white text-gray-700 border border-gray-300"
+                          }`}
+                        >
+                          {field.value && <Check className="w-5 h-5" />}
+                        </button>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
