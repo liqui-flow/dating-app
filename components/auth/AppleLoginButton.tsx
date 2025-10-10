@@ -26,7 +26,7 @@ export default function AppleLoginButton() {
   return (
     <Button
       variant="outline"
-      className="w-full bg-transparent text-black border-black/20"
+      className="w-full h-11 sm:h-10 bg-transparent text-black border-black/20 font-medium"
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
       onMouseLeave={() => setIsPressed(false)}

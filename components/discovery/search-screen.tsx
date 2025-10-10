@@ -225,9 +225,6 @@ export function SearchScreen() {
                         alt={profile.name}
                         className="w-full h-full object-cover"
                       />
-                      {profile.verified && (
-                        <Badge className="absolute -top-1 -right-1 text-xs px-1 py-0 bg-primary">✓</Badge>
-                      )}
                     </div>
 
                     {/* Content */}

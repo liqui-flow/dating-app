@@ -125,29 +125,29 @@ export function ChatScreen() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
+      <div className="flex-shrink-0 p-3 sm:p-4 border-b border-border glass-apple">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" className="p-2">
-              <ArrowLeft className="w-5 h-5" />
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <Button variant="ghost" size="sm" className="p-1 sm:p-2">
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="relative">
-                <Avatar className="w-10 h-10">
+                <Avatar className="w-8 h-8 sm:w-10 sm:h-10">
                   <AvatarImage src={mockUser.avatar || "/placeholder.svg"} alt={mockUser.name} />
                   <AvatarFallback>{mockUser.name[0]}</AvatarFallback>
                 </Avatar>
                 {mockUser.isOnline && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full" />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 border-2 border-background rounded-full" />
                 )}
               </div>
 
               <div>
-                <div className="flex items-center space-x-2">
-                  <h2 className="font-semibold">{mockUser.name}</h2>
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <h2 className="font-semibold text-sm sm:text-base">{mockUser.name}</h2>
                   {mockUser.isPremium && (
-                    <Badge variant="secondary" className="text-xs px-1 py-0">
+                    <Badge className="bg-[#4A0E0E] text-white text-xs px-1 py-0">
                       Premium
                     </Badge>
                   )}
@@ -157,28 +157,28 @@ export function ChatScreen() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" className="p-2">
-              <Phone className="w-5 h-5" />
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            <Button variant="ghost" size="sm" className="p-1 sm:p-2">
+              <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2">
-              <Video className="w-5 h-5" />
+            <Button variant="ghost" size="sm" className="p-1 sm:p-2">
+              <Video className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2">
-              <MoreVertical className="w-5 h-5" />
+            <Button variant="ghost" size="sm" className="p-1 sm:p-2">
+              <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
         {messages.map((message) => (
           <div key={message.id}>
             {message.type === "match" ? (
               <div className="flex justify-center">
-                <div className="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2">
-                  <Heart className="w-4 h-4 fill-current" />
+                <div className="bg-primary/10 text-primary px-3 py-2 sm:px-4 rounded-full text-xs sm:text-sm font-medium flex items-center space-x-1 sm:space-x-2">
+                  <Heart className="w-3 h-3 sm:w-4 sm:h-4 fill-current" />
                   <span>{message.text}</span>
                 </div>
               </div>
@@ -186,13 +186,13 @@ export function ChatScreen() {
               <div className={cn("flex", message.isOwn ? "justify-end" : "justify-start")}>
                 <div
                   className={cn(
-                    "max-w-[80%] px-4 py-2 rounded-2xl",
+                    "max-w-[85%] sm:max-w-[80%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl",
                     message.isOwn
                       ? "bg-primary text-primary-foreground rounded-br-md"
                       : "bg-muted text-foreground rounded-bl-md",
                   )}
                 >
-                  <p className="text-sm leading-relaxed">{message.text}</p>
+                  <p className="text-xs sm:text-sm leading-relaxed">{message.text}</p>
                   <div
                     className={cn(
                       "flex items-center justify-end space-x-1 mt-1",
@@ -220,14 +220,14 @@ export function ChatScreen() {
       </div>
 
       {/* Message Input */}
-      <div className="flex-shrink-0 p-4 border-t border-border glass-apple">
-        <div className="flex items-end space-x-3">
-          <div className="flex space-x-2">
-            <Button variant="ghost" size="sm" className="p-2">
-              <ImageIcon className="w-5 h-5" />
+      <div className="flex-shrink-0 p-3 sm:p-4 border-t border-border glass-apple">
+        <div className="flex items-end space-x-2 sm:space-x-3">
+          <div className="flex space-x-1 sm:space-x-2">
+            <Button variant="ghost" size="sm" className="p-1 sm:p-2">
+              <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2">
-              <Smile className="w-5 h-5" />
+            <Button variant="ghost" size="sm" className="p-1 sm:p-2">
+              <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
 
@@ -237,15 +237,15 @@ export function ChatScreen() {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="pr-12 rounded-full"
+              className="pr-10 sm:pr-12 rounded-full text-sm"
             />
             <Button
               size="sm"
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full p-0"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0"
               onClick={handleSendMessage}
               disabled={!newMessage.trim()}
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
         </div>

@@ -58,7 +58,7 @@ export function SwipeAnimations({ show, type, onComplete, hideOverlay = false }:
           className={cn(
             "absolute inset-0 animate-card-flash",
             type === 'heart' 
-              ? "bg-gradient-to-br from-emerald-500/20 via-green-400/10 to-transparent" 
+              ? "bg-gradient-to-br from-pink-600/25 via-pink-500/15 to-transparent" 
               : "bg-gradient-to-br from-rose-500/20 via-red-400/10 to-transparent"
           )}
         />
@@ -81,7 +81,7 @@ export function SwipeAnimations({ show, type, onComplete, hideOverlay = false }:
         >
           {type === 'heart' ? (
             <Heart 
-              className="w-16 h-16 text-emerald-500 fill-emerald-500 drop-shadow-lg" 
+              className="w-16 h-16 text-pink-600 fill-pink-600 drop-shadow-lg" 
               strokeWidth={2}
             />
           ) : (

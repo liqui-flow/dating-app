@@ -102,7 +102,7 @@ export function ProfileView({ isOwnProfile = false, onEdit }: ProfileViewProps) 
             {/* Badges */}
             <div className="absolute top-4 right-4 flex flex-col space-y-2">
               {mockProfile.verified && <Badge className="bg-primary text-primary-foreground">Verified</Badge>}
-              {mockProfile.premium && <Badge className="bg-secondary text-secondary-foreground">Premium</Badge>}
+              {mockProfile.premium && <Badge className="bg-[#4A0E0E] text-white">Premium</Badge>}
             </div>
           </div>
         </Card>

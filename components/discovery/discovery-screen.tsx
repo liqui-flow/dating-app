@@ -248,25 +248,25 @@ export function DiscoveryScreen() {
 	return (
 		<div className="h-screen overflow-hidden bg-background flex flex-col">
 			{/* Floating header elements */}
-			<div className="fixed top-3 left-4 z-40 text-xl font-semibold">Discover</div>
+			<div className="fixed top-3 left-4 z-40 text-lg sm:text-xl font-semibold">For you</div>
 			<div className="fixed top-3 right-3 z-40">
 				<Button
 					variant="secondary"
 					size="sm"
-					className="rounded-full px-4 py-3 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+					className="rounded-full px-3 py-2 sm:px-4 sm:py-3 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
 					onClick={() => setShowFilters(true)}
 				>
 					<Filter className="w-4 h-4" />
 				</Button>
 			</div>
 
-			<div className="p-4 pb-20 mt-10 flex-1 overflow-visible">
+			<div className="p-2 sm:p-4 pb-20 mt-8 sm:mt-10 flex-1 overflow-visible">
 				{viewMode === "cards" ? (
 					<div className="space-y-6">
 						{/* Card Stack */}
-						<div className="relative h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-14 md:-translate-y-16 overflow-visible">
+						<div className="relative h-[65vh] sm:h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-8 sm:-translate-y-14 md:-translate-y-16 overflow-visible">
 							{hasMoreProfiles ? (
-								<div className="relative w-full max-w-sm h-full overflow-visible">
+								<div className="relative w-full max-w-xs sm:max-w-sm h-full overflow-visible">
 									{mockProfiles
 										.slice(currentCardIndex, Math.min(currentCardIndex + 4, mockProfiles.length))
 										.map((profile, index) => (
@@ -282,18 +282,18 @@ export function DiscoveryScreen() {
 										))}
 								</div>
 							) : (
-								<Card className="w-full max-w-sm h-96 flex items-center justify-center">
-									<CardContent className="text-center space-y-4">
-										<div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-											<Heart className="w-8 h-8 text-muted-foreground" />
+								<Card className="w-full max-w-xs sm:max-w-sm h-80 sm:h-96 flex items-center justify-center">
+									<CardContent className="text-center space-y-4 p-4 sm:p-6">
+										<div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+											<Heart className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
 										</div>
 										<div className="space-y-2">
-											<h3 className="text-lg font-semibold">No more profiles</h3>
-											<p className="text-sm text-muted-foreground">
+											<h3 className="text-base sm:text-lg font-semibold">No more profiles</h3>
+											<p className="text-xs sm:text-sm text-muted-foreground">
 												Check back later for new matches or adjust your filters
 											</p>
 										</div>
-										<Button onClick={() => setCurrentCardIndex(0)}>Start Over</Button>
+										<Button onClick={() => setCurrentCardIndex(0)} className="text-sm">Start Over</Button>
 									</CardContent>
 								</Card>
 							)}

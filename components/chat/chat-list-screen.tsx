@@ -136,7 +136,7 @@ export function ChatListScreen() {
                         <div className="flex items-center space-x-2">
                           <h3 className="font-semibold text-sm truncate">{chat.name}</h3>
                           {chat.isPremium && (
-                            <Badge variant="secondary" className="text-xs px-1 py-0">
+                            <Badge className="bg-[#4A0E0E] text-white text-xs px-1 py-0">
                               Premium
                             </Badge>
                           )}

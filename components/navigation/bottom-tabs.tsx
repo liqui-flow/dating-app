@@ -31,8 +31,8 @@ export function BottomTabs({ activeTab = "discover", onTabChange }: BottomTabsPr
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border hidden">
-      <div className="flex items-center justify-around py-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border z-50">
+      <div className="flex items-center justify-around py-2 px-2">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = currentTab === tab.id
@@ -43,10 +43,11 @@ export function BottomTabs({ activeTab = "discover", onTabChange }: BottomTabsPr
               onClick={() => handleTabClick(tab.id)}
               className={cn(
                 "flex flex-col items-center justify-center p-2 min-w-0 flex-1 transition-colors",
+                "hover:bg-accent/50 rounded-lg",
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Icon className={cn("w-6 h-6 mb-1", isActive && "fill-current")} />
+              <Icon className={cn("w-5 h-5 sm:w-6 sm:h-6 mb-1", isActive && "fill-current")} />
               <span className="text-xs font-medium truncate">{tab.label}</span>
             </button>
           )

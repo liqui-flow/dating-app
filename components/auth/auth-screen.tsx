@@ -31,22 +31,32 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
     }
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-3 sm:p-4">
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="text-center space-y-3 sm:space-y-4 px-4 sm:px-6 pt-6 sm:pt-6">
           <div className="flex items-center justify-center">
-            <h1 className="text-2xl font-bold text-primary font-sans">Lovesathi</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-primary font-sans">Lovesathi</h1>
           </div>
-          <CardDescription className="text-base">Join thousands finding meaningful connections</CardDescription>
+          <CardDescription className="text-sm sm:text-base">Join thousands finding meaningful connections</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6 pb-6 sm:pb-6">
           <Tabs defaultValue="signup" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signup" className="text-primary">Sign Up</TabsTrigger>
-              <TabsTrigger value="login" className="text-primary">Login</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 h-12 sm:h-10 bg-muted/50 p-1 rounded-lg">
+              <TabsTrigger 
+                value="signup" 
+                className="text-sm sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 rounded-md min-h-[40px] sm:min-h-[36px] flex items-center justify-center"
+              >
+                Sign Up
+              </TabsTrigger>
+              <TabsTrigger 
+                value="login" 
+                className="text-sm sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 rounded-md min-h-[40px] sm:min-h-[36px] flex items-center justify-center"
+              >
+                Login
+              </TabsTrigger>
             </TabsList>
-            <TabsContent value="signup" className="space-y-4">
-              <form onSubmit={handleSubmit} className="space-y-4">
+            <TabsContent value="signup" className="space-y-4 sm:space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-primary">Full Name</Label>
                   <Input id="name" placeholder="Enter your full name" required className="text-primary placeholder:text-primary" />
@@ -84,7 +94,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                     </Button>
                   </div>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full h-11 sm:h-10 font-medium" disabled={isLoading}>
                   {isLoading ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
@@ -97,14 +107,14 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                     <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <GoogleLoginButton />
                   <AppleLoginButton />
                 </div>
               </div>
             </TabsContent>
-            <TabsContent value="login" className="space-y-4">
-              <form onSubmit={handleSubmit} className="space-y-4">
+            <TabsContent value="login" className="space-y-4 sm:space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email" className="text-primary">Email or Phone</Label>
                   <Input id="signin-email" placeholder="Enter your email or phone" required className="text-primary placeholder:text-primary" />
@@ -139,7 +149,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                     <a href="/auth/forgot-password">Forgot password?</a>
                   </Button>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full h-11 sm:h-10 font-medium" disabled={isLoading}>
                   {isLoading ? "Logging In..." : "Login"}
                 </Button>
               </form>
@@ -152,7 +162,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                     <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <GoogleLoginButton />
                   <AppleLoginButton />
                 </div>

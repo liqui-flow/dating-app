@@ -126,8 +126,8 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
 
       <motion.div
         className={cn(
-          "w-full max-w-sm h-[60vh] md:h-[480px] overflow-hidden cursor-grab active:cursor-grabbing select-none touch-none",
-          "rounded-3xl",
+          "w-full max-w-xs sm:max-w-sm h-[55vh] sm:h-[60vh] md:h-[480px] overflow-hidden cursor-grab active:cursor-grabbing select-none touch-none",
+          "rounded-2xl sm:rounded-3xl",
           "relative",
           // 3D floating effect
           "transform-gpu perspective-1000",
@@ -184,9 +184,8 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
 
       {/* Top-right status badges */}
       {stackIndex === 0 && (
-        <div className="absolute top-4 right-4 flex flex-col space-y-2 z-20">
-          {profile.verified && <Badge className="bg-primary text-primary-foreground">Verified</Badge>}
-          {profile.premium && <Badge className="bg-secondary text-secondary-foreground">Premium</Badge>}
+        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex flex-col space-y-1 sm:space-y-2 z-20">
+          {profile.premium && <Badge className="bg-[#4A0E0E] text-white text-xs px-2 py-1">Premium</Badge>}
         </div>
       )}
 
@@ -194,13 +193,13 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
       {stackIndex === 0 && (
         <>
           <motion.div
-            className="absolute top-6 left-6 text-2xl font-extrabold tracking-wider text-emerald-400"
+            className="absolute top-4 left-4 sm:top-6 sm:left-6 text-lg sm:text-2xl font-extrabold tracking-wider text-pink-600"
             style={{ opacity: likeOpacity }}
           >
             LIKE
           </motion.div>
           <motion.div
-            className="absolute top-6 right-6 text-2xl font-extrabold tracking-wider text-rose-400"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 text-lg sm:text-2xl font-extrabold tracking-wider text-rose-400"
             style={{ opacity: passOpacity }}
           >
             NOPE
@@ -212,32 +211,32 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
       {stackIndex === 0 && (
         <div
           className={cn(
-            "absolute left-4 right-4 bottom-4 z-20",
-            "rounded-2xl p-4 flex items-center justify-between",
+            "absolute left-2 right-2 sm:left-4 sm:right-4 top-95 z-10 w-11/12",
+            "rounded-xl sm:rounded-2xl p-2 sm:p-3 flex items-center justify-between",
             "bg-white/[0.15] border border-white/30",
             "backdrop-blur-xl supports-[backdrop-filter]:bg-white/[0.15]",
             // Enhanced shadow for floating effect
             "shadow-[0_8px_32px_rgba(0,0,0,0.3),0_2px_8px_rgba(0,0,0,0.2)]",
             // Subtle inner glow
-            "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-white/20 before:to-transparent before:pointer-events-none",
+            "before:absolute before:inset-0 before:rounded-xl sm:before:rounded-2xl before:bg-gradient-to-br before:from-white/20 before:to-transparent before:pointer-events-none",
             "relative overflow-hidden",
           )}
         >
           <div className="min-w-0 relative z-10">
-            <h2 className="text-white text-xl font-bold truncate drop-shadow-lg">
+            <h2 className="text-white text-lg sm:text-xl font-bold truncate drop-shadow-lg">
               {profile.name}, {profile.age}
             </h2>
           </div>
           <Button
             variant="secondary"
             size="sm"
-            className="rounded-full w-9 h-9 p-0 shadow-lg bg-white/25 border border-white/40 backdrop-blur-xl hover:bg-white/35 hover:scale-110 transition-all duration-200 relative z-10"
+            className="rounded-full w-8 h-8 sm:w-9 sm:h-9 p-0 shadow-lg bg-white/25 border border-white/40 backdrop-blur-xl hover:bg-white/35 hover:scale-110 transition-all duration-200 relative z-10"
             onClick={(e) => {
               e.stopPropagation()
               setShowInfo((v) => !v)
             }}
           >
-            <Info className="w-4 h-4 text-white drop-shadow" />
+            <Info className="w-3 h-3 sm:w-4 sm:h-4 text-white drop-shadow" />
           </Button>
         </div>
       )}
@@ -246,28 +245,28 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
       {stackIndex === 0 && (
         <div
           className={cn(
-            "absolute left-4 right-4 z-10 overflow-hidden transition-all duration-300",
-            showInfo ? "bottom-24" : "bottom-24 max-h-0 opacity-0",
+            "absolute left-2 right-2 sm:left-4 sm:right-4 z-10 overflow-hidden transition-all duration-300",
+            showInfo ? "bottom-20 sm:bottom-24" : "bottom-20 sm:bottom-24 max-h-0 opacity-0",
           )}
           style={{ opacity: showInfo ? 1 : 0 }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="rounded-2xl bg-white/[0.15] border border-white/30 backdrop-blur-xl p-5 text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)] relative overflow-hidden">
+          <div className="rounded-xl sm:rounded-2xl bg-white/[0.15] border border-white/30 backdrop-blur-xl p-3 sm:p-5 text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)] relative overflow-hidden">
             {/* Inner glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
             <div className="relative z-10">
-              <div className="space-y-2 text-sm">
-                <div className="font-semibold text-base">About</div>
-                <div className="text-white/90 line-clamp-5 leading-relaxed">{profile.bio}</div>
-                <div className="pt-2 flex flex-wrap gap-2">
-                  <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
+              <div className="space-y-2 text-xs sm:text-sm">
+                <div className="font-semibold text-sm sm:text-base">About</div>
+                <div className="text-white/90 line-clamp-3 sm:line-clamp-5 leading-relaxed">{profile.bio}</div>
+                <div className="pt-2 flex flex-wrap gap-1 sm:gap-2">
+                  <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm text-xs px-2 py-1">
                     {profile.occupation}
                   </Badge>
-                  <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
+                  <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm text-xs px-2 py-1">
                     {profile.education}
                   </Badge>
-                  {profile.interests.slice(0, 5).map((interest) => (
-                    <Badge key={interest} variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm">
+                  {profile.interests.slice(0, 3).map((interest) => (
+                    <Badge key={interest} variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm text-xs px-2 py-1">
                       {interest}
                     </Badge>
                   ))}
@@ -276,7 +275,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-white hover:bg-white/25 font-medium"
+                    className="text-white hover:bg-white/25 font-medium text-xs sm:text-sm"
                     onClick={(e) => {
                       e.stopPropagation()
                       onProfileClick()

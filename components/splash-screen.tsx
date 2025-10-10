@@ -29,30 +29,47 @@ interface SplashScreenProps {
 
 export function SplashScreen({ onComplete }: SplashScreenProps) {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>("splash")
+  
+  // Check for immediate navigation flags first
+  const showPathSelect = typeof window !== "undefined" ? localStorage.getItem("showPathSelect") : null
+  const completeMode = typeof window !== "undefined" ? localStorage.getItem("onboardingCompleteMode") as "dating" | "matrimony" | null : null
+  const showComplete = typeof window !== "undefined" ? localStorage.getItem("onboardingShowComplete") : null
+  
+  const [isLoading, setIsLoading] = useState(!showPathSelect && !showComplete)
+  const [currentStep, setCurrentStep] = useState<OnboardingStep>(
+    showPathSelect ? "path-select" : 
+    showComplete ? "complete" : 
+    "splash"
+  )
   const [mode, setMode] = useState<"dating" | "matrimony">("dating")
 
   useEffect(() => {
     try {
-      const completeMode = localStorage.getItem("onboardingCompleteMode") as "dating" | "matrimony" | null
-      const showComplete = localStorage.getItem("onboardingShowComplete")
       if (completeMode && showComplete) {
         localStorage.removeItem("onboardingShowComplete")
         onComplete?.(completeMode)
         return
       }
+      
+      if (showPathSelect) {
+        localStorage.removeItem("showPathSelect")
+        setCurrentStep("path-select")
+        setIsLoading(false)
+        return
+      }
     } catch {}
-  }, [onComplete])
+  }, [onComplete, showPathSelect, showComplete, completeMode])
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-      setCurrentStep("auth")
-    }, 3000)
+    if (!showPathSelect && !showComplete) {
+      const timer = setTimeout(() => {
+        setIsLoading(false)
+        setCurrentStep("auth")
+      }, 3000)
 
-    return () => clearTimeout(timer)
-  }, [])
+      return () => clearTimeout(timer)
+    }
+  }, [showPathSelect, showComplete])
 
   const handleComplete = () => {
     if (onComplete) {
@@ -62,8 +79,25 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <h1 className="text-5xl font-bold text-primary tracking-wide">Lovesathi.</h1>
+      <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
+        {/* Video Background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        >
+          <source src="/Video.mp4" type="video/mp4" />
+        </video>
+        
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/30 z-10"></div>
+        
+        {/* Content */}
+        <h1 className="text-5xl font-bold text-white tracking-wide relative z-20 drop-shadow-lg">
+          Lovesathi.
+        </h1>
       </div>
     )
   }
@@ -122,8 +156,25 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <h1 className="text-5xl font-bold text-primary tracking-wide">Lovesathi</h1>
+    <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
+      {/* Video Background */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+      >
+        <source src="/Video.mp4" type="video/mp4" />
+      </video>
+      
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/30 z-10"></div>
+      
+      {/* Content */}
+      <h1 className="text-5xl font-bold text-white tracking-wide relative z-20 drop-shadow-lg">
+        Lovesathi
+      </h1>
     </div>
   )
 }

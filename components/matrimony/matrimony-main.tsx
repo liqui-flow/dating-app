@@ -100,7 +100,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       {/* Floating header elements */}
       {currentScreen === "discover" && (
         <>
-          <div className="fixed top-3 left-4 z-40 text-xl font-semibold">Discover</div>
+          <div className="fixed top-3 left-4 z-40 text-xl font-semibold">Find your match</div>
           <div className="fixed top-3 right-3 z-40">
             <Button
               variant="secondary"
