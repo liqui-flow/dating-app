@@ -38,8 +38,10 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
     const files = event.target.files
     if (files && files.length > 0) {
       const newPhotos: Photo[] = []
+      const maxPhotos = 6
+      const remainingSlots = maxPhotos - photos.length
       
-      for (let i = 0; i < Math.min(files.length, 5 - photos.length); i++) {
+      for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
         const file = files[i]
         const photo: Photo = {
           id: Date.now().toString() + i,
@@ -80,41 +82,44 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
   const isComplete = name.trim() && photos.length >= 3
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-primary">Let's build your profile</CardTitle>
+    <div className="h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white overflow-hidden">
+      <Card className="w-full max-w-2xl h-full max-h-[90vh] flex flex-col">
+        <CardHeader className="text-center flex-shrink-0 pb-4">
+          <CardTitle className="text-2xl font-bold text-primary">Let's build your profile</CardTitle>
         </CardHeader>
         
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-4 flex-1 overflow-y-auto">
           {/* Name Section */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-primary">
+              <h2 className="text-lg font-semibold text-primary">
                 Welcome{name ? `, ${name}` : ""}! Now, let's add some photos.
               </h2>
-              <p className="text-sm text-primary mt-2">
+              <p className="text-xs text-primary mt-1">
                 Show us who you are. Add at least 3 photos to stand out.
               </p>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-primary">What should we call you?</Label>
+            <div className="space-y-1">
+              <Label htmlFor="name" className="text-primary text-sm">What should we call you?</Label>
               <Input
                 id="name"
                 placeholder="Enter your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="text-primary placeholder:text-primary"
+                className="text-primary placeholder:text-primary h-8"
               />
+              {!name.trim() && (
+                <p className="text-red-500 text-xs">Please type your name to continue</p>
+              )}
             </div>
           </div>
 
           {/* Main Profile Photo */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="flex justify-center">
               <div className="relative">
-                <div className="w-32 h-32 rounded-full bg-muted/20 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-muted/20 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
                   {photos.length > 0 ? (
                     <img 
                       src={photos[0].preview} 
@@ -122,7 +127,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    <Camera className="w-8 h-8 text-muted-foreground" />
+                    <Camera className="w-6 h-6 text-muted-foreground" />
                   )}
                 </div>
               </div>
@@ -132,41 +137,53 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 variant="outline"
-                className="border-primary text-primary hover:bg-primary hover:text-white"
+                disabled={photos.length >= 6}
+                size="sm"
+                className="border-primary text-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Photo
+                <Upload className="w-3 h-3 mr-1" />
+                {photos.length >= 6 ? "Max reached" : "Upload Photo"}
               </Button>
+              {photos.length < 3 && (
+                <p className="text-red-500 text-xs mt-1">
+                  Min 3 photos, max 6. {photos.length > 0 ? `${photos.length} added.` : 'None yet.'}
+                </p>
+              )}
+              {photos.length >= 6 && (
+                <p className="text-green-600 text-xs mt-1">
+                  Max reached. Remove to add new ones.
+                </p>
+              )}
             </div>
           </div>
 
           {/* Photo Thumbnails */}
           {photos.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-primary text-center">Your Photos</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-primary text-center">Your Photos</h3>
+              <div className="grid grid-cols-3 gap-2">
                 {photos.map((photo, index) => (
-                  <div key={photo.id} className="space-y-2">
+                  <div key={photo.id} className="space-y-1">
                     <div className="relative">
                       <img 
                         src={photo.preview} 
                         alt={`Photo ${index + 1}`}
-                        className="w-full h-24 object-cover rounded-lg"
+                        className="w-full h-16 object-cover rounded"
                       />
                       <Button
                         size="sm"
                         variant="destructive"
-                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full p-0"
                         onClick={() => removePhoto(photo.id)}
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-2 h-2" />
                       </Button>
                     </div>
                     <Input
-                      placeholder={photoPrompts[index] || "Add a caption..."}
+                      placeholder={photoPrompts[index] || "Caption..."}
                       value={photo.caption || ""}
                       onChange={(e) => updatePhotoCaption(photo.id, e.target.value)}
-                      className="text-xs text-primary placeholder:text-primary"
+                      className="text-xs text-primary placeholder:text-primary h-6"
                     />
                   </div>
                 ))}
@@ -175,23 +192,24 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
           )}
 
           {/* Video Section */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="text-center">
-              <h3 className="text-lg font-semibold text-primary">Add a video (optional)</h3>
-              <p className="text-sm text-primary">Add a 15-second video to bring your profile to life!</p>
+              <h3 className="text-sm font-semibold text-primary">Add a video (optional)</h3>
+              <p className="text-xs text-primary">15-second video to bring your profile to life!</p>
             </div>
             
             <div className="text-center">
               <Button
                 onClick={() => videoInputRef.current?.click()}
                 variant="outline"
+                size="sm"
                 className="border-primary text-primary hover:bg-primary hover:text-white"
               >
-                <Video className="w-4 h-4 mr-2" />
+                <Video className="w-3 h-3 mr-1" />
                 {video ? "Change Video" : "Add Video"}
               </Button>
               {video && (
-                <p className="text-xs text-primary mt-2">{video.name}</p>
+                <p className="text-xs text-primary mt-1">{video.name}</p>
               )}
             </div>
           </div>
@@ -214,13 +232,14 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
           />
 
           {/* Navigation */}
-          <div className="flex justify-between pt-6">
-            <Button variant="ghost" onClick={onBack} className="text-primary">
+          <div className="flex justify-between pt-4 flex-shrink-0">
+            <Button variant="ghost" onClick={onBack} className="text-primary" size="sm">
               Back
             </Button>
             <Button 
               onClick={handleNext}
               disabled={!isComplete}
+              size="sm"
               className="bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
             >
               Next

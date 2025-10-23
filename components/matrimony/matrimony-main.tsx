@@ -147,7 +147,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       )}
 
       {currentScreen === "chat" && selectedChatId && (
-        <div className="h-screen w-full">
+        <div className="fixed inset-0 z-50 bg-background">
           <MatrimonyChatScreen 
             chatId={selectedChatId} 
             onBack={() => setCurrentScreen("messages")} 

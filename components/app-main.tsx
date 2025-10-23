@@ -112,14 +112,18 @@ export function AppMain() {
           }))
         }} />
       case "chat":
-        return <ChatScreen 
-          chatId={appState.chatUserId} 
-          onBack={() => setAppState(prev => ({
-            ...prev,
-            currentScreen: "messages",
-            activeTab: "messages"
-          }))}
-        />
+        return (
+          <div className="fixed inset-0 z-50 bg-background">
+            <ChatScreen 
+              chatId={appState.chatUserId} 
+              onBack={() => setAppState(prev => ({
+                ...prev,
+                currentScreen: "messages",
+                activeTab: "messages"
+              }))}
+            />
+          </div>
+        )
       case "profile":
         return (
           <SettingsScreen

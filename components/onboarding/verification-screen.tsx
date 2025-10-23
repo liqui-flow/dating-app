@@ -315,7 +315,7 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                 <Button
                   type="button"
                   variant="outline"
-                  className={`w-full rounded-md px-4 py-2 text-sm border ${
+                  className={`w-full rounded-md px-3 py-2 text-xs border whitespace-nowrap ${
                     gender === "prefer_not_to_say"
                       ? "!bg-primary !text-primary-foreground !border-primary hover:!bg-primary"
                       : "bg-white text-primary border-primary hover:!bg-primary hover:!text-primary-foreground"
