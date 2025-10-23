@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,119 +29,187 @@ interface ChatUser {
 
 // Mock data for different chat users
 const mockChatUsers: Record<string, ChatUser> = {
-  "1": {
-    id: "1",
-    name: "Priya",
-    avatar: "/indian-woman-professional.png",
-    isOnline: true,
-    isPremium: false,
-  },
-  "2": {
-    id: "2",
-    name: "Ananya",
+  "m1": {
+    id: "m1",
+    name: "Aditi Sharma",
     avatar: "/professional-woman-smiling.png",
-    isOnline: false,
-    lastSeen: "1h ago",
+    isOnline: true,
     isPremium: true,
   },
-  "3": {
-    id: "3",
-    name: "Kavya",
-    avatar: "/woman-hiking.png",
+  "m2": {
+    id: "m2",
+    name: "Rahul Mehta",
+    avatar: "/professional-headshot.png",
+    isOnline: false,
+    lastSeen: "1h ago",
+    isPremium: false,
+  },
+  "m3": {
+    id: "m3",
+    name: "Priya Patel",
+    avatar: "/woman-at-coffee-shop.png",
     isOnline: true,
     isPremium: false,
   },
-  "4": {
-    id: "4",
-    name: "Riya",
-    avatar: "/woman-at-coffee-shop.png",
+  "m4": {
+    id: "m4",
+    name: "Arjun Singh",
+    avatar: "/new-profile-photo.jpg",
+    isOnline: false,
+    lastSeen: "2h ago",
+    isPremium: true,
+  },
+  "m5": {
+    id: "m5",
+    name: "Sneha Reddy",
+    avatar: "/woman-hiking.png",
     isOnline: false,
     lastSeen: "1d ago",
     isPremium: false,
   },
-  "5": {
-    id: "5",
-    name: "Sneha",
-    avatar: "/woman-with-family.jpg",
-    isOnline: true,
-    isPremium: false,
-  },
-  "6": {
-    id: "6",
-    name: "Meera",
-    avatar: "/casual-outdoor-photo.jpg",
-    isOnline: false,
-    lastSeen: "3d ago",
-    isPremium: true,
-  },
-  "7": {
-    id: "7",
-    name: "Aisha",
-    avatar: "/professional-headshot.png",
-    isOnline: false,
-    lastSeen: "4d ago",
-    isPremium: false,
-  },
 }
 
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    text: "It's a match! 🎉",
-    timestamp: "2h ago",
-    isOwn: false,
-    isRead: true,
-    type: "match",
-  },
-  {
-    id: "2",
-    text: "Hey! Thanks for the like. How's your day going?",
-    timestamp: "2h ago",
-    isOwn: false,
-    isRead: true,
-    type: "text",
-  },
-  {
-    id: "3",
-    text: "Hi Priya! My day's been great, thanks for asking. I love your travel photos - where was that mountain shot taken?",
-    timestamp: "1h ago",
-    isOwn: true,
-    isRead: true,
-    type: "text",
-  },
-  {
-    id: "4",
-    text: "That was from my trip to Himachal Pradesh last month! The view was absolutely breathtaking 🏔️",
-    timestamp: "45m ago",
-    isOwn: false,
-    isRead: true,
-    type: "text",
-  },
-  {
-    id: "5",
-    text: "Wow, that sounds amazing! I've been wanting to plan a mountain trip. Any recommendations?",
-    timestamp: "30m ago",
-    isOwn: true,
-    isRead: true,
-    type: "text",
-  },
-  {
-    id: "6",
-    text: "Definitely! Manali and Kasol are must-visits. I can share some hidden gems if you're interested 😊",
-    timestamp: "2m ago",
-    isOwn: false,
-    isRead: false,
-    type: "text",
-  },
-]
-
-interface ChatScreenProps {
-  chatId?: string
-  onBack?: () => void
+// Mock initial messages for each chat
+const mockChatMessages: Record<string, Message[]> = {
+  "m1": [
+    {
+      id: "1",
+      text: "It's a match! 🎉",
+      timestamp: "2h ago",
+      isOwn: false,
+      isRead: true,
+      type: "match",
+    },
+    {
+      id: "2",
+      text: "Thank you for expressing interest in my profile.",
+      timestamp: "2h ago",
+      isOwn: false,
+      isRead: true,
+      type: "text",
+    },
+    {
+      id: "3",
+      text: "Hi Aditi! I'm really impressed by your profile. Your family values align perfectly with ours.",
+      timestamp: "1h ago",
+      isOwn: true,
+      isRead: true,
+      type: "text",
+    },
+  ],
+  "m2": [
+    {
+      id: "1",
+      text: "It's a match! 🎉",
+      timestamp: "3h ago",
+      isOwn: false,
+      isRead: true,
+      type: "match",
+    },
+    {
+      id: "2",
+      text: "Our families could connect this weekend. Would you be interested?",
+      timestamp: "3h ago",
+      isOwn: false,
+      isRead: true,
+      type: "text",
+    },
+    {
+      id: "3",
+      text: "That sounds wonderful! I'll discuss with my family and get back to you.",
+      timestamp: "2h ago",
+      isOwn: true,
+      isRead: true,
+      type: "text",
+    },
+  ],
+  "m3": [
+    {
+      id: "1",
+      text: "It's a match! 🎉",
+      timestamp: "4h ago",
+      isOwn: false,
+      isRead: true,
+      type: "match",
+    },
+    {
+      id: "2",
+      text: "Hi! I saw your profile and would love to connect.",
+      timestamp: "4h ago",
+      isOwn: false,
+      isRead: true,
+      type: "text",
+    },
+    {
+      id: "3",
+      text: "Hello Priya! Thank you for reaching out. I'd love to know more about you.",
+      timestamp: "3h ago",
+      isOwn: true,
+      isRead: true,
+      type: "text",
+    },
+  ],
+  "m4": [
+    {
+      id: "1",
+      text: "It's a match! 🎉",
+      timestamp: "5h ago",
+      isOwn: false,
+      isRead: true,
+      type: "match",
+    },
+    {
+      id: "2",
+      text: "Namaste! Your family values align with ours. Would you like to meet?",
+      timestamp: "5h ago",
+      isOwn: false,
+      isRead: true,
+      type: "text",
+    },
+    {
+      id: "3",
+      text: "Namaste Arjun! I'm glad our values match. I'd be happy to meet.",
+      timestamp: "4h ago",
+      isOwn: true,
+      isRead: true,
+      type: "text",
+    },
+  ],
+  "m5": [
+    {
+      id: "1",
+      text: "It's a match! 🎉",
+      timestamp: "1d ago",
+      isOwn: false,
+      isRead: true,
+      type: "match",
+    },
+    {
+      id: "2",
+      text: "Would you like to meet for coffee this weekend?",
+      timestamp: "1d ago",
+      isOwn: false,
+      isRead: true,
+      type: "text",
+    },
+    {
+      id: "3",
+      text: "That sounds great! I'd love to meet for coffee. What time works for you?",
+      timestamp: "1d ago",
+      isOwn: true,
+      isRead: true,
+      type: "text",
+    },
+  ],
 }
 
-export function ChatScreen({ chatId = "1", onBack }: ChatScreenProps) {
-  const [messages, setMessages] = useState<Message[]>(mockMessages)
+interface MatrimonyChatScreenProps {
+  chatId: string
+  onBack: () => void
+}
+
+export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps) {
+  const [messages, setMessages] = useState<Message[]>(mockChatMessages[chatId] || [])
   const [newMessage, setNewMessage] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -173,18 +240,18 @@ export function ChatScreen({ chatId = "1", onBack }: ChatScreenProps) {
       // Show typing indicator
       setIsTyping(true)
       
-      // Auto-reply with various responses after 1-3 seconds
+      // Auto-reply with various matrimony-appropriate responses after 1-3 seconds
       const autoReplies = [
         "hi",
-        "hey there! 😊",
-        "that's interesting!",
-        "tell me more!",
-        "I love that!",
-        "sounds great!",
-        "really? that's awesome!",
-        "I totally agree!",
-        "that's so cool!",
-        "amazing! 🤩"
+        "Namaste! 🙏",
+        "That's wonderful to hear!",
+        "I completely agree with you",
+        "Our families would be pleased",
+        "That sounds perfect!",
+        "I'm so happy to know this",
+        "This is exactly what I was hoping for",
+        "Your values align with ours",
+        "I'm excited to learn more! 😊"
       ]
       
       setTimeout(() => {
@@ -210,47 +277,53 @@ export function ChatScreen({ chatId = "1", onBack }: ChatScreenProps) {
     }
   }
 
+  if (!chatUser) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>Chat not found</p>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            {onBack && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="p-2 hover:bg-muted/50 rounded-full" 
-                onClick={onBack}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-muted/50 rounded-full" 
+              onClick={onBack}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
 
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <Avatar className="w-12 h-12">
-                  <AvatarImage src={chatUser?.avatar || "/placeholder.svg"} alt={chatUser?.name || "User"} />
-                  <AvatarFallback className="text-lg">{chatUser?.name?.[0] || "U"}</AvatarFallback>
+                  <AvatarImage src={chatUser.avatar || "/placeholder.svg"} alt={chatUser.name} />
+                  <AvatarFallback className="text-lg">{chatUser.name[0]}</AvatarFallback>
                 </Avatar>
-                {chatUser?.isOnline && (
+                {chatUser.isOnline && (
                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-background rounded-full" />
                 )}
               </div>
 
               <div>
                 <div className="flex items-center space-x-2">
-                  <h2 className="font-semibold text-base">{chatUser?.name || "User"}</h2>
-                  {chatUser?.isPremium && (
+                  <h2 className="font-semibold text-base">{chatUser.name}</h2>
+                  {chatUser.isPremium && (
                     <Badge className="bg-[#4A0E0E] text-white text-xs px-2 py-0">
                       Premium
                     </Badge>
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${chatUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                  <div className={`w-2 h-2 rounded-full ${chatUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
                   <p className="text-sm text-muted-foreground">
-                    {isTyping ? "typing..." : chatUser?.isOnline ? "Online now" : `Last seen ${chatUser?.lastSeen || 'recently'}`}
+                    {isTyping ? "typing..." : chatUser.isOnline ? "Online now" : `Last seen ${chatUser.lastSeen || 'recently'}`}
                   </p>
                 </div>
               </div>

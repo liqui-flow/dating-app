@@ -7,6 +7,7 @@ import { SearchScreen } from "@/components/discovery/search-screen"
 import { ChatListScreen } from "@/components/chat/chat-list-screen"
 import { ChatScreen } from "@/components/chat/chat-screen"
 import { SettingsScreen } from "@/components/settings/settings-screen"
+import { AppSettings } from "@/components/settings/app-settings"
 import { PremiumScreen } from "@/components/premium/premium-screen"
 import { ProfileSetup } from "@/components/profile/profile-setup"
 import { MatchNotification } from "@/components/chat/match-notification"
@@ -33,6 +34,7 @@ type Screen =
   | "verification-status"
   | "premium-features"
   | "my-profile"
+  | "app-settings"
 
 interface AppState {
   currentScreen: Screen
@@ -102,9 +104,22 @@ export function AppMain() {
       case "explore":
         return <DiscoveryScreen />
       case "messages":
-        return <ChatListScreen />
+        return <ChatListScreen onChatClick={(chatId) => {
+          setAppState(prev => ({
+            ...prev,
+            currentScreen: "chat",
+            chatUserId: chatId
+          }))
+        }} />
       case "chat":
-        return <ChatScreen />
+        return <ChatScreen 
+          chatId={appState.chatUserId} 
+          onBack={() => setAppState(prev => ({
+            ...prev,
+            currentScreen: "messages",
+            activeTab: "messages"
+          }))}
+        />
       case "profile":
         return (
           <SettingsScreen
@@ -153,16 +168,36 @@ export function AppMain() {
         return <PremiumFeatures onBack={() => handleNavigation("profile")} />
       case "my-profile":
         return <ProfileView isOwnProfile onEdit={() => handleNavigation("profile-setup")} />
+      case "app-settings":
+        return (
+          <AppSettings
+            onNavigate={(id) => {
+              if (id === "help_faq") window.alert("FAQ coming soon")
+              else if (id === "help_contact") window.alert("Contact us at support@example.com")
+              else if (id === "help_report_bug") window.alert("Bug report submitted")
+              else if (id === "app_settings") window.alert("Open App Settings")
+            }}
+            onLogout={() => {
+              window.location.href = "/auth"
+            }}
+            onBack={() => handleNavigation("profile")}
+          />
+        )
       default:
         return <DiscoveryScreen />
     }
   }
 
-  const shouldShowBottomTabs = false
-
   return (
     <>
-      <AppLayout activeTab={appState.activeTab} onTabChange={handleTabChange} showBottomTabs={shouldShowBottomTabs}>
+      <AppLayout 
+        activeTab={appState.activeTab} 
+        onTabChange={handleTabChange} 
+        showBottomTabs={false}
+        onSettingsClick={() => handleNavigation("app-settings")}
+        showSettingsButton={true}
+        currentScreen={appState.currentScreen}
+      >
         {renderScreen()}
       </AppLayout>
 
@@ -172,14 +207,19 @@ export function AppMain() {
         />
       )}
 
-      <QuickActions
-        onOpenChat={() =>
-          setAppState((prev) => ({ ...prev, currentScreen: "messages", activeTab: "messages" }))
-        }
-        onOpenProfile={() =>
-          setAppState((prev) => ({ ...prev, currentScreen: "profile", activeTab: "profile" }))
-        }
-      />
+      {appState.currentScreen !== "chat" && (
+        <QuickActions
+          onOpenChat={() =>
+            setAppState((prev) => ({ ...prev, currentScreen: "messages", activeTab: "messages" }))
+          }
+          onOpenProfile={() =>
+            setAppState((prev) => ({ ...prev, currentScreen: "profile", activeTab: "profile" }))
+          }
+          onDiscover={() =>
+            setAppState((prev) => ({ ...prev, currentScreen: "discover", activeTab: "discover" }))
+          }
+        />
+      )}
 
       {/* Match Notification */}
       {appState.showMatch && (

@@ -1,15 +1,12 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  User,
   Bell,
   Shield,
   Crown,
@@ -22,6 +19,7 @@ import {
   Info,
   Mail,
   Bug,
+  ArrowLeft,
 } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
@@ -45,35 +43,131 @@ type SettingsNavigateHandler = (id: string) => void
 
 const settingsSections: SettingsSection[] = [
   {
-    title: "Account",
+    title: "Notifications",
     items: [
       {
-        id: "profile",
-        label: "Edit Profile",
-        description: "Update your photos and information",
-        icon: User,
+        id: "push_notifications",
+        label: "Push Notifications",
+        description: "Get notified about matches and messages",
+        icon: Bell,
+        type: "toggle",
+        value: true,
+      },
+      {
+        id: "message_notifications",
+        label: "Message Notifications",
+        description: "Notifications for new messages",
+        icon: MessageCircle,
+        type: "toggle",
+        value: true,
+      },
+    ],
+  },
+  {
+    title: "App Settings",
+    items: [
+      {
+        id: "profile_visibility",
+        label: "Profile Visibility",
+        description: "Show or hide your profile",
+        icon: Power,
+        type: "toggle",
+        value: true,
+      },
+      {
+        id: "hide_age",
+        label: "Hide My Age",
+        description: "Don't show your age on profile",
+        icon: Info,
+        type: "toggle",
+        value: false,
+      },
+      {
+        id: "hide_distance",
+        label: "Hide My Distance",
+        description: "Don't show distance on profile",
+        icon: Info,
+        type: "toggle",
+        value: false,
+      },
+    ],
+  },
+  {
+    title: "Help & Support",
+    items: [
+      {
+        id: "help_faq",
+        label: "FAQ",
+        description: "Common questions about the app",
+        icon: HelpCircle,
         type: "navigation",
       },
       {
-        id: "premium",
-        label: "Premium Features",
-        description: "Upgrade to unlock all features",
-        icon: Crown,
+        id: "help_contact",
+        label: "Contact Us",
+        description: "Reach out to our team",
+        icon: Mail,
         type: "navigation",
-        badge: "Upgrade",
       },
       {
-        id: "verification",
-        label: "Profile Verification",
-        description: "Verify your profile with photo ID",
-        icon: Shield,
+        id: "help_report_bug",
+        label: "Report a Bug",
+        description: "Found an issue? Tell us",
+        icon: Bug,
         type: "navigation",
+      },
+      {
+        id: "app_settings",
+        label: "App Settings",
+        description: "Privacy, safety, and more",
+        icon: Settings,
+        type: "navigation",
+      },
+    ],
+  },
+  {
+    title: "Account Actions",
+    items: [
+      {
+        id: "delete_account",
+        label: "Delete Account",
+        description: "Permanently delete your account",
+        icon: Settings,
+        type: "action",
+        destructive: true,
+      },
+      {
+        id: "logout",
+        label: "Log Out",
+        icon: LogOut,
+        type: "action",
+        destructive: true,
       },
     ],
   },
 ]
 
-export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: SettingsNavigateHandler; onLogout?: () => void }) {
+interface AppSettingsProps {
+  onNavigate?: SettingsNavigateHandler
+  onLogout?: () => void
+  onBack?: () => void
+}
+
+export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) {
+  const [settings, setSettings] = useState<Record<string, boolean>>({
+    push_notifications: true,
+    message_notifications: true,
+    profile_visibility: true,
+    hide_age: false,
+    hide_distance: false,
+  })
+
+  const handleToggle = (id: string) => {
+    setSettings((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }))
+  }
 
   const handleNavigation = (id: string) => {
     if (onNavigate) onNavigate(id)
@@ -94,17 +188,17 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
       {/* Header */}
       <div className="flex-shrink-0 p-6 border-b border-border glass-apple">
         <div className="flex items-center space-x-4">
-          <Avatar className="w-16 h-16">
-            <AvatarImage src="/professional-headshot.png" alt="Profile" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <div className="space-y-1">
-            <h1 className="text-xl font-bold">John Doe</h1>
-            <p className="text-sm text-muted-foreground">john.doe@example.com</p>
-            <Badge variant="secondary" className="text-xs">
-              Free Account
-            </Badge>
-          </div>
+          {onBack && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-muted/50 rounded-full" 
+              onClick={onBack}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
+          <h1 className="text-xl font-bold">Settings</h1>
         </div>
       </div>
 
@@ -155,6 +249,12 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
                         </div>
 
                         <div className="flex items-center">
+                          {item.type === "toggle" && (
+                            <Switch
+                              checked={settings[item.id] || false}
+                              onCheckedChange={() => handleToggle(item.id)}
+                            />
+                          )}
                           {item.type === "navigation" && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
                         </div>
                       </div>

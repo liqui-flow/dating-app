@@ -9,77 +9,38 @@ import { QuickActions } from "@/components/navigation/quick-actions"
 import { Filter, Check, X } from "lucide-react"
 import { MatrimonySwipeCard } from "@/components/matrimony/matrimony-swipe-card"
 import { MatrimonyChatList } from "@/components/matrimony/matrimony-chat-list"
+import { MatrimonyChatScreen } from "@/components/matrimony/matrimony-chat-screen"
 import { MatrimonyFilterSheet } from "@/components/matrimony/matrimony-filter-sheet"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
 import { SettingsScreen } from "@/components/settings/settings-screen"
+import { AppSettings } from "@/components/settings/app-settings"
 import { ProfileSetup } from "@/components/profile/profile-setup"
 import { PremiumScreen } from "@/components/premium/premium-screen"
 import { PaymentScreen } from "@/components/premium/payment-screen"
 import { PremiumFeatures } from "@/components/premium/premium-features"
 import { VerificationStatus } from "@/components/profile/verification-status"
+import { MOCK_MATRIMONY_PROFILES, type MatrimonyProfile } from "@/lib/mockMatrimonyProfiles"
 
 interface MatrimonyMainProps {
   onExit?: () => void
 }
 
-interface MatrimonyProfile {
-  id: string
-  name: string
-  age: number
-  education: string
-  profession: string
-  location: string
-  community?: string
-  photos: string[]
-  bio?: string
-  interests?: string[]
-  verified?: boolean
-  premium?: boolean
-}
-
-const SAMPLE_PROFILES: MatrimonyProfile[] = [
-  {
-    id: "m1",
-    name: "Aditi Sharma",
-    age: 27,
-    education: "MBA, IIM Ahmedabad",
-    profession: "Product Manager",
-    location: "Bengaluru, India",
-    community: "Brahmin",
-    photos: ["/professional-woman-smiling.png", "/woman-hiking.png"],
-    bio: "Family-oriented person who loves traveling and cooking. Looking for someone who values traditions and is ready for marriage.",
-    interests: ["Travel", "Cooking", "Dancing", "Reading"],
-    verified: true,
-    premium: false,
-  },
-  {
-    id: "m2",
-    name: "Rahul Mehta",
-    age: 30,
-    education: "B.Tech, IIT Bombay",
-    profession: "Senior Software Engineer",
-    location: "Pune, India",
-    community: "Vaishya",
-    photos: ["/professional-headshot.png", "/casual-outdoor-photo.jpg"],
-    bio: "Tech enthusiast who enjoys hiking and photography. Seeking a life partner who shares similar values and dreams.",
-    interests: ["Technology", "Photography", "Hiking", "Music"],
-    verified: true,
-    premium: true,
-  },
-]
 
 export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
-  const [profiles] = useState<MatrimonyProfile[]>(SAMPLE_PROFILES)
+  const [profiles] = useState<MatrimonyProfile[]>(MOCK_MATRIMONY_PROFILES)
   const [currentScreen, setCurrentScreen] = useState<
     | "discover"
     | "messages"
+    | "chat"
     | "profile"
     | "profile-setup"
     | "premium"
     | "payment"
     | "premium-features"
     | "verification-status"
+    | "app-settings"
   >("discover")
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
@@ -96,7 +57,14 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
   }
 
   return (
-    <AppLayout activeTab="discover" onTabChange={() => {}} showBottomTabs={false}>
+    <AppLayout 
+      activeTab="discover" 
+      onTabChange={() => {}} 
+      showBottomTabs={false}
+      onSettingsClick={() => setCurrentScreen("app-settings")}
+      showSettingsButton={true}
+      currentScreen={currentScreen}
+    >
       {/* Floating header elements */}
       {currentScreen === "discover" && (
         <>
@@ -104,11 +72,11 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
           <div className="fixed top-3 right-3 z-40">
             <Button
               variant="secondary"
-              size="sm"
-              className="rounded-full px-4 py-3 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+              size="default"
+              className="rounded-full px-5 py-4 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
               onClick={() => setShowFilters(true)}
             >
-              <Filter className="w-4 h-4" />
+              <Filter className="w-5 h-5" />
             </Button>
           </div>
         </>
@@ -171,7 +139,19 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
 
       {currentScreen === "messages" && (
         <div className="p-4 pb-20 mt-2 w-full">
-          <MatrimonyChatList />
+          <MatrimonyChatList onChatClick={(chatId) => {
+            setSelectedChatId(chatId)
+            setCurrentScreen("chat")
+          }} />
+        </div>
+      )}
+
+      {currentScreen === "chat" && selectedChatId && (
+        <div className="h-screen w-full">
+          <MatrimonyChatScreen 
+            chatId={selectedChatId} 
+            onBack={() => setCurrentScreen("messages")} 
+          />
         </div>
       )}
 
@@ -231,14 +211,34 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         </div>
       )}
 
+      {currentScreen === "app-settings" && (
+        <div className="p-0 pb-0 mt-0">
+          <AppSettings
+            onNavigate={(id) => {
+              if (id === "help_faq") window.alert("FAQ coming soon")
+              else if (id === "help_contact") window.alert("Contact us at support@example.com")
+              else if (id === "help_report_bug") window.alert("Bug report submitted")
+              else if (id === "app_settings") window.alert("Open App Settings")
+            }}
+            onLogout={() => {
+              window.location.href = "/auth"
+            }}
+            onBack={() => setCurrentScreen("profile")}
+          />
+        </div>
+      )}
+
       {(currentScreen === "messages" || currentScreen === "profile") && (
         <BackFloatingButton onClick={() => setCurrentScreen("discover")} />
       )}
 
-      <QuickActions
-        onOpenChat={() => setCurrentScreen("messages")}
-        onOpenProfile={() => setCurrentScreen("profile")}
-      />
+      {currentScreen !== "chat" && (
+        <QuickActions
+          onOpenChat={() => setCurrentScreen("messages")}
+          onOpenProfile={() => setCurrentScreen("profile")}
+          onDiscover={() => setCurrentScreen("discover")}
+        />
+      )}
 
       {/* Matrimony Filter Sheet */}
       <MatrimonyFilterSheet open={showFilters} onOpenChange={setShowFilters} />

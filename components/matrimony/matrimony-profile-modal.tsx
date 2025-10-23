@@ -8,23 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { X, MapPin, Briefcase, GraduationCap, Users, Share, Flag, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-interface MatrimonyProfile {
-  id: string
-  name: string
-  age: number
-  height?: string
-  profession: string
-  community?: string
-  location: string
-  photos: string[]
-  bio?: string
-  interests?: string[]
-  education?: string
-  religion?: string
-  verified?: boolean
-  premium?: boolean
-}
+import type { MatrimonyProfile } from "@/lib/mockMatrimonyProfiles"
 
 interface MatrimonyProfileModalProps {
   profile: MatrimonyProfile

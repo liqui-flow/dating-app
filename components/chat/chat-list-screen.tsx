@@ -66,9 +66,46 @@ const mockChats: ChatPreview[] = [
     isMatch: true,
     isPremium: false,
   },
+  {
+    id: "5",
+    name: "Sneha",
+    avatar: "/woman-with-family.jpg",
+    lastMessage: "Your profile caught my attention! Let's chat 😊",
+    timestamp: "2d ago",
+    unreadCount: 3,
+    isOnline: true,
+    isMatch: true,
+    isPremium: false,
+  },
+  {
+    id: "6",
+    name: "Meera",
+    avatar: "/casual-outdoor-photo.jpg",
+    lastMessage: "I love your sense of humor! Want to grab dinner?",
+    timestamp: "3d ago",
+    unreadCount: 0,
+    isOnline: false,
+    isMatch: true,
+    isPremium: true,
+  },
+  {
+    id: "7",
+    name: "Aisha",
+    avatar: "/professional-headshot.png",
+    lastMessage: "Your music taste is amazing! Any concert recommendations?",
+    timestamp: "4d ago",
+    unreadCount: 1,
+    isOnline: false,
+    isMatch: true,
+    isPremium: false,
+  },
 ]
 
-export function ChatListScreen() {
+interface ChatListScreenProps {
+  onChatClick?: (chatId: string) => void
+}
+
+export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
   const [searchQuery, setSearchQuery] = useState("")
 
   const filteredChats = mockChats.filter(
@@ -117,7 +154,10 @@ export function ChatListScreen() {
           <div className="divide-y divide-border">
             {filteredChats.map((chat) => (
               <Card key={chat.id} className="border-0 rounded-none shadow-none glass-apple">
-                <CardContent className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+                <CardContent 
+                  className="p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => onChatClick?.(chat.id)}
+                >
                   <div className="flex items-center space-x-3">
                     {/* Avatar */}
                     <div className="relative">

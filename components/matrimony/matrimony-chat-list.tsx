@@ -44,9 +44,46 @@ const mockChats: ChatPreview[] = [
     isMatch: true,
     isPremium: false,
   },
+  {
+    id: "m3",
+    name: "Priya Patel",
+    avatar: "/woman-at-coffee-shop.png",
+    lastMessage: "Hi! I saw your profile and would love to connect.",
+    timestamp: "2h ago",
+    unreadCount: 2,
+    isOnline: true,
+    isMatch: true,
+    isPremium: false,
+  },
+  {
+    id: "m4",
+    name: "Arjun Singh",
+    avatar: "/new-profile-photo.jpg",
+    lastMessage: "Namaste! Your family values align with ours.",
+    timestamp: "3h ago",
+    unreadCount: 0,
+    isOnline: false,
+    isMatch: true,
+    isPremium: true,
+  },
+  {
+    id: "m5",
+    name: "Sneha Reddy",
+    avatar: "/woman-hiking.png",
+    lastMessage: "Would you like to meet for coffee this weekend?",
+    timestamp: "1d ago",
+    unreadCount: 1,
+    isOnline: false,
+    isMatch: true,
+    isPremium: false,
+  },
 ]
 
-export function MatrimonyChatList() {
+interface MatrimonyChatListProps {
+  onChatClick?: (chatId: string) => void
+}
+
+export function MatrimonyChatList({ onChatClick }: MatrimonyChatListProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTab, setSelectedTab] = useState<"all" | "matches" | "shortlisted">("all")
 
@@ -97,7 +134,10 @@ export function MatrimonyChatList() {
           <div className="divide-y divide-border">
             {filteredChats.map((chat) => (
               <Card key={chat.id} className="border-0 rounded-none shadow-none glass-apple">
-                <CardContent className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+                <CardContent 
+                  className="p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => onChatClick?.(chat.id)}
+                >
                   <div className="flex items-center space-x-3">
                     {/* Avatar */}
                     <div className="relative">
