@@ -6,7 +6,6 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { bioSchema } from "@/lib/schemas/matrimony"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
@@ -39,29 +38,28 @@ export function Step6Bio({ onNext, onBack }: { onNext: () => void; onBack: () =>
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>A Few Words About You</CardTitle>
-            <CardDescription>Write a short bio to introduce yourself.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <FormField control={form.control} name="bio" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Bio (500–1000 characters)</FormLabel>
-                <FormControl>
-                  <Textarea rows={8} maxLength={1000} placeholder="Describe your personality, passions, and what you're looking for in a life partner." {...field} />
-                </FormControl>
-                <div className="text-xs text-muted-foreground">{(field.value?.length || 0)}/1000</div>
-                <FormMessage />
-              </FormItem>
-            )} />
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-semibold">A Few Words About You</h2>
+            <p className="text-muted-foreground">Write a short bio to introduce yourself.</p>
+          </div>
+          
+          <FormField control={form.control} name="bio" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Bio (500–1000 characters)</FormLabel>
+              <FormControl>
+                <Textarea rows={8} maxLength={1000} placeholder="Describe your personality, passions, and what you're looking for in a life partner." {...field} />
+              </FormControl>
+              <div className="text-xs text-muted-foreground">{(field.value?.length || 0)}/1000</div>
+              <FormMessage />
+            </FormItem>
+          )} />
 
-            <div className="flex justify-between pt-2">
-              <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
-              <Button type="submit">Next</Button>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="flex justify-between pt-2">
+            <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
+            <Button type="submit">Next</Button>
+          </div>
+        </div>
       </form>
     </Form>
   )

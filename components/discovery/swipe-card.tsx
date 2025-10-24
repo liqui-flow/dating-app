@@ -44,10 +44,8 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   
-  // Transform motion values to rotation and opacity
+  // Transform motion values to rotation
   const rotate = useTransform(x, [-300, 300], [-30, 30])
-  const likeOpacity = useTransform(x, [0, 120], [0, 1])
-  const passOpacity = useTransform(x, [-120, 0], [1, 0])
 
   const depthStyles = useMemo(() => {
     // Enhanced visual stacking for realistic deck-of-cards effect
@@ -189,23 +187,6 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
         </div>
       )}
 
-      {/* Like/Pass hint while dragging */}
-      {stackIndex === 0 && (
-        <>
-          <motion.div
-            className="absolute top-4 left-4 sm:top-6 sm:left-6 text-lg sm:text-2xl font-extrabold tracking-wider text-pink-600"
-            style={{ opacity: likeOpacity }}
-          >
-            LIKE
-          </motion.div>
-          <motion.div
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 text-lg sm:text-2xl font-extrabold tracking-wider text-rose-400"
-            style={{ opacity: passOpacity }}
-          >
-            NOPE
-          </motion.div>
-        </>
-      )}
 
       {/* Bottom glassmorphic bar with name/age and info button - Enhanced 3D */}
       {stackIndex === 0 && (

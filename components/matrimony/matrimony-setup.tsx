@@ -83,7 +83,7 @@ export function MatrimonySetup() {
           </div>
         </CardHeader>
         <Separator />
-        <CardContent className="p-6">
+        <CardContent className="p-8">
           <MatrimonySetupProvider>
             {step === 0 && (
               <Step1WelcomeIdentity onNext={() => setStep(1)} />

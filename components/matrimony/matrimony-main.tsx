@@ -156,18 +156,16 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       )}
 
       {currentScreen === "profile" && (
-        <div className="p-4 pb-20 mt-2 w-full">
-          <SettingsScreen
-            onNavigate={(id) => {
-              if (id === "profile") setCurrentScreen("profile-setup")
-              else if (id === "premium") setCurrentScreen("premium")
-              else if (id === "verification") setCurrentScreen("verification-status")
-            }}
-            onLogout={() => {
-              window.location.href = "/auth"
-            }}
-          />
-        </div>
+        <SettingsScreen
+          onNavigate={(id) => {
+            if (id === "profile") setCurrentScreen("profile-setup")
+            else if (id === "premium") setCurrentScreen("premium")
+            else if (id === "verification") setCurrentScreen("verification-status")
+          }}
+          onLogout={() => {
+            window.location.href = "/auth"
+          }}
+        />
       )}
 
       {currentScreen === "profile-setup" && (
