@@ -11,25 +11,79 @@ import { Separator } from "@/components/ui/separator"
 import GoogleLoginButton from "@/components/auth/GoogleLoginButton"
 import AppleLoginButton from "@/components/auth/AppleLoginButton"
 import { Eye, EyeOff } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
+
 interface AuthScreenProps {
   onAuthSuccess?: () => void
 }
+
 export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [activeTab, setActiveTab] = useState("signup")
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+  })
+  const [error, setError] = useState<string | null>(null)
+
+  // 🔹 Handle input change
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({ ...prev, [id]: value }))
+  }
+
+  // 🔹 Handle Sign Up
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    if (onAuthSuccess) {
-      onAuthSuccess()
-    } else {
+    setError(null)
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.name,
+            phone: formData.phone,
+          },
+          emailRedirectTo: `${window.location.origin}/onboarding/verification`,
+        },
+      })
+      if (error) throw error
+
       router.push("/onboarding/verification")
+    } catch (err: any) {
+      setError(err.message || "Something went wrong")
+    } finally {
+      setIsLoading(false)
     }
   }
+
+  // 🔹 Handle Login
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      })
+      if (error) throw error
+
+      if (onAuthSuccess) onAuthSuccess()
+      else router.push("/onboarding/verification")
+    } catch (err: any) {
+      setError(err.message || "Invalid credentials")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-3 sm:p-4">
       <Card className="w-full max-w-md mx-auto">
@@ -37,38 +91,40 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
           <div className="flex items-center justify-center">
             <h1 className="text-xl sm:text-2xl font-bold text-primary font-sans">Lovesathi</h1>
           </div>
-          <CardDescription className="text-sm sm:text-base">Join thousands finding meaningful connections</CardDescription>
+          <CardDescription className="text-sm sm:text-base">
+            Join thousands finding meaningful connections
+          </CardDescription>
         </CardHeader>
+
         <CardContent className="px-4 sm:px-6 pb-6 sm:pb-6">
-          <Tabs defaultValue="signup" className="space-y-6">
+          <Tabs defaultValue="signup" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-2 h-12 sm:h-10 bg-muted/50 p-1 rounded-lg">
-              <TabsTrigger 
-                value="signup" 
-                className="text-sm sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 rounded-md min-h-[40px] sm:min-h-[36px] flex items-center justify-center"
-              >
+              <TabsTrigger value="signup" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all rounded-md flex items-center justify-center">
                 Sign Up
               </TabsTrigger>
-              <TabsTrigger 
-                value="login" 
-                className="text-sm sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 rounded-md min-h-[40px] sm:min-h-[36px] flex items-center justify-center"
-              >
+              <TabsTrigger value="login" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all rounded-md flex items-center justify-center">
                 Login
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="signup" className="space-y-4 sm:space-y-4">
-              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+
+            {/* ---------- SIGNUP ---------- */}
+            <TabsContent value="signup" className="space-y-4">
+              <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-primary">Full Name</Label>
-                  <Input id="name" placeholder="Enter your full name" required className="text-primary placeholder:text-primary" />
+                  <Input id="name" placeholder="Enter your full name" required value={formData.name} onChange={handleChange} />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-primary">Email</Label>
-                  <Input id="email" type="email" placeholder="Enter your email" required className="text-primary placeholder:text-primary" />
+                  <Input id="email" type="email" placeholder="Enter your email" required value={formData.email} onChange={handleChange} />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-primary">Phone Number</Label>
-                  <Input id="phone" type="tel" placeholder="Enter your phone number" required className="text-primary placeholder:text-primary" />
+                  <Input id="phone" type="tel" placeholder="Enter your phone number" value={formData.phone} onChange={handleChange} />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-primary">Password</Label>
                   <div className="relative">
@@ -77,7 +133,8 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                       type={showPassword ? "text" : "password"}
                       placeholder="Create a password"
                       required
-                      className="text-primary placeholder:text-primary"
+                      value={formData.password}
+                      onChange={handleChange}
                     />
                     <Button
                       type="button"
@@ -86,18 +143,18 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                       className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                 </div>
-                <Button type="submit" className="w-full h-11 sm:h-10 font-medium" disabled={isLoading}>
+
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+                <Button type="submit" className="w-full h-11 font-medium" disabled={isLoading}>
                   {isLoading ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
+
               <div className="space-y-4">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -113,21 +170,25 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                 </div>
               </div>
             </TabsContent>
-            <TabsContent value="login" className="space-y-4 sm:space-y-4">
-              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+
+            {/* ---------- LOGIN ---------- */}
+            <TabsContent value="login" className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email" className="text-primary">Email or Phone</Label>
-                  <Input id="signin-email" placeholder="Enter your email or phone" required className="text-primary placeholder:text-primary" />
+                  <Label htmlFor="email" className="text-primary">Email</Label>
+                  <Input id="email" type="email" placeholder="Enter your email" required value={formData.email} onChange={handleChange} />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password" className="text-primary">Password</Label>
+                  <Label htmlFor="password" className="text-primary">Password</Label>
                   <div className="relative">
                     <Input
-                      id="signin-password"
+                      id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       required
-                      className="text-primary placeholder:text-primary"
+                      value={formData.password}
+                      onChange={handleChange}
                     />
                     <Button
                       type="button"
@@ -136,23 +197,24 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                       className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                 </div>
+
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
                 <div className="flex items-center justify-between">
                   <Button asChild variant="link" className="px-0 text-sm">
                     <a href="/auth/forgot-password">Forgot password?</a>
                   </Button>
                 </div>
-                <Button type="submit" className="w-full h-11 sm:h-10 font-medium" disabled={isLoading}>
+
+                <Button type="submit" className="w-full h-11 font-medium" disabled={isLoading}>
                   {isLoading ? "Logging In..." : "Login"}
                 </Button>
               </form>
+
               <div className="space-y-4">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -169,29 +231,15 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
               </div>
             </TabsContent>
           </Tabs>
+
           <div className="mt-6 text-center text-xs text-muted-foreground">
             By continuing, you agree to our{" "}
-            <Button variant="link" className="p-0 h-auto text-xs text-primary">
-              Terms of Service
-            </Button>{" "}
+            <Button variant="link" className="p-0 h-auto text-xs text-primary">Terms of Service</Button>{" "}
             and{" "}
-            <Button variant="link" className="p-0 h-auto text-xs text-primary">
-              Privacy Policy
-            </Button>
+            <Button variant="link" className="p-0 h-auto text-xs text-primary">Privacy Policy</Button>
           </div>
         </CardContent>
       </Card>
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
