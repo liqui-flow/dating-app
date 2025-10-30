@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Inter, Roboto_Mono } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-// Removed global back button wrapper
+import { Toaster } from "sonner"
 
 const inter = Inter({
   variable: "--font-sans",
@@ -31,6 +31,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {children}
+          <Toaster /> {/* ✅ Sonner toaster here */}
         </ThemeProvider>
       </body>
     </html>
