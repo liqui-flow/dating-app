@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Shield, CheckCircle, Upload, Camera } from "lucide-react"
+import { Shield, CheckCircle, Upload, Camera, X, FileText } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
+import { FaceScanModal } from "@/components/kyc/FaceScanModal"
 
 interface VerificationScreenProps {
   onComplete?: () => void
@@ -26,13 +28,15 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
   const [underageMessage, setUnderageMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const uploadInputRef = useRef<HTMLInputElement | null>(null)
-  const cameraInputRef = useRef<HTMLInputElement | null>(null)
-  const videoRef = useRef<HTMLVideoElement | null>(null)
-  const mediaStreamRef = useRef<MediaStream | null>(null)
-  const [showCameraOverlay, setShowCameraOverlay] = useState(false)
   const today = new Date()
   const defaultMonth = new Date(new Date().setFullYear(today.getFullYear() - 20))
   const [calendarMonth, setCalendarMonth] = useState<Date>(defaultMonth)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [filePreview, setFilePreview] = useState<string | null>(null)
+  const [capturedFacePhoto, setCapturedFacePhoto] = useState<File | null>(null)
+  const [facePhotoPreview, setFacePhotoPreview] = useState<string | null>(null)
+  const [showFaceScanModal, setShowFaceScanModal] = useState(false)
+  const { toast } = useToast()
 
   // Live underage validation when DOB changes
   useEffect(() => {
@@ -48,75 +52,93 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
     }
   }, [dob])
 
+  const handleFileUpload = (file: File) => {
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf']
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase()
+    
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload Aadhar card, PAN card, Driving License, or Passport (.jpg, .jpeg, .png, .pdf)",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+    if (file.size > maxSize) {
+      toast({
+        title: "File Too Large",
+        description: "Please upload a file smaller than 5MB",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Set the uploaded file
+    setUploadedFile(file)
+
+    // Generate preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFilePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    } else {
+      // For PDFs, no preview
+      setFilePreview(null)
+    }
+  }
+
+  const handleRemoveFile = () => {
+    setUploadedFile(null)
+    setFilePreview(null)
+    if (uploadInputRef.current) {
+      uploadInputRef.current.value = ''
+    }
+  }
+
   const handleUploadId = () => {
     // Works on Web (desktop/mobile) and mobile browsers on Android/iOS
     uploadInputRef.current?.click()
   }
 
   const handleTakePhoto = async () => {
-    // Mobile hint: try to force camera on supported mobile browsers
-    const ua = typeof navigator !== "undefined" ? navigator.userAgent : ""
-    const isMobile = /iphone|ipad|ipod|android/i.test(ua)
-
-    if (cameraInputRef.current) {
-      // Set attributes defensively for broadest support
-      cameraInputRef.current.setAttribute("accept", "image/*;capture=camera")
-      cameraInputRef.current.setAttribute("capture", "environment")
-    }
-
-    if (isMobile) {
-      cameraInputRef.current?.click()
-      return
-    }
-
-    // Try opening desktop/laptop camera using MediaDevices
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        mediaStreamRef.current = stream
-        setShowCameraOverlay(true)
-        // Defer attaching to next paint
-        setTimeout(() => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream
-            videoRef.current.play().catch(() => {})
-          }
-        }, 0)
-        return
-      }
-    } catch (err) {
-      // Permission denied or not available; fall back below
-    }
-
-    // Fallback: open file picker
-    uploadInputRef.current?.click()
+    // Open the face scan modal for KYC verification
+    setShowFaceScanModal(true)
   }
 
-  const stopCamera = () => {
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((t) => t.stop())
-      mediaStreamRef.current = null
+  const handleFaceScanComplete = async (imageBlob: Blob) => {
+    // Convert blob to File
+    const file = new File([imageBlob], `face-scan-${Date.now()}.jpg`, { type: "image/jpeg" })
+    
+    // Set the captured photo
+    setCapturedFacePhoto(file)
+    
+    // Generate preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setFacePhotoPreview(reader.result as string)
     }
-    setShowCameraOverlay(false)
+    reader.readAsDataURL(file)
+
+    // Show success toast
+    toast({
+      title: "Face Scan Complete",
+      description: "Your face has been successfully verified.",
+    })
+
+    // TODO: Send to backend API for verification
+    // await verifyFaceScan(file)
   }
 
-  const handleCaptureFrame = async () => {
-    const video = videoRef.current
-    if (!video) return
-    const canvas = document.createElement("canvas")
-    canvas.width = video.videoWidth || 1280
-    canvas.height = video.videoHeight || 720
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const file = new File([blob], `capture-${Date.now()}.jpg`, { type: blob.type })
-        console.log("Captured photo file:", file.name)
-        // Integrate like upload flow if needed
-      }
-      stopCamera()
-    }, "image/jpeg", 0.92)
+  const handleRemoveFacePhoto = () => {
+    setCapturedFacePhoto(null)
+    setFacePhotoPreview(null)
   }
 
   const handleSendCode = async () => {
@@ -363,44 +385,119 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Hidden inputs for file picking and camera capture */}
+                <div className="space-y-4">
+                  {/* Hidden input for file picking */}
                   <input
                     ref={uploadInputRef}
                     type="file"
-                    accept="image/*,application/pdf"
+                    accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
                     style={{ display: "none" }}
                     onChange={(e) => {
                       const file = e.target.files?.[0]
                       if (file) {
-                        // Keep existing UI/logic intact; simply acknowledge selection
-                        console.log("Selected ID file:", file.name)
-                      }
-                    }}
-                  />
-                  <input
-                    ref={cameraInputRef}
-                    type="file"
-                    accept="image/*;capture=camera"
-                    // capture hints camera usage on supported mobile browsers
-                    capture="environment"
-                    style={{ display: "none" }}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        console.log("Captured/Chosen photo:", file.name)
+                        handleFileUpload(file)
                       }
                     }}
                   />
 
-                  <Button onClick={handleUploadId} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-primary">
-                    <Upload className="w-6 h-6" />
-                    <span className="text-sm">Upload ID</span>
-                  </Button>
-                  <Button onClick={handleTakePhoto} variant="outline" className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-primary">
-                    <Camera className="w-6 h-6" />
-                    <span className="text-sm">Take Photo</span>
-                  </Button>
+                  {/* Upload ID and Take Photo buttons */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Upload ID Button - Transforms when file is uploaded */}
+                    {!uploadedFile ? (
+                      <Button 
+                        onClick={handleUploadId} 
+                        variant="outline" 
+                        className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-primary w-full transition-all duration-300"
+                      >
+                        <Upload className="w-6 h-6" />
+                        <span className="text-sm">Upload ID</span>
+                      </Button>
+                    ) : (
+                      <div className="relative h-auto p-3 border border-border rounded-lg bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm overflow-hidden transition-all duration-300 animate-in fade-in-50 scale-in-95">
+                        {/* Delete Button - Top Right */}
+                        <button
+                          onClick={handleRemoveFile}
+                          className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-destructive/90 hover:bg-destructive text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* File Preview Content */}
+                        <div className="flex flex-col items-center space-y-2">
+                          {/* Image Preview or PDF Icon */}
+                          {filePreview ? (
+                            <div className="w-full h-20 rounded-md overflow-hidden border border-border/50 shadow-sm">
+                              <img 
+                                src={filePreview} 
+                                alt="ID Preview" 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-full h-20 rounded-md bg-primary/10 flex items-center justify-center border border-border/50">
+                              <FileText className="w-10 h-10 text-primary" />
+                            </div>
+                          )}
+                          
+                          {/* File Info */}
+                          <div className="w-full space-y-0.5 pr-4">
+                            <p className="text-xs font-medium text-primary truncate">
+                              {uploadedFile.name}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {(uploadedFile.size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Take Photo Button - Transforms when face photo is captured */}
+                    {!capturedFacePhoto ? (
+                      <Button 
+                        onClick={handleTakePhoto} 
+                        variant="outline" 
+                        className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-primary w-full transition-all duration-300"
+                      >
+                        <Camera className="w-6 h-6" />
+                        <span className="text-sm">Take Photo</span>
+                      </Button>
+                    ) : (
+                      <div className="relative h-auto p-3 border border-border rounded-lg bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm overflow-hidden transition-all duration-300 animate-in fade-in-50 scale-in-95">
+                        {/* Delete Button - Top Right */}
+                        <button
+                          onClick={handleRemoveFacePhoto}
+                          className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-destructive/90 hover:bg-destructive text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Face Photo Preview Content */}
+                        <div className="flex flex-col items-center space-y-2">
+                          {/* Image Preview */}
+                          {facePhotoPreview && (
+                            <div className="w-full h-20 rounded-md overflow-hidden border border-border/50 shadow-sm">
+                              <img 
+                                src={facePhotoPreview} 
+                                alt="Face Scan" 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          
+                          {/* File Info */}
+                          <div className="w-full space-y-0.5 pr-4">
+                            <p className="text-xs font-medium text-primary truncate">
+                              {capturedFacePhoto.name}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {(capturedFacePhoto.size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -421,20 +518,12 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
         </CardContent>
       </Card>
 
-      {/* Minimal camera overlay for desktop getUserMedia capture */}
-      {showCameraOverlay && (
-        <div className="fixed inset-0 bg-background/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-background rounded-lg shadow-lg p-4 space-y-4">
-            <div className="aspect-video bg-primary rounded overflow-hidden">
-              <video ref={videoRef} playsInline className="w-full h-full object-contain" />
-            </div>
-            <div className="flex items-center justify-end space-x-2">
-              <Button variant="ghost" onClick={stopCamera}>Cancel</Button>
-              <Button onClick={handleCaptureFrame}>Capture</Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Face Scan Modal */}
+      <FaceScanModal
+        isOpen={showFaceScanModal}
+        onClose={() => setShowFaceScanModal(false)}
+        onScanComplete={handleFaceScanComplete}
+      />
     </div>
   )
 }

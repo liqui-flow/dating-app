@@ -4,6 +4,7 @@ import { Inter, Roboto_Mono } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
+import { Toaster as ShadcnToaster } from "@/components/ui/toaster"
 
 const inter = Inter({
   variable: "--font-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {children}
           <Toaster /> {/* ✅ Sonner toaster here */}
+          <ShadcnToaster /> {/* ✅ Shadcn toaster for form validations */}
         </ThemeProvider>
       </body>
     </html>
