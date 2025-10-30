@@ -5,22 +5,19 @@ import { randomInt } from "crypto";
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();
-
     if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
 
-    // ✅ Get users list
     const { data, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
     if (usersError) throw new Error(usersError.message);
-
-    const users = data?.users ?? [];
-    const user = users.find((u: any) => u.email === email);
+    const user = data?.users?.find((u: any) => u.email === email);
 
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    // ✅ Generate OTP
+    // Get user's name from user metadata or email
+    const userName = user.user_metadata?.name || user.user_metadata?.full_name || email.split('@')[0];
+
     const otp = randomInt(1000, 9999).toString();
 
-    // ✅ Store OTP
     const { error: otpError } = await supabaseAdmin
       .from("otp_codes")
       .insert({
@@ -31,9 +28,31 @@ export async function POST(req: Request) {
 
     if (otpError) throw new Error(otpError.message);
 
-    console.log("RESET OTP:", otp); // remove in production
+    console.log("RESET OTP:", otp, "for user:", userName);
 
-    return NextResponse.json({ message: "OTP sent" });
+    // ✅ Send Email via MSG91
+    await fetch("https://control.msg91.com/api/v5/email/send", {
+      method: "POST",
+      headers: {
+        "authkey": process.env.MSG91_API_KEY!,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        recipients: [{ 
+          to: [{ email }],
+          variables: { 
+            name: userName,
+            otp: otp,
+            OTP: otp
+          }
+        }],
+        from: { email: "dev@no-reply.lovesathi.com", name: "LoveSathi" },
+        domain: "no-reply.lovesathi.com",
+        template_id: process.env.MSG91_EMAIL_TEMPLATE_ID
+      }),
+    });
+
+    return NextResponse.json({ message: "OTP sent to email" });
 
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });

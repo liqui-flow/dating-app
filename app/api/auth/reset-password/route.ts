@@ -1,34 +1,62 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { randomInt } from "crypto";
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const { email } = await req.json();
 
-    if (!email || !password)
-      return NextResponse.json({ error: "Email & New Password required" }, { status: 400 });
+    if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
 
-    // check verified otp
-    const { data: otp, error: otpError } = await supabaseAdmin
+    const { data, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+    if (usersError) throw new Error(usersError.message);
+
+    const users = data?.users ?? [];
+    const user = users.find((u: any) => u.email === email);
+
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+    // Get user's name from user metadata or email
+    const userName = user.user_metadata?.name || user.user_metadata?.full_name || email.split('@')[0];
+
+    const otp = randomInt(1000, 9999).toString();
+
+    const { error: otpError } = await supabaseAdmin
       .from("otp_codes")
-      .select("*")
-      .eq("email", email)
-      .eq("verified", true)
-      .order("id", { ascending: false })
-      .limit(1)
-      .single();
+      .insert({
+        email,
+        otp,
+        expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+      });
 
-    if (!otp || otpError)
-      return NextResponse.json({ error: "OTP not verified" }, { status: 400 });
+    if (otpError) throw new Error(otpError.message);
 
-    // update password
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(otp.user_id, {
-      password
+    // ✅ SEND OTP USING MSG91
+    await fetch("https://control.msg91.com/api/v5/email/send", {
+      method: "POST",
+      headers: {
+        "authkey": process.env.MSG91_API_KEY!,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        recipients: [{ 
+          to: [{ email }],
+          variables: { 
+            name: userName,
+            otp: otp,
+            OTP: otp
+          }
+        }],
+        from: { email: "dev@no-reply.lovesathi.com", name: "LoveSathi" },
+        domain: "no-reply.lovesathi.com",
+        template_id: process.env.MSG91_EMAIL_TEMPLATE_ID
+      }),
     });
 
-    if (error) throw error;
+    console.log("RESET OTP:", otp, "for user:", userName);
 
-    return NextResponse.json({ message: "Password reset successful" });
+    return NextResponse.json({ message: "OTP sent" });
+
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });
   }
