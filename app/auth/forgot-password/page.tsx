@@ -1,5 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [step, setStep] = useState<"request" | "verify" | "reset">("request");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -139,6 +142,9 @@ export default function ForgotPasswordPage() {
     if (password !== confirmPassword)
       return toast.error("Passwords do not match");
 
+    if (password.length < 6)
+      return toast.error("Password must be at least 6 characters");
+
     setIsLoading(true);
 
     const res = await fetch("/api/auth/reset-password", {
@@ -150,10 +156,17 @@ export default function ForgotPasswordPage() {
     const data = await res.json();
     setIsLoading(false);
 
-    if (!res.ok) return toast.error(data.error);
+    if (!res.ok) return toast.error(data.error || "Password reset failed");
 
-    toast.success("Password updated ✅");
-    window.location.href = "/auth";
+    // ✅ Success toast with better messaging
+    toast.success("Password reset successful! Redirecting to login...", {
+      duration: 2000,
+    });
+    
+    // ✅ Replace history entry to prevent back button issues
+    setTimeout(() => {
+      router.replace("/auth");
+    }, 1500);
   };
 
   return (
@@ -262,7 +275,7 @@ export default function ForgotPasswordPage() {
 
               <Separator />
               <Button asChild variant="link" className="w-full">
-                <a href="/auth">Back to login</a>
+                <Link href="/auth">Back to login</Link>
               </Button>
             </form>
           )}

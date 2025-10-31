@@ -1,66 +1,77 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { randomInt } from "crypto";
 
 export const dynamic = "force-dynamic";
 
-
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email, password } = await req.json();
 
-    if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+    }
 
-    const { data, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+    // Validate password strength
+    if (password.length < 6) {
+      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    }
+
+    // ✅ Verify that OTP was verified before allowing password reset
+    const { data: otpData, error: otpError } = await supabaseAdmin
+      .from("otp_codes")
+      .select("*")
+      .eq("email", email)
+      .eq("verified", true)
+      .order("id", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (otpError || !otpData) {
+      return NextResponse.json({ error: "Please verify OTP first" }, { status: 400 });
+    }
+
+    // Check if OTP is still valid (within 10 minutes)
+    const otpAge = Date.now() - new Date(otpData.created_at).getTime();
+    if (otpAge > 10 * 60 * 1000) {
+      return NextResponse.json({ error: "OTP verification expired, please request a new one" }, { status: 400 });
+    }
+
+    // ✅ Find the user by email
+    const { data: userData, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
     if (usersError) throw new Error(usersError.message);
 
-    const users = data?.users ?? [];
-    const user = users.find((u: any) => u.email === email);
+    const user = userData?.users?.find((u: any) => u.email === email);
 
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
-    // Get user's name from user metadata or email
-    const userName = user.user_metadata?.name || user.user_metadata?.full_name || email.split('@')[0];
+    // ✅ Update password using Supabase Auth Admin API
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      user.id,
+      { password }
+    );
 
-    const otp = randomInt(1000, 9999).toString();
+    if (updateError) {
+      console.error("Password update error:", updateError);
+      throw new Error(updateError.message);
+    }
 
-    const { error: otpError } = await supabaseAdmin
+    // ✅ Invalidate the OTP after successful password reset
+    await supabaseAdmin
       .from("otp_codes")
-      .insert({
-        email,
-        otp,
-        expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-      });
+      .update({ verified: false })
+      .eq("id", otpData.id);
 
-    if (otpError) throw new Error(otpError.message);
+    console.log("Password successfully reset for user:", user.email);
 
-    // ✅ SEND OTP USING MSG91
-    await fetch("https://control.msg91.com/api/v5/email/send", {
-      method: "POST",
-      headers: {
-        "authkey": process.env.MSG91_API_KEY!,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        recipients: [{ 
-          to: [{ email }],
-          variables: { 
-            name: userName,
-            otp: otp,
-            OTP: otp
-          }
-        }],
-        from: { email: "dev@no-reply.lovesathi.com", name: "LoveSathi" },
-        domain: "no-reply.lovesathi.com",
-        template_id: process.env.MSG91_EMAIL_TEMPLATE_ID
-      }),
+    return NextResponse.json({ 
+      message: "Password reset successful",
+      success: true 
     });
 
-    console.log("RESET OTP:", otp, "for user:", userName);
-
-    return NextResponse.json({ message: "OTP sent" });
-
   } catch (e: any) {
+    console.error("Reset password error:", e);
     return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });
   }
 }
