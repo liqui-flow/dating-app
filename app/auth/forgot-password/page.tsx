@@ -8,6 +8,9 @@ import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { toast } from "sonner";
 
+export const dynamic = "force-dynamic";
+
+
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState<"request" | "verify" | "reset">("request");
   const [showPassword, setShowPassword] = useState(false);
