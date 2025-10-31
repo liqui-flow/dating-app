@@ -11,9 +11,10 @@ import { FaceScanModal } from "@/components/kyc/FaceScanModal"
 
 interface VerificationScreenProps {
   onComplete?: () => void
+  onSkip?: () => void
 }
 
-export function VerificationScreen({ onComplete }: VerificationScreenProps) {
+export function VerificationScreen({ onComplete, onSkip }: VerificationScreenProps) {
   const [step, setStep] = useState<"profile" | "gender" | "id">("profile")
   const [verificationMethod, setVerificationMethod] = useState<"phone" | "email">("phone")
   const [contactValue, setContactValue] = useState("")
@@ -501,7 +502,11 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <Button onClick={handleComplete} className="w-full" disabled={isLoading}>
+                  <Button 
+                    onClick={handleComplete} 
+                    className="w-full" 
+                    disabled={isLoading || !uploadedFile || !capturedFacePhoto}
+                  >
                     {isLoading ? "Processing..." : "Verify ID"}
                   </Button>
                   <Button 
@@ -511,6 +516,15 @@ export function VerificationScreen({ onComplete }: VerificationScreenProps) {
                   >
                     Back
                   </Button>
+                  {onSkip && (
+                    <Button 
+                      onClick={onSkip} 
+                      variant="outline" 
+                      className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                    >
+                      Skip for now
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

@@ -108,7 +108,10 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   }
 
   if (currentStep === "verification") {
-    return <VerificationScreen onComplete={() => setCurrentStep("path-select")} />
+    return <VerificationScreen 
+      onComplete={() => setCurrentStep("path-select")} 
+      onSkip={() => setCurrentStep("path-select")}
+    />
   }
 
   if (currentStep === "path-select") {
