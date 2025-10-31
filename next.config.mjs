@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone", // ✅ Needed for Render deployment
+
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -9,6 +11,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
 
-export default nextConfig
+  experimental: {
+    serverActions: true,
+  },
+};
+
+export default nextConfig;
