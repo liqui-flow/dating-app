@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Camera, Upload, Video, X } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
+import { completeProfileSetup } from "@/lib/datingProfileService"
+import { useToast } from "@/hooks/use-toast"
 
 interface ProfileSetupProps {
   onComplete: () => void
@@ -31,8 +34,10 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
   const [name, setName] = useState("")
   const [photos, setPhotos] = useState<Photo[]>([])
   const [video, setVideo] = useState<File | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -73,9 +78,57 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
     ))
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (name.trim() && photos.length >= 3) {
-      onComplete()
+      setIsLoading(true)
+      
+      try {
+        // Get current user
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        
+        if (authError || !user) {
+          toast({
+            title: "Authentication Error",
+            description: "Please sign in to continue",
+            variant: "destructive"
+          })
+          setIsLoading(false)
+          return
+        }
+
+        // Prepare photos data
+        const photosData = photos.map(photo => ({
+          file: photo.file,
+          caption: photo.caption || ""
+        }))
+
+        // Save profile data to database
+        const result = await completeProfileSetup(
+          user.id,
+          name.trim(),
+          photosData,
+          video || undefined
+        )
+
+        if (result.success) {
+          toast({
+            title: "Profile Saved!",
+            description: "Your profile has been saved successfully.",
+          })
+          onComplete()
+        } else {
+          throw new Error(result.error || "Failed to save profile")
+        }
+      } catch (error: any) {
+        console.error("Error saving profile:", error)
+        toast({
+          title: "Error",
+          description: error.message || "Failed to save your profile. Please try again.",
+          variant: "destructive"
+        })
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -233,16 +286,22 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
 
           {/* Navigation */}
           <div className="flex justify-between pt-4 flex-shrink-0">
-            <Button variant="ghost" onClick={onBack} className="text-primary" size="sm">
+            <Button 
+              variant="ghost" 
+              onClick={onBack} 
+              className="text-primary" 
+              size="sm"
+              disabled={isLoading}
+            >
               Back
             </Button>
             <Button 
               onClick={handleNext}
-              disabled={!isComplete}
+              disabled={!isComplete || isLoading}
               size="sm"
               className="bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
             >
-              Next
+              {isLoading ? "Saving..." : "Next"}
             </Button>
           </div>
         </CardContent>

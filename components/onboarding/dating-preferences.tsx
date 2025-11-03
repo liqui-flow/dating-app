@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { User, Users, HeartHandshake } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
+import { saveDatingPreferences } from "@/lib/datingProfileService"
+import { useToast } from "@/hooks/use-toast"
 
 interface DatingPreferencesProps {
   onComplete: () => void
@@ -38,14 +41,57 @@ const preferenceOptions = [
 export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps) {
   const [selectedPreference, setSelectedPreference] = useState<DatingPreference | null>(null)
   const [showOnProfile, setShowOnProfile] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
 
   const handlePreferenceSelect = (preference: DatingPreference) => {
     setSelectedPreference(preference)
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (selectedPreference) {
-      onComplete()
+      setIsLoading(true)
+      
+      try {
+        // Get current user
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        
+        if (authError || !user) {
+          toast({
+            title: "Authentication Error",
+            description: "Please sign in to continue",
+            variant: "destructive"
+          })
+          setIsLoading(false)
+          return
+        }
+
+        // Save dating preferences to database
+        const result = await saveDatingPreferences(
+          user.id,
+          selectedPreference,
+          showOnProfile
+        )
+
+        if (result.success) {
+          toast({
+            title: "Preferences Saved!",
+            description: "Your dating preferences have been saved.",
+          })
+          onComplete()
+        } else {
+          throw new Error(result.error || "Failed to save preferences")
+        }
+      } catch (error: any) {
+        console.error("Error saving preferences:", error)
+        toast({
+          title: "Error",
+          description: error.message || "Failed to save your preferences. Please try again.",
+          variant: "destructive"
+        })
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -110,15 +156,20 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
 
           {/* Navigation */}
           <div className="flex justify-between pt-6">
-            <Button variant="ghost" onClick={onBack} className="text-primary">
+            <Button 
+              variant="ghost" 
+              onClick={onBack} 
+              className="text-primary"
+              disabled={isLoading}
+            >
               Back
             </Button>
             <Button 
               onClick={handleNext}
-              disabled={!selectedPreference}
+              disabled={!selectedPreference || isLoading}
               className="bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
             >
-              Next
+              {isLoading ? "Saving..." : "Next"}
             </Button>
           </div>
         </CardContent>

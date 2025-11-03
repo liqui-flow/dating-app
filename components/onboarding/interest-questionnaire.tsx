@@ -8,6 +8,9 @@ import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import { Sparkles, Zap, Heart } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
+import { completeQuestionnaire } from "@/lib/datingProfileService"
+import { useToast } from "@/hooks/use-toast"
 
 interface InterestQuestionnaireProps {
   onComplete?: () => void
@@ -61,6 +64,10 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
   const [ageRange, setAgeRange] = useState<[number, number]>([21, 35])
   const [distance, setDistance] = useState([25])
 
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+
   const selectedCount = selectedInterests.length
   const answeredCount = useMemo(() => Object.values(answers).filter(Boolean).length, [answers])
 
@@ -68,6 +75,95 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
 
   const toggleInterest = (label: string) => {
     setSelectedInterests((prev) => (prev.includes(label) ? prev.filter((i) => i !== label) : [...prev, label]))
+  }
+
+  const handleComplete = async () => {
+    if (!canProceed) return
+    
+    setIsLoading(true)
+    
+    try {
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        toast({
+          title: "Authentication Error",
+          description: "Please sign in to continue",
+          variant: "destructive"
+        })
+        setIsLoading(false)
+        return
+      }
+
+      // Prepare interests data with categories
+      const interestsData = selectedInterests.map(interestName => {
+        // Find the category for this interest
+        let category = ''
+        for (const [cat, items] of Object.entries(interestCategories)) {
+          if (items.includes(interestName)) {
+            category = cat
+            break
+          }
+        }
+        return {
+          category,
+          name: interestName
+        }
+      })
+
+      // Prepare prompts data (only answered ones)
+      const promptsData = Object.entries(answers)
+        .filter(([_, answer]) => answer.trim())
+        .map(([question, answer]) => ({
+          question,
+          answer
+        }))
+
+      // Prepare this or that choices
+      const choicesData = Object.entries(choices)
+        .filter(([_, selected]) => selected !== null)
+        .map(([indexStr, selected]) => {
+          const index = parseInt(indexStr)
+          const [optionA, optionB] = thisOrThatPairs[index]
+          return {
+            optionA,
+            optionB,
+            selected: selected as 0 | 1,
+            index
+          }
+        })
+
+      // Save all questionnaire data
+      const result = await completeQuestionnaire(user.id, {
+        interests: interestsData,
+        prompts: promptsData,
+        choices: choicesData,
+        goal,
+        minAge: ageRange[0],
+        maxAge: ageRange[1],
+        maxDistance: distance[0]
+      })
+
+      if (result.success) {
+        toast({
+          title: "Profile Complete!",
+          description: "Your dating profile is now complete.",
+        })
+        onComplete?.()
+      } else {
+        throw new Error(result.error || "Failed to complete questionnaire")
+      }
+    } catch (error: any) {
+      console.error("Error completing questionnaire:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save your responses. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -233,10 +329,17 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
             <Button 
               variant="outline" 
               className="bg-white/10 backdrop-blur-md border-white/20 text-primary hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+              disabled={isLoading}
             >
               Back
             </Button>
-            <Button disabled={!canProceed} onClick={() => onComplete?.()} className="bg-primary text-white hover:bg-primary/90">Next</Button>
+            <Button 
+              disabled={!canProceed || isLoading} 
+              onClick={handleComplete} 
+              className="bg-primary text-white hover:bg-primary/90"
+            >
+              {isLoading ? "Saving..." : "Complete"}
+            </Button>
           </div>
         </CardContent>
       </Card>
