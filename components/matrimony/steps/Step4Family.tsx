@@ -9,13 +9,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
-import { saveDraft } from "@/lib/matrimonyService"
+import { saveDraft, saveStep4 } from "@/lib/matrimonyService"
 import { Check } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
+import { toast } from "sonner"
 
 type FormValues = z.infer<typeof familySchema>
 
 export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { family, setPartial } = useMatrimonySetupStore()
+  const [isLoading, setIsLoading] = React.useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(familySchema),
@@ -42,9 +45,34 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
     return () => sub.unsubscribe()
   }, [form, setPartial])
 
-  const onSubmit = (values: FormValues) => {
-    setPartial("family", values)
-    onNext()
+  const onSubmit = async (values: FormValues) => {
+    setIsLoading(true)
+    
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        toast.error("Please sign in to continue")
+        setIsLoading(false)
+        return
+      }
+
+      setPartial("family", values)
+
+      const result = await saveStep4(user.id, values)
+
+      if (result.success) {
+        toast.success("Step 4 saved successfully!")
+        onNext()
+      } else {
+        throw new Error(result.error || "Failed to save")
+      }
+    } catch (error: any) {
+      console.error("Error saving step 4:", error)
+      toast.error(error.message || "Failed to save. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -149,8 +177,8 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
           )} />
 
           <div className="flex justify-between pt-2">
-            <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
-            <Button type="submit">Next</Button>
+            <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Next"}</Button>
           </div>
         </div>
       </form>

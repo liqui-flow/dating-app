@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
 import { Check } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
+import { saveStep2 } from "@/lib/matrimonyService"
+import { toast } from "sonner"
 
 type FormValues = z.infer<typeof personalPhysicalSchema>
 
@@ -22,6 +25,7 @@ function toCm(value: { cm?: number; ft?: number; inch?: number }) {
 export function Step2PersonalPhysical({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { personal, setPartial } = useMatrimonySetupStore()
   const [unit, setUnit] = useState<"cm" | "ftin">(personal.heightUnit || "cm")
+  const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(personalPhysicalSchema),
@@ -44,9 +48,46 @@ export function Step2PersonalPhysical({ onNext, onBack }: { onNext: () => void; 
     return () => sub.unsubscribe()
   }, [form, setPartial, unit])
 
-  const onSubmit = (values: FormValues) => {
-    setPartial("personal", { ...values, heightUnit: unit })
-    onNext()
+  const onSubmit = async (values: FormValues) => {
+    setIsLoading(true)
+    
+    try {
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        toast.error("Please sign in to continue")
+        setIsLoading(false)
+        return
+      }
+
+      // Save to store
+      setPartial("personal", { ...values, heightUnit: unit })
+
+      // Save to database
+      const result = await saveStep2(user.id, {
+        heightCm: values.heightCm,
+        heightUnit: unit,
+        complexion: values.complexion,
+        bodyType: values.bodyType,
+        diet: values.diet,
+        smoker: values.smoker,
+        drinker: values.drinker,
+        maritalStatus: values.maritalStatus,
+      })
+
+      if (result.success) {
+        toast.success("Step 2 saved successfully!")
+        onNext()
+      } else {
+        throw new Error(result.error || "Failed to save")
+      }
+    } catch (error: any) {
+      console.error("Error saving step 2:", error)
+      toast.error(error.message || "Failed to save. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -205,8 +246,8 @@ export function Step2PersonalPhysical({ onNext, onBack }: { onNext: () => void; 
           />
 
           <div className="flex justify-between pt-2">
-            <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
-            <Button type="submit">Next</Button>
+            <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Next"}</Button>
           </div>
         </div>
       </form>

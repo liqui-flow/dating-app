@@ -12,14 +12,17 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Upload, X } from "lucide-react"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
-import { uploadAsset, saveDraft } from "@/lib/matrimonyService"
+import { uploadAsset, saveDraft, saveStep1 } from "@/lib/matrimonyService"
 import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabaseClient"
+import { toast } from "sonner"
 
 type FormValues = z.infer<typeof welcomeIdentitySchema>
 
 export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
   const { welcome, setPartial } = useMatrimonySetupStore()
   const [photos, setPhotos] = React.useState<string[]>(welcome.photoUrls || (welcome.photoUrl ? [welcome.photoUrl] : []))
+  const [isLoading, setIsLoading] = React.useState(false)
   const router = useRouter()
 
   const form = useForm<FormValues>({
@@ -48,14 +51,53 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
   }, [form, setPartial])
 
   const onSubmit = async (values: FormValues) => {
-    setPartial("welcome", {
-      name: values.name,
-      age: values.age,
-      gender: values.gender,
-      createdBy: values.createdBy,
-      photoUrls: photos,
-    })
-    onNext()
+    if (photos.length < 3) {
+      toast.error("Please upload at least 3 photos")
+      return
+    }
+
+    setIsLoading(true)
+    
+    try {
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        toast.error("Please sign in to continue")
+        setIsLoading(false)
+        return
+      }
+
+      // Save to store
+      setPartial("welcome", {
+        name: values.name,
+        age: values.age,
+        gender: values.gender,
+        createdBy: values.createdBy,
+        photoUrls: photos,
+      })
+
+      // Save to database
+      const result = await saveStep1(user.id, {
+        name: values.name,
+        age: values.age,
+        gender: values.gender,
+        createdBy: values.createdBy,
+        photoUrls: photos,
+      })
+
+      if (result.success) {
+        toast.success("Step 1 saved successfully!")
+        onNext()
+      } else {
+        throw new Error(result.error || "Failed to save")
+      }
+    } catch (error: any) {
+      console.error("Error saving step 1:", error)
+      toast.error(error.message || "Failed to save. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -197,7 +239,7 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
           />
 
           <div className="flex justify-between">
-            <Button type="button" variant="ghost" onClick={() => {
+            <Button type="button" variant="ghost" disabled={isLoading} onClick={() => {
               // Navigate back to path selection by going to home and triggering path-select step
               try {
                 localStorage.removeItem("onboardingCompleteMode")
@@ -207,7 +249,9 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
               } catch {}
               router.push("/")
             }}>Back</Button>
-            <Button type="submit">Next</Button>
+            <Button type="submit" disabled={isLoading || photos.length < 3}>
+              {isLoading ? "Saving..." : "Next"}
+            </Button>
           </div>
         </div>
       </form>

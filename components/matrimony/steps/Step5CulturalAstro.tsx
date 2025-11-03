@@ -9,12 +9,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
-import { saveDraft } from "@/lib/matrimonyService"
+import { saveDraft, saveStep5 } from "@/lib/matrimonyService"
+import { supabase } from "@/lib/supabaseClient"
+import { toast } from "sonner"
 
 type FormValues = z.infer<typeof culturalAstroSchema>
 
 export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { cultural, setPartial } = useMatrimonySetupStore()
+  const [isLoading, setIsLoading] = React.useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(culturalAstroSchema),
@@ -40,9 +43,44 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
     return () => sub.unsubscribe()
   }, [form, setPartial])
 
-  const onSubmit = (values: FormValues) => {
-    setPartial("cultural", values)
-    onNext()
+  const onSubmit = async (values: FormValues) => {
+    setIsLoading(true)
+    
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        toast.error("Please sign in to continue")
+        setIsLoading(false)
+        return
+      }
+
+      setPartial("cultural", values)
+
+      const result = await saveStep5(user.id, {
+        religion: values.religion,
+        motherTongue: values.motherTongue,
+        community: values.community,
+        subCaste: values.subCaste,
+        dob: values.dob,
+        tob: values.tob,
+        pob: values.pob,
+        star: values.star,
+        gotra: values.gotra,
+      })
+
+      if (result.success) {
+        toast.success("Step 5 saved successfully!")
+        onNext()
+      } else {
+        throw new Error(result.error || "Failed to save")
+      }
+    } catch (error: any) {
+      console.error("Error saving step 5:", error)
+      toast.error(error.message || "Failed to save. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -127,8 +165,8 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
           </div>
 
           <div className="flex justify-between pt-2">
-            <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
-            <Button type="submit">Next</Button>
+            <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Next"}</Button>
           </div>
         </div>
       </form>

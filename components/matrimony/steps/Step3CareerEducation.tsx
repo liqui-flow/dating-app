@@ -9,12 +9,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
-import { saveDraft } from "@/lib/matrimonyService"
+import { saveDraft, saveStep3 } from "@/lib/matrimonyService"
+import { supabase } from "@/lib/supabaseClient"
+import { toast } from "sonner"
 
 type FormValues = z.infer<typeof careerEducationSchema>
 
 export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { career, setPartial } = useMatrimonySetupStore()
+  const [isLoading, setIsLoading] = React.useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(careerEducationSchema),
@@ -38,8 +41,33 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
   }, [form, setPartial])
 
   const onSubmit = async (values: FormValues) => {
-    setPartial("career", values)
-    onNext()
+    setIsLoading(true)
+    
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        toast.error("Please sign in to continue")
+        setIsLoading(false)
+        return
+      }
+
+      setPartial("career", values)
+
+      const result = await saveStep3(user.id, values)
+
+      if (result.success) {
+        toast.success("Step 3 saved successfully!")
+        onNext()
+      } else {
+        throw new Error(result.error || "Failed to save")
+      }
+    } catch (error: any) {
+      console.error("Error saving step 3:", error)
+      toast.error(error.message || "Failed to save. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -130,8 +158,8 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
           </div>
 
           <div className="flex justify-between pt-2">
-            <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
-            <Button type="submit">Next</Button>
+            <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Next"}</Button>
           </div>
         </div>
       </form>

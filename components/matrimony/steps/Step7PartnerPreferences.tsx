@@ -9,12 +9,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
-import { saveDraft } from "@/lib/matrimonyService"
+import { saveDraft, saveStep7 } from "@/lib/matrimonyService"
+import { supabase } from "@/lib/supabaseClient"
+import { toast } from "sonner"
 
 type FormValues = z.infer<typeof partnerPreferencesSchema>
 
 export function Step7PartnerPreferences({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { preferences, setPartial } = useMatrimonySetupStore()
+  const [isLoading, setIsLoading] = React.useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(partnerPreferencesSchema),
@@ -40,9 +43,44 @@ export function Step7PartnerPreferences({ onNext, onBack }: { onNext: () => void
     return () => sub.unsubscribe()
   }, [form, setPartial])
 
-  const onSubmit = (values: FormValues) => {
-    setPartial("preferences", values)
-    onNext()
+  const onSubmit = async (values: FormValues) => {
+    setIsLoading(true)
+    
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        toast.error("Please sign in to continue")
+        setIsLoading(false)
+        return
+      }
+
+      setPartial("preferences", values)
+
+      const result = await saveStep7(user.id, {
+        ageRange: values.ageRange as [number, number],
+        heightRangeCm: values.heightRangeCm as [number, number],
+        dietPrefs: values.dietPrefs,
+        lifestylePrefs: values.lifestylePrefs,
+        educationPrefs: values.educationPrefs,
+        professionPrefs: values.professionPrefs,
+        locations: values.locations,
+        communities: values.communities,
+        familyTypePrefs: values.familyTypePrefs,
+      })
+
+      if (result.success) {
+        toast.success("Profile completed successfully!")
+        onNext()
+      } else {
+        throw new Error(result.error || "Failed to save")
+      }
+    } catch (error: any) {
+      console.error("Error saving step 7:", error)
+      toast.error(error.message || "Failed to save. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -145,8 +183,8 @@ export function Step7PartnerPreferences({ onNext, onBack }: { onNext: () => void
           </div>
 
           <div className="flex justify-between pt-2">
-            <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
-            <Button type="submit">Next</Button>
+            <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Complete"}</Button>
           </div>
         </div>
       </form>
