@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "Dating & Matrimony App",
+    "slug": "dating-matrimony-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/placeholder-logo.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./public/placeholder-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lovesathi.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "We need access to your camera for KYC identity verification. This helps keep our community safe and authentic.",
+        "NSPhotoLibraryUsageDescription": "We need access to your photo library to upload profile photos.",
+        "NSMicrophoneUsageDescription": "Microphone access is needed for video calls with your matches."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./public/placeholder-logo.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.lovesathi.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./public/placeholder-logo.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera for identity verification.",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for video calls.",
+          "recordAudioAndroid": true
+        }
+      ]
+    ]
+  }
+}
+
