@@ -233,9 +233,13 @@ export async function uploadIDDocument(file: File) {
       throw new Error('User not authenticated')
     }
 
+    console.log('🔄 Uploading ID document for user:', user.id)
+
     // Generate unique filename
     const fileExt = file.name.split('.').pop()
     const fileName = `${user.id}/id-document-${Date.now()}.${fileExt}`
+
+    console.log('📁 Upload path:', fileName)
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
@@ -245,7 +249,12 @@ export async function uploadIDDocument(file: File) {
         upsert: false
       })
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ Upload error:', error)
+      throw new Error(`Storage upload failed: ${error.message}. Please check if storage policies are applied.`)
+    }
+
+    console.log('✅ Upload successful:', data)
 
     // Get public URL
     const { data: urlData } = supabase.storage
@@ -278,9 +287,13 @@ export async function uploadFaceScan(file: File) {
       throw new Error('User not authenticated')
     }
 
+    console.log('🔄 Uploading face scan for user:', user.id)
+
     // Generate unique filename
     const fileExt = file.name.split('.').pop()
     const fileName = `${user.id}/face-scan-${Date.now()}.${fileExt}`
+
+    console.log('📁 Upload path:', fileName)
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
@@ -290,7 +303,12 @@ export async function uploadFaceScan(file: File) {
         upsert: false
       })
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ Upload error:', error)
+      throw new Error(`Storage upload failed: ${error.message}. Please check if storage policies are applied.`)
+    }
+
+    console.log('✅ Upload successful:', data)
 
     // Get public URL
     const { data: urlData } = supabase.storage

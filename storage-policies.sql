@@ -9,6 +9,20 @@
 
 -- Then run the policies below:
 
+-- ⚠️ NOTE: If you get "policy already exists" errors, that means the policies
+-- are already applied. You can safely ignore those errors or DROP the existing
+-- policies first and recreate them.
+
+-- To DROP existing policies (optional, run only if you want to recreate):
+-- DROP POLICY IF EXISTS "Users can upload own documents" ON storage.objects;
+-- DROP POLICY IF EXISTS "Users can read own documents" ON storage.objects;
+-- DROP POLICY IF EXISTS "Users can update own documents" ON storage.objects;
+-- DROP POLICY IF EXISTS "Users can delete own documents" ON storage.objects;
+-- DROP POLICY IF EXISTS "Users can upload own face scans" ON storage.objects;
+-- DROP POLICY IF EXISTS "Users can read own face scans" ON storage.objects;
+-- DROP POLICY IF EXISTS "Users can update own face scans" ON storage.objects;
+-- DROP POLICY IF EXISTS "Users can delete own face scans" ON storage.objects;
+
 -- ============================================
 -- POLICIES FOR: verification-documents bucket
 -- ============================================
