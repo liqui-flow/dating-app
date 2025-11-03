@@ -8,6 +8,11 @@ import { Label } from "@/components/ui/label"
 import { Shield, CheckCircle, Upload, Camera, X, FileText } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { FaceScanModal } from "@/components/kyc/FaceScanModal"
+import { 
+  saveDateOfBirth, 
+  saveGender, 
+  completeIDVerification 
+} from "@/lib/verificationApi"
 
 interface VerificationScreenProps {
   onComplete?: () => void
@@ -192,7 +197,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
     return age
   }
 
-  const handleProfileContinue = () => {
+  const handleProfileContinue = async () => {
     setUnderageMessage(null)
     const age = dob ? calculateAge(dob) : 0
     if (age < 17) {
@@ -201,16 +206,61 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
       return
     }
     if (dob) {
-      setProfileValid(true)
-      setStep("gender")
+      setIsLoading(true)
+      
+      // Save DOB to Supabase
+      const result = await saveDateOfBirth(dob)
+      
+      setIsLoading(false)
+      
+      if (result.success) {
+        toast({
+          title: "Date of Birth Saved",
+          description: "Your date of birth has been saved successfully.",
+        })
+        setProfileValid(true)
+        setStep("gender")
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to save date of birth. Please try again.",
+          variant: "destructive",
+        })
+      }
     }
   }
 
   const handleComplete = async () => {
+    // Validate that both files are uploaded
+    if (!uploadedFile || !capturedFacePhoto) {
+      toast({
+        title: "Missing Files",
+        description: "Please upload both ID document and face scan to continue.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    
+    // Upload files and save verification to Supabase
+    const result = await completeIDVerification(uploadedFile, capturedFacePhoto)
+    
     setIsLoading(false)
-    onComplete?.()
+    
+    if (result.success) {
+      toast({
+        title: "Verification Submitted",
+        description: "Your ID verification has been submitted successfully and is pending review.",
+      })
+      onComplete?.()
+    } else {
+      toast({
+        title: "Verification Failed",
+        description: result.error || "Failed to submit verification. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   // Progress indicator helpers
@@ -289,12 +339,13 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
 
                 <div className="space-y-3">
                   <Button onClick={handleProfileContinue} className="w-full" disabled={isLoading || !dob}>
-                    Continue
+                    {isLoading ? "Saving..." : "Continue"}
                   </Button>
                   <Button 
                     onClick={() => window.location.href = '/'} 
                     variant="outline" 
                     className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                    disabled={isLoading}
                   >
                     Back
                   </Button>
@@ -349,13 +400,41 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                 </Button>
               </div>
               <div className="space-y-3">
-                <Button className="w-full" onClick={() => setStep("id")} disabled={gender === null}>
-                  Continue
+                <Button 
+                  className="w-full" 
+                  onClick={async () => {
+                    if (gender === null) return
+                    
+                    setIsLoading(true)
+                    
+                    // Save gender to Supabase
+                    const result = await saveGender(gender)
+                    
+                    setIsLoading(false)
+                    
+                    if (result.success) {
+                      toast({
+                        title: "Gender Saved",
+                        description: "Your gender has been saved successfully.",
+                      })
+                      setStep("id")
+                    } else {
+                      toast({
+                        title: "Error",
+                        description: result.error || "Failed to save gender. Please try again.",
+                        variant: "destructive",
+                      })
+                    }
+                  }} 
+                  disabled={gender === null || isLoading}
+                >
+                  {isLoading ? "Saving..." : "Continue"}
                 </Button>
                 <Button 
                   onClick={() => setStep("profile")} 
                   variant="outline" 
                   className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                  disabled={isLoading}
                 >
                   Back
                 </Button>
@@ -507,12 +586,13 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                     className="w-full" 
                     disabled={isLoading || !uploadedFile || !capturedFacePhoto}
                   >
-                    {isLoading ? "Processing..." : "Verify ID"}
+                    {isLoading ? "Uploading & Saving..." : "Verify ID"}
                   </Button>
                   <Button 
                     onClick={() => setStep("gender")} 
                     variant="outline" 
                     className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                    disabled={isLoading}
                   >
                     Back
                   </Button>
@@ -521,6 +601,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                       onClick={onSkip} 
                       variant="outline" 
                       className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                      disabled={isLoading}
                     >
                       Skip for now
                     </Button>
