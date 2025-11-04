@@ -63,20 +63,61 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
     }
   }
 
+  // 🔹 Handle Post-Login Redirect Logic
+  const handlePostLogin = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('selected_path, onboarding_completed')
+        .eq('user_id', userId)
+        .single()
+
+      if (error || !profile) {
+        console.log('No profile found, sending to onboarding')
+        router.push('/onboarding/verification')
+        return
+      }
+
+      if (!profile.onboarding_completed) {
+        router.push('/onboarding/verification')
+        return
+      }
+
+      if (profile.selected_path === 'dating') {
+        router.push('/dating/dashboard')
+        return
+      }
+
+      if (profile.selected_path === 'matrimony') {
+        router.push('/matrimony/discovery')
+        return
+      }
+
+      // fallback
+      router.push('/onboarding/verification')
+    } catch (err) {
+      console.error('Error checking profile:', err)
+      router.push('/onboarding/verification')
+    }
+  }
+
   // 🔹 Handle Login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       })
       if (error) throw error
 
-      if (onAuthSuccess) onAuthSuccess()
-      else router.push("/onboarding/verification")
+      if (data.user) {
+        await handlePostLogin(data.user.id)
+      } else {
+        router.push("/onboarding/verification")
+      }
     } catch (err: any) {
       setError(err.message || "Invalid credentials")
     } finally {

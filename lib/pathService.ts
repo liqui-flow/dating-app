@@ -24,7 +24,7 @@ export async function saveUserPath(userId: string, path: PathType) {
       const { data, error } = await supabase
         .from('user_profiles')
         .update({ 
-          path,
+          selected_path: path,
           path_selected_at: new Date().toISOString()
         })
         .eq('user_id', userId)
@@ -58,7 +58,7 @@ export async function getUserPath(userId: string): Promise<PathType | null> {
   try {
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('path')
+      .select('selected_path')
       .eq('user_id', userId)
       .single()
 
@@ -70,7 +70,7 @@ export async function getUserPath(userId: string): Promise<PathType | null> {
       throw error
     }
 
-    return data?.path as PathType | null
+    return data?.selected_path as PathType | null
   } catch (error) {
     console.error('Error fetching user path:', error)
     return null
@@ -92,7 +92,7 @@ export async function upsertUserPath(
   try {
     const updateData: any = {
       user_id: userId,
-      path,
+      selected_path: path,
       path_selected_at: new Date().toISOString(),
       ...additionalData
     }
@@ -114,6 +114,34 @@ export async function upsertUserPath(
     return { 
       success: false, 
       error: error.message || 'Failed to save path selection' 
+    }
+  }
+}
+
+/**
+ * Mark user's onboarding as completed
+ */
+export async function completeOnboarding(userId: string, path: PathType) {
+  try {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({
+        onboarding_completed: true,
+        onboarding_completed_at: new Date().toISOString(),
+        selected_path: path
+      })
+      .eq('user_id', userId)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return { success: true, data }
+  } catch (error: any) {
+    console.error('Error completing onboarding:', error)
+    return {
+      success: false,
+      error: error.message || 'Failed to complete onboarding'
     }
   }
 }

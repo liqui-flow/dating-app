@@ -15,6 +15,8 @@ import { Step5CulturalAstro } from "@/components/matrimony/steps/Step5CulturalAs
 import { Step6Bio } from "@/components/matrimony/steps/Step6Bio"
 import { Step7PartnerPreferences } from "@/components/matrimony/steps/Step7PartnerPreferences"
 import { MatrimonySetupProvider } from "@/components/matrimony/store"
+import { supabase } from "@/lib/supabaseClient"
+import { completeOnboarding } from "@/lib/pathService"
 
 // Step placeholders (implemented later)
 function StepPlaceholder({ title }: { title: string }) {
@@ -104,15 +106,19 @@ export function MatrimonySetup() {
               <Step6Bio onNext={() => setStep(6)} onBack={() => setStep(4)} />
             )}
             {step === 6 && (
-              <Step7PartnerPreferences onNext={() => {
+              <Step7PartnerPreferences onNext={async () => {
                 try {
-                  if (typeof window !== "undefined") {
-                    localStorage.setItem("onboardingShowComplete", "true")
-                    localStorage.setItem("onboardingCompleteMode", "matrimony")
+                  // Mark onboarding as completed
+                  const { data: { user } } = await supabase.auth.getUser()
+                  if (user) {
+                    await completeOnboarding(user.id, "matrimony")
                   }
-                } catch {}
-                toast.success("Matrimony setup complete")
-                router.push("/")
+                  toast.success("Matrimony setup complete")
+                  router.push("/matrimony/discovery")
+                } catch (error) {
+                  console.error("Error completing matrimony onboarding:", error)
+                  toast.error("Failed to complete setup")
+                }
               }} onBack={() => setStep(5)} />
             )}
 
