@@ -20,6 +20,7 @@ import { PaymentScreen } from "@/components/premium/payment-screen"
 import { PremiumFeatures } from "@/components/premium/premium-features"
 import { VerificationStatus } from "@/components/profile/verification-status"
 import { MOCK_MATRIMONY_PROFILES, type MatrimonyProfile } from "@/lib/mockMatrimonyProfiles"
+import { supabase } from "@/lib/supabaseClient"
 
 interface MatrimonyMainProps {
   onExit?: () => void
@@ -162,7 +163,8 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
             else if (id === "premium") setCurrentScreen("premium")
             else if (id === "verification") setCurrentScreen("verification-status")
           }}
-          onLogout={() => {
+          onLogout={async () => {
+            await supabase.auth.signOut()
             window.location.href = "/auth"
           }}
         />
@@ -218,7 +220,8 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
               else if (id === "help_report_bug") window.alert("Bug report submitted")
               else if (id === "app_settings") window.alert("Open App Settings")
             }}
-            onLogout={() => {
+            onLogout={async () => {
+              await supabase.auth.signOut()
               window.location.href = "/auth"
             }}
             onBack={() => setCurrentScreen("profile")}

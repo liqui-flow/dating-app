@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 import {
   Bell,
   Shield,
@@ -22,6 +23,8 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { supabase } from "@/lib/supabaseClient"
+import { useToast } from "@/hooks/use-toast"
 
 interface SettingsSection {
   title: string
@@ -161,6 +164,8 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
     hide_age: false,
     hide_distance: false,
   })
+  const [isDeleting, setIsDeleting] = useState(false)
+  const { toast } = useToast()
 
   const handleToggle = (id: string) => {
     setSettings((prev) => ({
@@ -180,6 +185,67 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
     if (id === "delete_account") {
       const trigger = document.getElementById("delete-account-trigger") as HTMLButtonElement | null
       trigger?.click()
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    try {
+      setIsDeleting(true)
+
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+      if (userError || !user) {
+        toast({
+          title: "Error",
+          description: "Unable to verify user session",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Call delete account API
+      const response = await fetch('/api/auth/delete-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id }),
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        toast({
+          title: "Deletion Failed",
+          description: data.error || "Failed to delete account. Please try again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Sign out the user
+      await supabase.auth.signOut()
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account and all data have been permanently deleted.",
+      })
+
+      // Call logout handler to redirect user
+      setTimeout(() => {
+        onLogout?.()
+      }, 1500)
+
+    } catch (error: any) {
+      console.error('Error deleting account:', error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -282,15 +348,16 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                // Simulate deletion success
-                alert("Your account has been deleted.")
-                onLogout?.()
+              onClick={(e) => {
+                e.preventDefault()
+                handleDeleteAccount()
               }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
