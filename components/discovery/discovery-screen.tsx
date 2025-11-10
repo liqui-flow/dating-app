@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -8,229 +8,196 @@ import { SwipeCard } from "@/components/discovery/swipe-card"
 import { FilterSheet } from "@/components/discovery/filter-sheet"
 import { ProfileModal } from "@/components/discovery/profile-modal"
 import { Heart, Filter } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
 
-// Mock profiles data
-const mockProfiles = [
-	{
-		id: "1",
-		name: "Priya Sharma",
-		age: 26,
-		location: "Mumbai, India",
-		occupation: "Marketing Manager",
-		education: "MBA",
-		photos: ["/professional-woman-smiling.png", "/woman-hiking.png"],
-		bio: "Family-oriented person who loves traveling and cooking. Looking for someone who values traditions and is ready for marriage.",
-		interests: ["Travel", "Cooking", "Dancing", "Reading"],
-		religion: "Hindu",
-		verified: true,
-		premium: false,
-		distance: "5 km away",
-	},
-	{
-		id: "2",
-		name: "Arjun Patel",
-		age: 29,
-		location: "Delhi, India",
-		occupation: "Software Engineer",
-		education: "B.Tech",
-		photos: ["/new-profile-photo.jpg", "/casual-outdoor-photo.jpg"],
-		bio: "Tech enthusiast who enjoys hiking and photography. Seeking a life partner who shares similar values and dreams.",
-		interests: ["Technology", "Photography", "Hiking", "Music"],
-		religion: "Hindu",
-		verified: true,
-		premium: true,
-		distance: "12 km away",
-	},
-	{
-		id: "3",
-		name: "Sneha Reddy",
-		age: 24,
-		location: "Bangalore, India",
-		occupation: "Doctor",
-		education: "MBBS",
-		photos: ["/woman-with-family.jpg", "/professional-headshot.png"],
-		bio: "Passionate about helping others and spending time with family. Looking for someone genuine and caring.",
-		interests: ["Medicine", "Yoga", "Books", "Movies"],
-		religion: "Hindu",
-		verified: true,
-		premium: false,
-		distance: "8 km away",
-	},
-	{
-		id: "4",
-		name: "Neha Verma",
-		age: 27,
-		location: "Pune, India",
-		occupation: "UX Designer",
-		education: "B.Des",
-		photos: ["/professional-woman-smiling.png", "/woman-at-coffee-shop.png"],
-		bio: "Design lover, foodie, and a weekend traveler. Looking for a thoughtful partner.",
-		interests: ["Design", "Food", "Travel", "Art"],
-		religion: "Hindu",
-		verified: true,
-		premium: false,
-		distance: "3 km away",
-	},
-	{
-		id: "5",
-		name: "Rahul Mehta",
-		age: 30,
-		location: "Ahmedabad, India",
-		occupation: "Product Manager",
-		education: "MBA",
-		photos: ["/casual-outdoor-photo.jpg", "/professional-headshot.png"],
-		bio: "Ambitious and grounded. Love building products and long walks.",
-		interests: ["Startups", "Cricket", "Walking", "Podcasts"],
-		religion: "Hindu",
-		verified: true,
-		premium: true,
-		distance: "10 km away",
-	},
-	{
-		id: "6",
-		name: "Aisha Khan",
-		age: 25,
-		location: "Hyderabad, India",
-		occupation: "Teacher",
-		education: "M.A.",
-		photos: ["/woman-with-family.jpg", "/professional-woman-smiling.png"],
-		bio: "Family values and kindness first. I enjoy cooking and reading classics.",
-		interests: ["Cooking", "Reading", "Family", "Movies"],
-		religion: "Muslim",
-		verified: true,
-		premium: false,
-		distance: "6 km away",
-	},
-	{
-		id: "7",
-		name: "Vikram Singh",
-		age: 31,
-		location: "Jaipur, India",
-		occupation: "Entrepreneur",
-		education: "B.Com",
-		photos: ["/new-profile-photo.jpg", "/casual-outdoor-photo.jpg"],
-		bio: "Building my dream and looking for a partner to share it with.",
-		interests: ["Business", "Fitness", "Travel", "Music"],
-		religion: "Sikh",
-		verified: false,
-		premium: true,
-		distance: "14 km away",
-	},
-	{
-		id: "8",
-		name: "Anjali Nair",
-		age: 26,
-		location: "Kochi, India",
-		occupation: "Data Analyst",
-		education: "B.Sc",
-		photos: ["/professional-headshot.png", "/woman-hiking.png"],
-		bio: "Numbers by day, nature lover by weekend. Seeking a balanced partner.",
-		interests: ["Analytics", "Hiking", "Cooking", "Poetry"],
-		religion: "Hindu",
-		verified: true,
-		premium: false,
-		distance: "4 km away",
-	},
-	{
-		id: "9",
-		name: "Rohit Gupta",
-		age: 28,
-		location: "Chandigarh, India",
-		occupation: "Civil Engineer",
-		education: "B.E.",
-		photos: ["/placeholder-user.jpg", "/casual-outdoor-photo.jpg"],
-		bio: "Simple, honest and family-oriented. I like road trips and home-cooked food.",
-		interests: ["Road Trips", "Food", "Music", "Movies"],
-		religion: "Hindu",
-		verified: false,
-		premium: false,
-		distance: "11 km away",
-	},
-	{
-		id: "10",
-		name: "Meera Iyer",
-		age: 29,
-		location: "Chennai, India",
-		occupation: "Research Scientist",
-		education: "Ph.D",
-		photos: ["/woman-at-coffee-shop.png", "/professional-woman-smiling.png"],
-		bio: "Curious mind, kind heart. Interested in science, music, and culture.",
-		interests: ["Science", "Classical Music", "Reading", "Travel"],
-		religion: "Hindu",
-		verified: true,
-		premium: true,
-		distance: "7 km away",
-	},
-	{
-		id: "11",
-		name: "Farhan Ali",
-		age: 27,
-		location: "Lucknow, India",
-		occupation: "Photographer",
-		education: "B.A.",
-		photos: ["/casual-outdoor-photo.jpg", "/placeholder-user.jpg"],
-		bio: "Capturing moments. Looking for someone to share new ones with.",
-		interests: ["Photography", "Travel", "Coffee", "Art"],
-		religion: "Muslim",
-		verified: true,
-		premium: false,
-		distance: "9 km away",
-	},
-	{
-		id: "12",
-		name: "Riya Das",
-		age: 24,
-		location: "Kolkata, India",
-		occupation: "Content Writer",
-		education: "B.A.",
-		photos: ["/professional-woman-smiling.png", "/woman-with-family.jpg"],
-		bio: "Words, books, and long conversations. Seeking a warm, supportive partner.",
-		interests: ["Writing", "Books", "Cafe Hopping", "Movies"],
-		religion: "Hindu",
-		verified: false,
-		premium: false,
-		distance: "2 km away",
-	},
-	{
-		id: "13",
-		name: "Kabir Malhotra",
-		age: 32,
-		location: "Gurgaon, India",
-		occupation: "Finance Consultant",
-		education: "MBA",
-		photos: ["/professional-headshot.png", "/new-profile-photo.jpg"],
-		bio: "Finance by weekday, foodie by weekend. Family comes first.",
-		interests: ["Finance", "Food", "Fitness", "Travel"],
-		religion: "Hindu",
-		verified: true,
-		premium: true,
-		distance: "15 km away",
-	},
-]
+// Profile interface
+interface Profile {
+	id: string
+	name: string
+	age: number
+	location: string
+	occupation: string
+	education: string
+	photos: string[]
+	bio: string
+	interests: string[]
+	religion: string
+	verified: boolean
+	premium: boolean
+	distance: string
+	gender?: string
+}
 
 type ViewMode = "cards" | "grid"
+
+// Helper function to calculate age from date of birth
+function calculateAge(dob: string): number {
+	const birthDate = new Date(dob)
+	const today = new Date()
+	let age = today.getFullYear() - birthDate.getFullYear()
+	const monthDiff = today.getMonth() - birthDate.getMonth()
+	if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+		age--
+	}
+	return age
+}
 
 export function DiscoveryScreen() {
 	const [viewMode, setViewMode] = useState<ViewMode>("cards")
 	const [currentCardIndex, setCurrentCardIndex] = useState(0)
 	const [showFilters, setShowFilters] = useState(false)
-	const [selectedProfile, setSelectedProfile] = useState<(typeof mockProfiles)[0] | null>(null)
+	const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
 	const [likedProfiles, setLikedProfiles] = useState<string[]>([])
 	const [passedProfiles, setPassedProfiles] = useState<string[]>([])
+	const [profiles, setProfiles] = useState<Profile[]>([])
+	const [loading, setLoading] = useState(true)
 
-	const currentProfile = mockProfiles[currentCardIndex]
-	const hasMoreProfiles = currentCardIndex < mockProfiles.length
+	// Fetch profiles from Supabase
+	useEffect(() => {
+		async function fetchProfiles() {
+			try {
+				setLoading(true)
+
+				// Get current user
+				const { data: { user } } = await supabase.auth.getUser()
+				
+				// Fetch dating profiles with related data
+				const { data: datingProfiles, error: profilesError } = await supabase
+					.from("dating_profiles")
+					.select(`
+						user_id,
+						name,
+						video_url
+					`)
+					.eq("setup_completed", true)
+
+				if (profilesError) {
+					console.error("Error fetching dating profiles:", profilesError)
+					return
+				}
+
+				if (!datingProfiles || datingProfiles.length === 0) {
+					setProfiles([])
+					setLoading(false)
+					return
+				}
+
+				// Get user IDs
+				const userIds = datingProfiles.map((p) => p.user_id)
+
+				// Fetch user profiles (for dob and gender)
+				const { data: userProfiles, error: userProfilesError } = await supabase
+					.from("user_profiles")
+					.select("user_id, date_of_birth, gender")
+					.in("user_id", userIds)
+
+				if (userProfilesError) {
+					console.error("Error fetching user profiles:", userProfilesError)
+				}
+
+				// Fetch profile photos
+				const { data: photos, error: photosError } = await supabase
+					.from("profile_photos")
+					.select("user_id, photo_url, display_order, is_primary")
+					.in("user_id", userIds)
+					.order("display_order", { ascending: true })
+
+				if (photosError) {
+					console.error("Error fetching photos:", photosError)
+				}
+
+				// Fetch interests
+				const { data: interests, error: interestsError } = await supabase
+					.from("profile_interests")
+					.select("user_id, interest_name")
+					.in("user_id", userIds)
+
+				if (interestsError) {
+					console.error("Error fetching interests:", interestsError)
+				}
+
+				// Fetch relationship goals (for bio)
+				const { data: goals, error: goalsError } = await supabase
+					.from("relationship_goals")
+					.select("user_id, goal_description")
+					.in("user_id", userIds)
+
+				if (goalsError) {
+					console.error("Error fetching goals:", goalsError)
+				}
+
+				// Fetch ID verifications (for verified status)
+				const { data: verifications, error: verificationsError } = await supabase
+					.from("id_verifications")
+					.select("user_id, verification_status")
+					.in("user_id", userIds)
+
+				if (verificationsError) {
+					console.error("Error fetching verifications:", verificationsError)
+				}
+
+				// Combine all data
+				const combinedProfiles: Profile[] = datingProfiles
+					.map((datingProfile) => {
+						const userProfile = userProfiles?.find((up) => up.user_id === datingProfile.user_id)
+						const userPhotos = photos?.filter((p) => p.user_id === datingProfile.user_id).map((p) => p.photo_url) || []
+						const userInterests = interests?.filter((i) => i.user_id === datingProfile.user_id).map((i) => i.interest_name) || []
+						const userGoal = goals?.find((g) => g.user_id === datingProfile.user_id)
+						const verification = verifications?.find((v) => v.user_id === datingProfile.user_id)
+
+						// Skip if no user profile data (no dob)
+						if (!userProfile || !userProfile.date_of_birth) {
+							return null
+						}
+
+						// Exclude current user's profile
+						if (user && datingProfile.user_id === user.id) {
+							return null
+						}
+
+						return {
+							id: datingProfile.user_id,
+							name: datingProfile.name,
+							age: calculateAge(userProfile.date_of_birth),
+							gender: userProfile.gender,
+							location: "India", // Default location, can be enhanced later
+							occupation: "", // Not available in current schema
+							education: "", // Not available in current schema
+							photos: userPhotos.length > 0 ? userPhotos : ["/placeholder-user.jpg"],
+							bio: userGoal?.goal_description || "No bio available",
+							interests: userInterests,
+							religion: "", // Not available in current schema
+							verified: verification?.verification_status === "approved",
+							premium: false, // Not available in current schema
+							distance: "", // Not available in current schema
+						}
+					})
+					.filter((profile): profile is Profile => profile !== null)
+
+				setProfiles(combinedProfiles)
+			} catch (error) {
+				console.error("Error fetching profiles:", error)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchProfiles()
+	}, [])
+
+	const currentProfile = profiles[currentCardIndex]
+	const hasMoreProfiles = currentCardIndex < profiles.length
 
 	const handleLike = (profileId: string) => {
 		setLikedProfiles((prev) => [...prev, profileId])
-		if (currentCardIndex < mockProfiles.length - 1) {
+		if (currentCardIndex < profiles.length - 1) {
 			setCurrentCardIndex((prev) => prev + 1)
 		}
 	}
 
 	const handlePass = (profileId: string) => {
 		setPassedProfiles((prev) => [...prev, profileId])
-		if (currentCardIndex < mockProfiles.length - 1) {
+		if (currentCardIndex < profiles.length - 1) {
 			setCurrentCardIndex((prev) => prev + 1)
 		}
 	}
@@ -239,7 +206,7 @@ export function DiscoveryScreen() {
 		if (currentCardIndex > 0) {
 			setCurrentCardIndex((prev) => prev - 1)
 			// Remove from liked/passed arrays
-			const prevProfile = mockProfiles[currentCardIndex - 1]
+			const prevProfile = profiles[currentCardIndex - 1]
 			setLikedProfiles((prev) => prev.filter((id) => id !== prevProfile.id))
 			setPassedProfiles((prev) => prev.filter((id) => id !== prevProfile.id))
 		}
@@ -261,14 +228,21 @@ export function DiscoveryScreen() {
 			</div>
 
 			<div className="p-2 sm:p-4 pb-20 mt-8 sm:mt-10 flex-1 overflow-visible">
-				{viewMode === "cards" ? (
+				{loading ? (
+					<div className="flex items-center justify-center h-[65vh]">
+						<div className="text-center space-y-4">
+							<div className="w-12 h-12 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
+							<p className="text-sm text-muted-foreground">Loading profiles...</p>
+						</div>
+					</div>
+				) : viewMode === "cards" ? (
 					<div className="space-y-6">
 						{/* Card Stack */}
 						<div className="relative h-[65vh] sm:h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-8 sm:-translate-y-14 md:-translate-y-16 overflow-visible">
-							{hasMoreProfiles ? (
+							{hasMoreProfiles && profiles.length > 0 ? (
 								<div className="relative w-full max-w-xs sm:max-w-sm h-full overflow-visible">
-									{mockProfiles
-										.slice(currentCardIndex, Math.min(currentCardIndex + 4, mockProfiles.length))
+									{profiles
+										.slice(currentCardIndex, Math.min(currentCardIndex + 4, profiles.length))
 										.map((profile, index) => (
 											<div key={profile.id} className="absolute inset-0 flex items-center justify-center">
 												<SwipeCard
@@ -290,10 +264,14 @@ export function DiscoveryScreen() {
 										<div className="space-y-2">
 											<h3 className="text-base sm:text-lg font-semibold">No more profiles</h3>
 											<p className="text-xs sm:text-sm text-muted-foreground">
-												Check back later for new matches or adjust your filters
+												{profiles.length === 0 
+													? "No profiles available. Check back later!" 
+													: "Check back later for new matches or adjust your filters"}
 											</p>
 										</div>
-										<Button onClick={() => setCurrentCardIndex(0)} className="text-sm">Start Over</Button>
+										{profiles.length > 0 && (
+											<Button onClick={() => setCurrentCardIndex(0)} className="text-sm">Start Over</Button>
+										)}
 									</CardContent>
 								</Card>
 							)}

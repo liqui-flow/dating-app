@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AppLayout } from "@/components/layout/app-layout"
@@ -19,8 +19,35 @@ import { PremiumScreen } from "@/components/premium/premium-screen"
 import { PaymentScreen } from "@/components/premium/payment-screen"
 import { PremiumFeatures } from "@/components/premium/premium-features"
 import { VerificationStatus } from "@/components/profile/verification-status"
-import { MOCK_MATRIMONY_PROFILES, type MatrimonyProfile } from "@/lib/mockMatrimonyProfiles"
+import { type MatrimonyProfile } from "@/lib/mockMatrimonyProfiles"
 import { supabase } from "@/lib/supabaseClient"
+
+// Helper function to calculate age from date of birth
+function calculateAge(dob: string | null, ageFromProfile: number | null): number {
+	if (ageFromProfile) {
+		return ageFromProfile
+	}
+	if (dob) {
+		const birthDate = new Date(dob)
+		const today = new Date()
+		let age = today.getFullYear() - birthDate.getFullYear()
+		const monthDiff = today.getMonth() - birthDate.getMonth()
+		if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+			age--
+		}
+		return age
+	}
+	return 0
+}
+
+// Helper function to convert height from cm to feet and inches
+function formatHeight(heightCm: number | null): string | undefined {
+	if (!heightCm) return undefined
+	const totalInches = Math.round(heightCm / 2.54)
+	const feet = Math.floor(totalInches / 12)
+	const inches = totalInches % 12
+	return `${feet}'${inches}"`
+}
 
 interface MatrimonyMainProps {
   onExit?: () => void
@@ -28,7 +55,8 @@ interface MatrimonyMainProps {
 
 
 export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
-  const [profiles] = useState<MatrimonyProfile[]>(MOCK_MATRIMONY_PROFILES)
+  const [profiles, setProfiles] = useState<MatrimonyProfile[]>([])
+  const [loading, setLoading] = useState(true)
   const [currentScreen, setCurrentScreen] = useState<
     | "discover"
     | "messages"
@@ -45,6 +73,163 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
+
+  // Fetch profiles from Supabase
+  useEffect(() => {
+    async function fetchProfiles() {
+      try {
+        setLoading(true)
+
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        // Fetch matrimony profiles (only completed ones)
+        const { data: matrimonyProfiles, error: profilesError } = await supabase
+          .from("matrimony_profiles")
+          .select("user_id, name, age, gender")
+          .eq("profile_completed", true)
+
+        if (profilesError) {
+          console.error("Error fetching matrimony profiles:", profilesError)
+          return
+        }
+
+        if (!matrimonyProfiles || matrimonyProfiles.length === 0) {
+          setProfiles([])
+          setLoading(false)
+          return
+        }
+
+        // Get user IDs
+        const userIds = matrimonyProfiles.map((p) => p.user_id)
+
+        // Fetch photos
+        const { data: photos, error: photosError } = await supabase
+          .from("matrimony_photos")
+          .select("user_id, photo_url, display_order, is_primary")
+          .in("user_id", userIds)
+          .order("display_order", { ascending: true })
+
+        if (photosError) {
+          console.error("Error fetching photos:", photosError)
+        }
+
+        // Fetch personal details (for height)
+        const { data: personalDetails, error: personalError } = await supabase
+          .from("matrimony_personal_details")
+          .select("user_id, height_cm")
+          .in("user_id", userIds)
+
+        if (personalError) {
+          console.error("Error fetching personal details:", personalError)
+        }
+
+        // Fetch career/education (for profession and education)
+        const { data: careerEducation, error: careerError } = await supabase
+          .from("matrimony_career_education")
+          .select("user_id, job_title, highest_education, work_city, work_state, work_country")
+          .in("user_id", userIds)
+
+        if (careerError) {
+          console.error("Error fetching career education:", careerError)
+        }
+
+        // Fetch cultural details (for community, date_of_birth, location)
+        const { data: culturalDetails, error: culturalError } = await supabase
+          .from("matrimony_cultural_details")
+          .select("user_id, community, date_of_birth, place_of_birth")
+          .in("user_id", userIds)
+
+        if (culturalError) {
+          console.error("Error fetching cultural details:", culturalError)
+        }
+
+        // Fetch bio
+        const { data: bios, error: bioError } = await supabase
+          .from("matrimony_bio")
+          .select("user_id, bio")
+          .in("user_id", userIds)
+
+        if (bioError) {
+          console.error("Error fetching bios:", bioError)
+        }
+
+        // Fetch ID verifications (for verified status)
+        const { data: verifications, error: verificationsError } = await supabase
+          .from("id_verifications")
+          .select("user_id, verification_status")
+          .in("user_id", userIds)
+
+        if (verificationsError) {
+          console.error("Error fetching verifications:", verificationsError)
+        }
+
+        // Combine all data
+        const combinedProfiles: MatrimonyProfile[] = matrimonyProfiles
+          .map((matrimonyProfile) => {
+            const photosData = photos?.filter((p) => p.user_id === matrimonyProfile.user_id).map((p) => p.photo_url) || []
+            const personalDetail = personalDetails?.find((pd) => pd.user_id === matrimonyProfile.user_id)
+            const careerData = careerEducation?.find((ce) => ce.user_id === matrimonyProfile.user_id)
+            const culturalData = culturalDetails?.find((cd) => cd.user_id === matrimonyProfile.user_id)
+            const bioData = bios?.find((b) => b.user_id === matrimonyProfile.user_id)
+            const verification = verifications?.find((v) => v.user_id === matrimonyProfile.user_id)
+
+            // Skip if no essential data
+            if (!matrimonyProfile.name) {
+              return null
+            }
+
+            // Exclude current user's profile
+            if (user && matrimonyProfile.user_id === user.id) {
+              return null
+            }
+
+            // Calculate age (prefer from profile, fallback to DOB calculation)
+            const calculatedAge = calculateAge(
+              culturalData?.date_of_birth || null,
+              matrimonyProfile.age
+            )
+
+            // Format location
+            const locationParts = []
+            if (careerData?.work_city) locationParts.push(careerData.work_city)
+            if (careerData?.work_state) locationParts.push(careerData.work_state)
+            if (careerData?.work_country) locationParts.push(careerData.work_country)
+            const location = locationParts.length > 0 
+              ? locationParts.join(", ") 
+              : culturalData?.place_of_birth || "India"
+
+            const height = formatHeight(personalDetail?.height_cm || null)
+
+            return {
+              id: matrimonyProfile.user_id,
+              name: matrimonyProfile.name,
+              age: calculatedAge,
+              education: careerData?.highest_education || "",
+              profession: careerData?.job_title || "",
+              location: location,
+              community: culturalData?.community || undefined,
+              photos: photosData.length > 0 ? photosData : ["/placeholder-user.jpg"],
+              bio: bioData?.bio || undefined,
+              interests: [], // Not in current schema, can be added later
+              verified: verification?.verification_status === "approved",
+              premium: false, // Not in current schema, can be added later
+              height, // Add height to profile
+            }
+          })
+          .filter((profile): profile is MatrimonyProfile => profile !== null)
+
+        setProfiles(combinedProfiles)
+      } catch (error) {
+        console.error("Error fetching matrimony profiles:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfiles()
+  }, [])
+
   const currentProfile = profiles[currentCardIndex]
   const hasMoreProfiles = currentCardIndex < profiles.length
 
@@ -86,54 +271,68 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       {currentScreen === "discover" && (
         <div className="h-screen overflow-hidden flex flex-col">
           <div className="p-4 pb-20 mt-10 max-w-3xl mx-auto w-full flex-1 overflow-hidden">
-            <div className="space-y-6">
-              {/* Card Stack */}
-              <div className="relative h-[60vh] md:h-[500px] flex items-center justify-center transform -translate-y-2 md:-translate-y-4 overflow-visible">
-                {hasMoreProfiles ? (
-                  <div className="relative w-full max-w-sm h-full overflow-visible">
-                    {profiles
-                      .slice(currentCardIndex, Math.min(currentCardIndex + 4, profiles.length))
-                      .map((profile, index) => (
-                        <div key={profile.id} className="absolute inset-0 flex items-center justify-center">
-                          <MatrimonySwipeCard
-                            name={profile.name}
-                            age={profile.age}
-                            height={"5'6\""}
-                            profession={profile.profession}
-                            community={profile.community}
-                            location={profile.location}
-                            photos={profile.photos}
-                            verified={profile.verified}
-                            premium={profile.premium}
-                            bio={profile.bio}
-                            interests={profile.interests}
-                            education={profile.education}
-                            onConnect={index === 0 ? () => handleLike() : () => {}}
-                            onNotNow={index === 0 ? () => handlePass() : () => {}}
-                            onProfileClick={() => {
-                              // TODO: Implement profile modal for matrimony
-                              console.log("Profile clicked:", profile.name)
-                            }}
-                            stackIndex={index}
-                          />
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <Card className="w-full max-w-sm h-96 flex items-center justify-center">
-                    <CardContent className="text-center space-y-4">
-                      <div className="w-16 h-16 mx-auto bg-muted rounded-full" />
-                      <div className="space-y-2">
-                        <h3 className="text-lg font-semibold">No more profiles</h3>
-                        <p className="text-sm text-muted-foreground">Check back later for new matches</p>
-                      </div>
-                      <Button onClick={() => setCurrentCardIndex(0)}>Start Over</Button>
-                    </CardContent>
-                  </Card>
-                )}
+            {loading ? (
+              <div className="flex items-center justify-center h-[60vh] md:h-[500px]">
+                <div className="text-center space-y-4">
+                  <div className="w-12 h-12 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-muted-foreground">Loading profiles...</p>
+                </div>
               </div>
-
-            </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Card Stack */}
+                <div className="relative h-[60vh] md:h-[500px] flex items-center justify-center transform -translate-y-2 md:-translate-y-4 overflow-visible">
+                  {hasMoreProfiles && profiles.length > 0 ? (
+                    <div className="relative w-full max-w-sm h-full overflow-visible">
+                      {profiles
+                        .slice(currentCardIndex, Math.min(currentCardIndex + 4, profiles.length))
+                        .map((profile, index) => (
+                          <div key={profile.id} className="absolute inset-0 flex items-center justify-center">
+                            <MatrimonySwipeCard
+                              name={profile.name}
+                              age={profile.age}
+                              height={profile.height}
+                              profession={profile.profession}
+                              community={profile.community}
+                              location={profile.location}
+                              photos={profile.photos}
+                              verified={profile.verified}
+                              premium={profile.premium}
+                              bio={profile.bio}
+                              interests={profile.interests}
+                              education={profile.education}
+                              onConnect={index === 0 ? () => handleLike() : () => {}}
+                              onNotNow={index === 0 ? () => handlePass() : () => {}}
+                              onProfileClick={() => {
+                                // TODO: Implement profile modal for matrimony
+                                console.log("Profile clicked:", profile.name)
+                              }}
+                              stackIndex={index}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <Card className="w-full max-w-sm h-96 flex items-center justify-center">
+                      <CardContent className="text-center space-y-4">
+                        <div className="w-16 h-16 mx-auto bg-muted rounded-full" />
+                        <div className="space-y-2">
+                          <h3 className="text-lg font-semibold">No more profiles</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {profiles.length === 0 
+                              ? "No profiles available. Check back later!" 
+                              : "Check back later for new matches"}
+                          </p>
+                        </div>
+                        {profiles.length > 0 && (
+                          <Button onClick={() => setCurrentCardIndex(0)}>Start Over</Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

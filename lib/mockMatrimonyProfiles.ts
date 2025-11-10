@@ -11,6 +11,7 @@ export interface MatrimonyProfile {
   interests?: string[]
   verified?: boolean
   premium?: boolean
+  height?: string // Height in format like "5'6""
 }
 
 export const MOCK_MATRIMONY_PROFILES: MatrimonyProfile[] = [
