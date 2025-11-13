@@ -61,118 +61,129 @@ export function DiscoveryScreen() {
 				// Get current user
 				const { data: { user } } = await supabase.auth.getUser()
 				
-				// Fetch dating profiles with related data
-				const { data: datingProfiles, error: profilesError } = await supabase
-					.from("dating_profiles")
-					.select(`
-						user_id,
-						name,
-						video_url
-					`)
-					.eq("setup_completed", true)
-
-				if (profilesError) {
-					console.error("Error fetching dating profiles:", profilesError)
-					return
-				}
-
-				if (!datingProfiles || datingProfiles.length === 0) {
+				if (!user) {
 					setProfiles([])
 					setLoading(false)
 					return
 				}
 
-				// Get user IDs
-				const userIds = datingProfiles.map((p) => p.user_id)
+			// Fetch user's dating preferences from new consolidated table
+			const { data: userProfileFull, error: userProfileError } = await supabase
+				.from("dating_profile_full")
+				.select("preferences")
+				.eq("user_id", user.id)
+				.single()
 
-				// Fetch user profiles (for dob and gender)
-				const { data: userProfiles, error: userProfilesError } = await supabase
-					.from("user_profiles")
-					.select("user_id, date_of_birth, gender")
-					.in("user_id", userIds)
+			if (userProfileError && userProfileError.code !== 'PGRST116') {
+				console.error("Error fetching user preferences:", userProfileError)
+			}
 
-				if (userProfilesError) {
-					console.error("Error fetching user profiles:", userProfilesError)
-				}
+			// Fetch all dating profiles from new consolidated table
+			const { data: datingProfiles, error: profilesError } = await supabase
+				.from("dating_profile_full")
+				.select(`
+					user_id,
+					name,
+					dob,
+					gender,
+					bio,
+					photos,
+					interests,
+					relationship_goals,
+					preferences,
+					setup_completed
+				`)
+				.eq("setup_completed", true)
 
-				// Fetch profile photos
-				const { data: photos, error: photosError } = await supabase
-					.from("profile_photos")
-					.select("user_id, photo_url, display_order, is_primary")
-					.in("user_id", userIds)
-					.order("display_order", { ascending: true })
+			if (profilesError) {
+				console.error("Error fetching dating profiles:", profilesError)
+				return
+			}
 
-				if (photosError) {
-					console.error("Error fetching photos:", photosError)
-				}
+			if (!datingProfiles || datingProfiles.length === 0) {
+				setProfiles([])
+				setLoading(false)
+				return
+			}
 
-				// Fetch interests
-				const { data: interests, error: interestsError } = await supabase
-					.from("profile_interests")
-					.select("user_id, interest_name")
-					.in("user_id", userIds)
+			// Get user IDs for fetching additional data
+			const userIds = datingProfiles.map((p) => p.user_id)
 
-				if (interestsError) {
-					console.error("Error fetching interests:", interestsError)
-				}
+			// Fetch user profiles (for date_of_birth if not in dating_profile_full)
+			const { data: userProfiles, error: userProfilesError } = await supabase
+				.from("user_profiles")
+				.select("user_id, date_of_birth, gender")
+				.in("user_id", userIds)
 
-				// Fetch relationship goals (for bio)
-				const { data: goals, error: goalsError } = await supabase
-					.from("relationship_goals")
-					.select("user_id, goal_description")
-					.in("user_id", userIds)
+			if (userProfilesError) {
+				console.error("Error fetching user profiles:", userProfilesError)
+			}
 
-				if (goalsError) {
-					console.error("Error fetching goals:", goalsError)
-				}
+			// Fetch ID verifications (for verified status)
+			const { data: verifications, error: verificationsError } = await supabase
+				.from("id_verifications")
+				.select("user_id, verification_status")
+				.in("user_id", userIds)
 
-				// Fetch ID verifications (for verified status)
-				const { data: verifications, error: verificationsError } = await supabase
-					.from("id_verifications")
-					.select("user_id, verification_status")
-					.in("user_id", userIds)
+			if (verificationsError) {
+				console.error("Error fetching verifications:", verificationsError)
+			}
 
-				if (verificationsError) {
-					console.error("Error fetching verifications:", verificationsError)
-				}
+			// Get user's preference for filtering
+			const userPrefs = (userProfileFull?.preferences as any) || {}
+			const lookingFor = userPrefs.looking_for || 'everyone'
 
-				// Combine all data
-				const combinedProfiles: Profile[] = datingProfiles
-					.map((datingProfile) => {
-						const userProfile = userProfiles?.find((up) => up.user_id === datingProfile.user_id)
-						const userPhotos = photos?.filter((p) => p.user_id === datingProfile.user_id).map((p) => p.photo_url) || []
-						const userInterests = interests?.filter((i) => i.user_id === datingProfile.user_id).map((i) => i.interest_name) || []
-						const userGoal = goals?.find((g) => g.user_id === datingProfile.user_id)
-						const verification = verifications?.find((v) => v.user_id === datingProfile.user_id)
+			// Combine all data from consolidated table
+			const combinedProfiles: Profile[] = datingProfiles
+				.map((datingProfile) => {
+					// Get dob from dating_profile_full or fallback to user_profiles
+					const userProfile = userProfiles?.find((up) => up.user_id === datingProfile.user_id)
+					const dob = datingProfile.dob || userProfile?.date_of_birth
+					
+					// Skip if no dob available
+					if (!dob) {
+						return null
+					}
 
-						// Skip if no user profile data (no dob)
-						if (!userProfile || !userProfile.date_of_birth) {
-							return null
-						}
+					// Exclude current user's profile
+					if (user && datingProfile.user_id === user.id) {
+						return null
+					}
 
-						// Exclude current user's profile
-						if (user && datingProfile.user_id === user.id) {
-							return null
-						}
+					// Get data from consolidated table
+					const profilePhotos = (datingProfile.photos as string[]) || []
+					const profileInterests = (datingProfile.interests as string[]) || []
+					const profileGender = datingProfile.gender || userProfile?.gender
+					const profileBio = datingProfile.bio || datingProfile.relationship_goals || "No bio available"
+					const verification = verifications?.find((v) => v.user_id === datingProfile.user_id)
 
-						return {
-							id: datingProfile.user_id,
-							name: datingProfile.name,
-							age: calculateAge(userProfile.date_of_birth),
-							gender: userProfile.gender,
-							location: "India", // Default location, can be enhanced later
-							occupation: "", // Not available in current schema
-							education: "", // Not available in current schema
-							photos: userPhotos.length > 0 ? userPhotos : ["/placeholder-user.jpg"],
-							bio: userGoal?.goal_description || "No bio available",
-							interests: userInterests,
-							religion: "", // Not available in current schema
-							verified: verification?.verification_status === "approved",
-							premium: false, // Not available in current schema
-							distance: "", // Not available in current schema
-						}
-					})
-					.filter((profile): profile is Profile => profile !== null)
+					// Filter by gender preference
+					if (lookingFor === 'women' && profileGender !== 'female') {
+						return null
+					}
+					if (lookingFor === 'men' && profileGender !== 'male') {
+						return null
+					}
+					// If lookingFor is 'everyone', show all profiles
+
+					return {
+						id: datingProfile.user_id,
+						name: datingProfile.name,
+						age: calculateAge(dob),
+						gender: profileGender,
+						location: "India", // Default location, can be enhanced later
+						occupation: "", // Not available in current schema
+						education: "", // Not available in current schema
+						photos: profilePhotos.length > 0 ? profilePhotos : ["/placeholder-user.jpg"],
+						bio: profileBio,
+						interests: profileInterests,
+						religion: "", // Not available in current schema
+						verified: verification?.verification_status === "approved",
+						premium: false, // Not available in current schema
+						distance: "", // Not available in current schema
+					}
+				})
+				.filter((profile): profile is Profile => profile !== null)
 
 				setProfiles(combinedProfiles)
 			} catch (error) {

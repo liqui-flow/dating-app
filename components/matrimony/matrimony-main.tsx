@@ -83,10 +83,37 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         // Get current user
         const { data: { user } } = await supabase.auth.getUser()
         
-        // Fetch matrimony profiles (only completed ones)
+        if (!user) {
+          setProfiles([])
+          setLoading(false)
+          return
+        }
+
+        // Fetch current user's gender from user_profiles
+        const { data: currentUserProfile, error: currentUserError } = await supabase
+          .from("user_profiles")
+          .select("gender")
+          .eq("user_id", user.id)
+          .single()
+
+        if (currentUserError && currentUserError.code !== 'PGRST116') {
+          console.error("Error fetching current user profile:", currentUserError)
+        }
+
+        // Fetch matrimony profiles from consolidated table (only completed ones)
         const { data: matrimonyProfiles, error: profilesError } = await supabase
-          .from("matrimony_profiles")
-          .select("user_id, name, age, gender")
+          .from("matrimony_profile_full")
+          .select(`
+            user_id,
+            name,
+            age,
+            gender,
+            photos,
+            personal,
+            career,
+            cultural,
+            bio
+          `)
           .eq("profile_completed", true)
 
         if (profilesError) {
@@ -100,59 +127,8 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
           return
         }
 
-        // Get user IDs
+        // Get user IDs for verifications
         const userIds = matrimonyProfiles.map((p) => p.user_id)
-
-        // Fetch photos
-        const { data: photos, error: photosError } = await supabase
-          .from("matrimony_photos")
-          .select("user_id, photo_url, display_order, is_primary")
-          .in("user_id", userIds)
-          .order("display_order", { ascending: true })
-
-        if (photosError) {
-          console.error("Error fetching photos:", photosError)
-        }
-
-        // Fetch personal details (for height)
-        const { data: personalDetails, error: personalError } = await supabase
-          .from("matrimony_personal_details")
-          .select("user_id, height_cm")
-          .in("user_id", userIds)
-
-        if (personalError) {
-          console.error("Error fetching personal details:", personalError)
-        }
-
-        // Fetch career/education (for profession and education)
-        const { data: careerEducation, error: careerError } = await supabase
-          .from("matrimony_career_education")
-          .select("user_id, job_title, highest_education, work_city, work_state, work_country")
-          .in("user_id", userIds)
-
-        if (careerError) {
-          console.error("Error fetching career education:", careerError)
-        }
-
-        // Fetch cultural details (for community, date_of_birth, location)
-        const { data: culturalDetails, error: culturalError } = await supabase
-          .from("matrimony_cultural_details")
-          .select("user_id, community, date_of_birth, place_of_birth")
-          .in("user_id", userIds)
-
-        if (culturalError) {
-          console.error("Error fetching cultural details:", culturalError)
-        }
-
-        // Fetch bio
-        const { data: bios, error: bioError } = await supabase
-          .from("matrimony_bio")
-          .select("user_id, bio")
-          .in("user_id", userIds)
-
-        if (bioError) {
-          console.error("Error fetching bios:", bioError)
-        }
 
         // Fetch ID verifications (for verified status)
         const { data: verifications, error: verificationsError } = await supabase
@@ -164,14 +140,18 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
           console.error("Error fetching verifications:", verificationsError)
         }
 
-        // Combine all data
+        // Get current user's gender for filtering
+        const currentUserGender = currentUserProfile?.gender
+
+        // Combine all data from consolidated table
         const combinedProfiles: MatrimonyProfile[] = matrimonyProfiles
           .map((matrimonyProfile) => {
-            const photosData = photos?.filter((p) => p.user_id === matrimonyProfile.user_id).map((p) => p.photo_url) || []
-            const personalDetail = personalDetails?.find((pd) => pd.user_id === matrimonyProfile.user_id)
-            const careerData = careerEducation?.find((ce) => ce.user_id === matrimonyProfile.user_id)
-            const culturalData = culturalDetails?.find((cd) => cd.user_id === matrimonyProfile.user_id)
-            const bioData = bios?.find((b) => b.user_id === matrimonyProfile.user_id)
+            // Extract data from JSONB fields
+            const photosData = (matrimonyProfile.photos as string[]) || []
+            const personalData = (matrimonyProfile.personal as any) || {}
+            const careerData = (matrimonyProfile.career as any) || {}
+            const culturalData = (matrimonyProfile.cultural as any) || {}
+            const bioText = matrimonyProfile.bio || null
             const verification = verifications?.find((v) => v.user_id === matrimonyProfile.user_id)
 
             // Skip if no essential data
@@ -184,22 +164,43 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
               return null
             }
 
-            // Calculate age (prefer from profile, fallback to DOB calculation)
-            const calculatedAge = calculateAge(
-              culturalData?.date_of_birth || null,
-              matrimonyProfile.age
-            )
+            // Filter by gender preference
+            // If current user is male, show only female profiles
+            // If current user is female, show only male profiles
+            // If current user gender is not set or is 'prefer_not_to_say', show all profiles
+            if (currentUserGender === 'male' && matrimonyProfile.gender !== 'Female') {
+              return null
+            }
+            if (currentUserGender === 'female' && matrimonyProfile.gender !== 'Male') {
+              return null
+            }
+            // If currentUserGender is null or 'prefer_not_to_say', show all profiles
 
-            // Format location
+            // Calculate age (prefer from profile, fallback to DOB calculation)
+            let calculatedAge = matrimonyProfile.age || 0
+            if (culturalData?.date_of_birth) {
+              const birthDate = new Date(culturalData.date_of_birth)
+              const today = new Date()
+              let age = today.getFullYear() - birthDate.getFullYear()
+              const monthDiff = today.getMonth() - birthDate.getMonth()
+              if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--
+              }
+              calculatedAge = age
+            }
+
+            // Format location from work_location object
+            const workLocation = careerData?.work_location || {}
             const locationParts = []
-            if (careerData?.work_city) locationParts.push(careerData.work_city)
-            if (careerData?.work_state) locationParts.push(careerData.work_state)
-            if (careerData?.work_country) locationParts.push(careerData.work_country)
+            if (workLocation.city) locationParts.push(workLocation.city)
+            if (workLocation.state) locationParts.push(workLocation.state)
+            if (workLocation.country) locationParts.push(workLocation.country)
             const location = locationParts.length > 0 
               ? locationParts.join(", ") 
               : culturalData?.place_of_birth || "India"
 
-            const height = formatHeight(personalDetail?.height_cm || null)
+            // Format height
+            const height = personalData?.height_cm ? `${personalData.height_cm} cm` : undefined
 
             return {
               id: matrimonyProfile.user_id,
@@ -210,7 +211,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
               location: location,
               community: culturalData?.community || undefined,
               photos: photosData.length > 0 ? photosData : ["/placeholder-user.jpg"],
-              bio: bioData?.bio || undefined,
+              bio: bioText || undefined,
               interests: [], // Not in current schema, can be added later
               verified: verification?.verification_status === "approved",
               premium: false, // Not in current schema, can be added later

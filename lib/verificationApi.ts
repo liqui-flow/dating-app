@@ -66,12 +66,22 @@ export interface VerificationStatus {
  * Save or update user's date of birth
  */
 export async function saveDateOfBirth(dob: string) {
+  console.log('🔵 saveDateOfBirth called with DOB:', dob)
+  
   try {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError) {
+      console.error('❌ Auth error:', authError)
+      throw new Error('Authentication error: ' + authError.message)
+    }
     
     if (!user) {
+      console.error('❌ No user found')
       throw new Error('User not authenticated')
     }
+    
+    console.log('✅ User authenticated:', user.id)
 
     // Calculate age
     const birthDate = new Date(dob)
@@ -88,11 +98,11 @@ export async function saveDateOfBirth(dob: string) {
     }
 
     // First, try to get existing profile
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile, error: fetchError } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle() // Use maybeSingle() to avoid error if no row exists
 
     let result
 
@@ -120,10 +130,68 @@ export async function saveDateOfBirth(dob: string) {
         .single()
     }
 
-    if (result.error) throw result.error
+    if (result.error) {
+      console.error('❌ Error saving DOB to user_profiles:', result.error)
+      console.error('Error details:', JSON.stringify(result.error, null, 2))
+      throw result.error
+    }
+    
+    console.log('✅ DOB saved to user_profiles:', result.data)
 
-    // Update verification progress
-    await updateVerificationProgress('dob_completed')
+    // Always sync to dating_profile_full (create if doesn't exist)
+    const { data: existingDatingProfile } = await supabase
+      .from('dating_profile_full')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    // Get user profile to check path
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('selected_path')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    // Sync to dating_profile_full if path is dating or not set yet
+    if (existingDatingProfile) {
+      // Update existing profile
+      const { error: updateError } = await supabase
+        .from('dating_profile_full')
+        .update({ dob: dob })
+        .eq('user_id', user.id)
+      
+      if (updateError) {
+        console.warn('Warning: Could not update dating_profile_full:', updateError.message)
+        // Don't throw - this is optional sync
+      }
+    } else if (!userProfile?.selected_path || userProfile?.selected_path === 'dating') {
+      // Create new profile with dob (if user has selected dating path or path not set yet)
+      const { error: insertError } = await supabase
+        .from('dating_profile_full')
+        .insert({
+          user_id: user.id,
+          name: '', // Will be set later
+          dob: dob,
+          interests: [],
+          prompts: [],
+          photos: [],
+          preferences: {},
+          this_or_that_choices: [],
+        })
+      
+      if (insertError) {
+        console.warn('Warning: Could not insert into dating_profile_full:', insertError.message)
+        // Don't throw - this is optional sync, table might not exist yet
+      }
+    }
+
+    // Update verification progress (don't fail if this errors)
+    try {
+      await updateVerificationProgress('dob_completed')
+    } catch (progressError: any) {
+      console.warn('Warning: Could not update verification progress:', progressError.message)
+      // Don't throw - this is optional
+    }
 
     return { success: true, data: result.data }
   } catch (error: any) {
@@ -144,11 +212,11 @@ export async function saveGender(gender: 'male' | 'female' | 'prefer_not_to_say'
     }
 
     // First, try to get existing profile
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile, error: fetchError } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle() // Use maybeSingle() to avoid error if no row exists
 
     let result
 
@@ -180,10 +248,100 @@ export async function saveGender(gender: 'male' | 'female' | 'prefer_not_to_say'
         .single()
     }
 
-    if (result.error) throw result.error
+    if (result.error) {
+      console.error('Error saving gender to user_profiles:', result.error)
+      throw result.error
+    }
 
-    // Update verification progress
-    await updateVerificationProgress('gender_completed')
+    // Convert gender format for dating (lowercase) and matrimony (capitalized)
+    const genderValue = gender === 'prefer_not_to_say' ? null : gender
+    const genderMatrimony = gender === 'prefer_not_to_say' ? null : (gender === 'male' ? 'Male' : gender === 'female' ? 'Female' : 'Other')
+
+    // Always sync to dating_profile_full (create if doesn't exist)
+    const { data: existingDatingProfile } = await supabase
+      .from('dating_profile_full')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (existingDatingProfile) {
+      // Update existing profile
+      await supabase
+        .from('dating_profile_full')
+        .update({ gender: genderValue })
+        .eq('user_id', user.id)
+    } else {
+      // Create new profile with gender (if user has selected dating path)
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('selected_path, date_of_birth')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (userProfile?.selected_path === 'dating') {
+        await supabase
+          .from('dating_profile_full')
+          .insert({
+            user_id: user.id,
+            name: '', // Will be set later
+            dob: userProfile.date_of_birth || null,
+            gender: genderValue,
+            interests: [],
+            prompts: [],
+            photos: [],
+            preferences: {},
+            this_or_that_choices: [],
+          })
+      }
+    }
+
+    // Also sync to matrimony_profile_full if user has selected matrimony path
+    const { data: userProfileForMatrimony } = await supabase
+      .from('user_profiles')
+      .select('selected_path, date_of_birth')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (userProfileForMatrimony?.selected_path === 'matrimony') {
+      const { data: existingMatrimonyProfile } = await supabase
+        .from('matrimony_profile_full')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (existingMatrimonyProfile) {
+        // Update existing matrimony profile
+        await supabase
+          .from('matrimony_profile_full')
+          .update({ gender: genderMatrimony })
+          .eq('user_id', user.id)
+      } else {
+        // Create new matrimony profile with gender
+        await supabase
+          .from('matrimony_profile_full')
+          .insert({
+            user_id: user.id,
+            name: '', // Will be set later
+            gender: genderMatrimony,
+            photos: [],
+            personal: {},
+            career: {},
+            family: {},
+            cultural: {
+              date_of_birth: userProfileForMatrimony.date_of_birth || null,
+            },
+            partner_preferences: {},
+          })
+      }
+    }
+
+    // Update verification progress (don't fail if this errors)
+    try {
+      await updateVerificationProgress('gender_completed')
+    } catch (progressError: any) {
+      console.warn('Warning: Could not update verification progress:', progressError.message)
+      // Don't throw - this is optional
+    }
 
     return { success: true, data: result.data }
   } catch (error: any) {
@@ -439,12 +597,12 @@ export async function updateVerificationProgress(
       throw new Error('User not authenticated')
     }
 
-    // Get existing progress
+    // Get existing progress (use maybeSingle to avoid error if table doesn't exist)
     const { data: existingProgress } = await supabase
       .from('verification_progress')
       .select('*')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     const now = new Date().toISOString()
     let updateData: any = {

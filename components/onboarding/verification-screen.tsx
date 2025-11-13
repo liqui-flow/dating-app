@@ -198,22 +198,45 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
   }
 
   const handleProfileContinue = async () => {
+    console.log('🔵 handleProfileContinue called', { dob, isLoading })
+    
     setUnderageMessage(null)
-    const age = dob ? calculateAge(dob) : 0
+    
+    if (!dob) {
+      console.log('❌ No DOB provided')
+      toast({
+        title: "Date Required",
+        description: "Please select your date of birth.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const age = calculateAge(dob)
+    console.log('📅 Calculated age:', age)
+    
     if (age < 17) {
       setUnderageMessage("You're underage to use a dating app.")
       setProfileValid(false)
+      toast({
+        title: "Age Restriction",
+        description: "You must be at least 17 years old to use this app.",
+        variant: "destructive",
+      })
       return
     }
-    if (dob) {
-      setIsLoading(true)
-      
+
+    console.log('✅ Age validation passed, starting save...')
+    setIsLoading(true)
+    
+    try {
+      console.log('📤 Calling saveDateOfBirth with:', dob)
       // Save DOB to Supabase
       const result = await saveDateOfBirth(dob)
-      
-      setIsLoading(false)
+      console.log('📥 saveDateOfBirth result:', result)
       
       if (result.success) {
+        console.log('✅ DOB saved successfully')
         toast({
           title: "Date of Birth Saved",
           description: "Your date of birth has been saved successfully.",
@@ -221,12 +244,24 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
         setProfileValid(true)
         setStep("gender")
       } else {
+        console.error('❌ Failed to save DOB:', result.error)
         toast({
           title: "Error",
           description: result.error || "Failed to save date of birth. Please try again.",
           variant: "destructive",
         })
       }
+    } catch (error: any) {
+      console.error('❌ Error in handleProfileContinue:', error)
+      console.error('Error stack:', error.stack)
+      toast({
+        title: "Error",
+        description: error.message || "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+      console.log('🏁 handleProfileContinue finished')
     }
   }
 
@@ -338,7 +373,17 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                 )}
 
                 <div className="space-y-3">
-                  <Button onClick={handleProfileContinue} className="w-full" disabled={isLoading || !dob}>
+                  <Button 
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('🔘 Continue button clicked', { dob, isLoading })
+                      handleProfileContinue()
+                    }} 
+                    className="w-full" 
+                    disabled={isLoading || !dob}
+                    type="button"
+                  >
                     {isLoading ? "Saving..." : "Continue"}
                   </Button>
                   <Button 
