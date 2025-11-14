@@ -167,11 +167,12 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
-      <Card className="w-full max-w-3xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-primary">What's your vibe?</CardTitle>
-          <div className="mt-3">
+    <div className="min-h-screen flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
+      <Card className="w-full max-w-4xl bg-white/10 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl rounded-[32px]">
+        <CardHeader className="text-center space-y-3">
+          <CardTitle className="text-3xl font-bold text-white drop-shadow">What's your vibe?</CardTitle>
+          <p className="text-sm text-white/70">Pick interests, prompts, and preferences so we can curate better matches.</p>
+          <div className="mt-1">
             <Progress value={(canProceed ? 100 : Math.min(100, (selectedCount/5)*40 + (answeredCount/3)*40 + (goal ? 20 : 0)))} />
           </div>
         </CardHeader>
@@ -181,11 +182,11 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
             <div className="text-center">
               <h3 className="text-xl font-semibold text-primary">Pick at least 5 interests to help us find your perfect match.</h3>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 gap-5">
               {Object.entries(interestCategories).map(([category, items]) => (
-                <div key={category} className="p-3 rounded-xl bg-white/60 border border-primary/10">
-                  <div className="mb-2 flex items-center gap-2 text-primary font-medium">
-                    <Sparkles className="w-4 h-4" /> {category}
+                <div key={category} className="p-4 rounded-2xl bg-white/5 border border-white/15 backdrop-blur-xl shadow-[0_12px_30px_rgba(0,0,0,0.35)]">
+                  <div className="mb-3 flex items-center gap-2 text-white font-medium">
+                    <Sparkles className="w-4 h-4 text-white/80" /> {category}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {items.map((label) => {
@@ -195,10 +196,10 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                           key={label}
                           type="button"
                           onClick={() => toggleInterest(label)}
-                          className={`px-3 py-2 rounded-full text-sm transition transform active:scale-95 border ${
+                          className={`px-3 py-1.5 rounded-full text-sm transition transform active:scale-95 border shadow-inner ${
                             active
-                              ? "bg-primary text-white border-primary"
-                              : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
+                              ? "bg-white text-black border-black shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+                              : "bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black"
                           }`}
                         >
                           {label}
@@ -209,7 +210,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                 </div>
               ))}
             </div>
-            <div className="text-center text-sm text-primary">Selected: {selectedCount}/10</div>
+            <div className="text-center text-sm text-white/70 tracking-wide">Selected: {selectedCount}/10</div>
           </section>
 
           {/* Prompts */}
@@ -220,16 +221,16 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               {prompts.map((p) => (
-                <div key={p} className="p-4 rounded-xl border border-primary/10 bg-white/60">
-                  <Label className="text-primary text-sm mb-2 block">{p}</Label>
+                <div key={p} className="p-4 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-lg shadow-[0_8px_24px_rgba(0,0,0,0.3)]">
+                  <Label className="text-white text-sm mb-2 block">{p}</Label>
                   <Textarea
                     placeholder="Type a short answer..."
                     value={answers[p] || ""}
                     onChange={(e) => setAnswers((prev) => ({ ...prev, [p]: e.target.value }))}
-                    className="min-h-20 resize-none text-primary placeholder:text-primary"
+                    className="min-h-20 resize-none text-white placeholder:text-white/40 bg-white/5 border-white/20"
                     maxLength={140}
                   />
-                  <div className="mt-1 text-xs text-primary/70 text-right">{(answers[p] || "").length}/140</div>
+                  <div className="mt-1 text-xs text-white/60 text-right">{(answers[p] || "").length}/140</div>
                 </div>
               ))}
             </div>
@@ -251,8 +252,10 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                         <Button
                           key={label}
                           variant="outline"
-                          className={`h-auto p-4 text-left border whitespace-normal break-words leading-relaxed min-h-12 ${
-                            active ? "bg-primary text-white border-primary" : "bg-white text-primary border-primary"
+                          className={`group h-auto p-4 text-left border whitespace-normal break-words leading-relaxed min-h-12 transition-all ${
+                            active
+                              ? "!bg-white !text-black !border-black shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
+                              : "bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black"
                           }`}
                           onClick={() =>
                             setChoices((prev) => ({
@@ -262,7 +265,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
                           }
                         >
                           <div className="flex items-center gap-2">
-                            <Heart className={`w-4 h-4 shrink-0 ${active ? "fill-white" : "fill-primary"}`} />
+                            <Heart className={`w-4 h-4 shrink-0 transition-colors ${active ? "text-black" : "text-white group-hover:text-black"}`} />
                             <span>{label}</span>
                           </div>
                         </Button>
@@ -279,13 +282,17 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
             <div className="text-center">
               <h3 className="text-xl font-semibold text-primary">Be honest about your relationship intentions.</h3>
             </div>
-            <div className="grid md:grid-cols-2 gap-3">
+            <div className="grid md:grid-cols-2 gap-4">
               {intentions.map((g) => (
                 <Button
                   key={g}
                   variant="outline"
                   onClick={() => setGoal(g)}
-                  className={`h-auto p-4 text-left border ${goal === g ? "bg-primary text-white border-primary" : "bg-white text-primary border-primary"}`}
+                  className={`h-auto p-4 text-left border transition-all ${
+                    goal === g
+                      ? "!bg-white !text-black !border-black shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
+                      : "bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black"
+                  }`}
                 >
                   {g}
                 </Button>
@@ -328,7 +335,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
           <div className="flex justify-between pt-2">
             <Button 
               variant="outline" 
-              className="bg-white/10 backdrop-blur-md border-white/20 text-primary hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+              className="bg-white/10 text-white border border-white/20 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
               disabled={isLoading}
             >
               Back
@@ -336,7 +343,7 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
             <Button 
               disabled={!canProceed || isLoading} 
               onClick={handleComplete} 
-              className="bg-primary text-white hover:bg-primary/90"
+              className="px-6 py-2 rounded-full font-semibold bg-gradient-to-r from-white to-white text-black shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isLoading ? "Saving..." : "Complete"}
             </Button>

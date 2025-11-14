@@ -48,9 +48,9 @@ export function ProfileView({ isOwnProfile = false, onEdit }: ProfileViewProps) 
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10">
+      <div className="sticky top-0 backdrop-blur-sm border-b border-border z-10">
         <div className="flex items-center justify-between p-4">
           <h1 className="text-xl font-semibold">{isOwnProfile ? "My Profile" : mockProfile.name}</h1>
           <div className="flex items-center space-x-2">

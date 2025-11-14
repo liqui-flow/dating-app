@@ -28,9 +28,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${robotoMono.variable} antialiased`}>
+    <html lang="en" className={`${inter.variable} ${robotoMono.variable} antialiased dark`}>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
           <Toaster /> {/* ✅ Sonner toaster here */}
           <ShadcnToaster /> {/* ✅ Shadcn toaster for form validations */}

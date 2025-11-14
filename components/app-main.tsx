@@ -114,7 +114,7 @@ export function AppMain() {
         }} />
       case "chat":
         return (
-          <div className="fixed inset-0 z-50 bg-background">
+          <div className="fixed inset-0 z-50">
             <ChatScreen 
               chatId={appState.chatUserId} 
               onBack={() => setAppState(prev => ({

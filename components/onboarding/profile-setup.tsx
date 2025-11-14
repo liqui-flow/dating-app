@@ -192,7 +192,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
                 variant="outline"
                 disabled={photos.length >= 6}
                 size="sm"
-                className="border-primary text-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 <Upload className="w-3 h-3 mr-1" />
                 {photos.length >= 6 ? "Max reached" : "Upload Photo"}
@@ -256,7 +256,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
                 onClick={() => videoInputRef.current?.click()}
                 variant="outline"
                 size="sm"
-                className="border-primary text-primary hover:bg-primary hover:text-white"
+                className="bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black transition-all"
               >
                 <Video className="w-3 h-3 mr-1" />
                 {video ? "Change Video" : "Add Video"}
@@ -289,7 +289,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
             <Button 
               variant="ghost" 
               onClick={onBack} 
-              className="text-primary" 
+              className="bg-white/10 text-white border border-white/20 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200" 
               size="sm"
               disabled={isLoading}
             >
@@ -299,7 +299,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
               onClick={handleNext}
               disabled={!isComplete || isLoading}
               size="sm"
-              className="bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+              className="px-6 py-2 rounded-full font-semibold bg-gradient-to-r from-white to-white text-black shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isLoading ? "Saving..." : "Next"}
             </Button>

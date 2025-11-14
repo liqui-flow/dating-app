@@ -224,7 +224,7 @@ export function DiscoveryScreen() {
 	}
 
 	return (
-		<div className="h-screen overflow-hidden bg-background flex flex-col">
+		<div className="h-screen overflow-hidden flex flex-col">
 			{/* Floating header elements */}
 			<div className="fixed top-3 left-4 z-40 text-lg sm:text-xl font-semibold">For you</div>
 			<div className="fixed top-3 right-3 z-40">

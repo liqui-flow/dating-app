@@ -58,34 +58,50 @@ export function MatrimonySetup() {
   const back = () => setStep((s) => Math.max(s - 1, 0))
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
-      <Card className="w-full max-w-3xl">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">Matrimony Setup</CardTitle>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={onSaveDraft}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black/80 via-black/60 to-black/80">
+      <Card className="w-full max-w-4xl bg-white/10 border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.6)] backdrop-blur-2xl text-white rounded-[32px]">
+        <CardHeader className="space-y-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-3xl font-semibold tracking-tight text-white">Matrimony Setup</CardTitle>
+              <p className="text-sm text-white/70">Tell us about yourself so we can find the right matches.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSaveDraft}
+                className="rounded-full px-4 bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
+              >
                 <Save className="w-4 h-4 mr-2" /> Save draft
               </Button>
-              <Button variant="ghost" size="sm" onClick={onExit}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onExit}
+                className="rounded-full px-4 bg-white/5 text-white border border-transparent hover:border-white/30 hover:bg-white/10 transition-all duration-200"
+              >
                 <X className="w-4 h-4 mr-2" /> Exit
               </Button>
             </div>
           </div>
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-white/60">
               <span>
                 Step {step + 1} of {stepTitles.length}
               </span>
-              <span>{stepTitles[step]}</span>
+              <span className="truncate text-white/80">{stepTitles[step]}</span>
             </div>
-            <div className="mt-2 h-2 w-full rounded-full bg-muted">
-              <div className="h-2 rounded-full bg-primary" style={{ width: `${progress}%` }} />
+            <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-white via-white to-white shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
             </div>
           </div>
         </CardHeader>
         <Separator />
-        <CardContent className="p-8">
+        <CardContent className="p-8 space-y-8">
           <MatrimonySetupProvider>
             {step === 0 && (
               <Step1WelcomeIdentity onNext={() => setStep(1)} />

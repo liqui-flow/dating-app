@@ -26,7 +26,7 @@ export function MatrimonyOnboarding({ onComplete }: MatrimonyOnboardingProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <div className="space-y-2">

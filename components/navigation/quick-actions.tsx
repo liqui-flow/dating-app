@@ -22,27 +22,27 @@ export function QuickActions({ onOpenChat, onOpenProfile, onDiscover, className 
       {onDiscover && (
         <Button
           variant="secondary"
-          className="rounded-full px-4 py-5 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+          className="group rounded-full px-5 py-5 text-sm font-medium tracking-wide shadow-[0_10px_30px_rgba(0,0,0,0.4)] bg-white/10 text-white border border-white/20 backdrop-blur-xl transition-all duration-200 hover:!bg-white hover:!text-black hover:!border-black hover:-translate-y-0.5"
           onClick={onDiscover}
         >
-          <Search className="mr-2 h-4 w-4" />
+          <Search className="mr-2 h-4 w-4 transition-colors group-hover:text-black" />
           Discover
         </Button>
       )}
       <Button
         variant="secondary"
-        className="rounded-full px-4 py-5 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+        className="group rounded-full px-5 py-5 text-sm font-medium tracking-wide shadow-[0_10px_30px_rgba(0,0,0,0.4)] bg-white/10 text-white border border-white/20 backdrop-blur-xl transition-all duration-200 hover:!bg-white hover:!text-black hover:!border-black hover:-translate-y-0.5"
         onClick={onOpenChat}
       >
-        <MessageCircle className="mr-2 h-4 w-4" />
+        <MessageCircle className="mr-2 h-4 w-4 transition-colors group-hover:text-black" />
         Open Chat
       </Button>
       <Button
         variant="secondary"
-        className="rounded-full px-4 py-5 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+        className="group rounded-full px-5 py-5 text-sm font-medium tracking-wide shadow-[0_10px_30px_rgba(0,0,0,0.4)] bg-white/10 text-white border border-white/20 backdrop-blur-xl transition-all duration-200 hover:!bg-white hover:!text-black hover:!border-black hover:-translate-y-0.5"
         onClick={onOpenProfile}
       >
-        <User className="mr-2 h-4 w-4" />
+        <User className="mr-2 h-4 w-4 transition-colors group-hover:text-black" />
         Profile
       </Button>
     </div>

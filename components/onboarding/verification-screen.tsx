@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Shield, CheckCircle, Upload, Camera, X, FileText } from "lucide-react"
+import { Shield, CheckCircle, Upload, Camera, X, FileText, CalendarDays } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { FaceScanModal } from "@/components/kyc/FaceScanModal"
 import { 
@@ -321,7 +321,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
@@ -350,18 +350,24 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
               </div>
 
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dob" className="text-primary">Date of Birth</Label>
-                  <div className="rounded-2xl border bg-background p-3 max-w-sm mx-auto space-y-3">
-                    <Input
-                      id="dob"
-                      type="date"
-                      value={dob}
-                      onChange={(e) => setDob(e.target.value)}
-                      min="1950-01-01"
-                      max={`${today.getFullYear() - 17}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`}
-                      className="text-primary"
-                    />
+                <div className="space-y-3">
+                  <Label htmlFor="dob" className="text-primary text-sm uppercase tracking-[0.2em]">Date of Birth</Label>
+                  <div className="relative max-w-sm mx-auto rounded-3xl border border-white/15 bg-white/5 p-4 shadow-[0_10px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+                    <div className="absolute inset-0 rounded-3xl pointer-events-none border border-white/5" />
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 group-hover:text-white transition-colors duration-200">
+                        <CalendarDays className="w-5 h-5" />
+                      </div>
+                      <Input
+                        id="dob"
+                        type="date"
+                        value={dob}
+                        onChange={(e) => setDob(e.target.value)}
+                        min="1950-01-01"
+                        max={`${today.getFullYear() - 17}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`}
+                        className="glass-input w-full border-white/20 bg-white/10 pl-12 pr-4 py-3 text-base font-semibold text-primary focus:border-white/70 focus:ring-2 focus:ring-white/30 transition-all duration-200"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="text-center text-sm text-primary">
@@ -389,7 +395,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                   <Button 
                     onClick={() => window.location.href = '/'} 
                     variant="outline" 
-                    className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                    className="w-full bg-white/10 backdrop-blur-md border-white/20 text-white hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
                     disabled={isLoading}
                   >
                     Back
@@ -478,7 +484,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                 <Button 
                   onClick={() => setStep("profile")} 
                   variant="outline" 
-                  className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                  className="w-full bg-white/10 backdrop-blur-md border-white/20 text-white hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
                   disabled={isLoading}
                 >
                   Back
@@ -532,7 +538,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                       <Button 
                         onClick={handleUploadId} 
                         variant="outline" 
-                        className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-primary w-full transition-all duration-300"
+                        className="h-auto p-4 flex flex-col space-y-2 bg-white/10 text-white border-white/20 w-full transition-all duration-300 hover:!bg-white hover:!text-black hover:!border-black"
                       >
                         <Upload className="w-6 h-6" />
                         <span className="text-sm">Upload ID</span>
@@ -582,7 +588,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                       <Button 
                         onClick={handleTakePhoto} 
                         variant="outline" 
-                        className="h-auto p-4 flex flex-col space-y-2 bg-transparent text-primary w-full transition-all duration-300"
+                        className="h-auto p-4 flex flex-col space-y-2 bg-white/10 text-white border-white/20 w-full transition-all duration-300 hover:!bg-white hover:!text-black hover:!border-black"
                       >
                         <Camera className="w-6 h-6" />
                         <span className="text-sm">Take Photo</span>
@@ -636,7 +642,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                   <Button 
                     onClick={() => setStep("gender")} 
                     variant="outline" 
-                    className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                    className="w-full bg-white/10 backdrop-blur-md border-white/20 text-white hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
                     disabled={isLoading}
                   >
                     Back
@@ -645,7 +651,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                     <Button 
                       onClick={onSkip} 
                       variant="outline" 
-                      className="w-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-[#4A0E0E] hover:border-[#4A0E0E] hover:text-white transition-all"
+                      className="w-full bg-white/10 backdrop-blur-md border-white/20 text-white hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
                       disabled={isLoading}
                     >
                       Skip for now

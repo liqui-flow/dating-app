@@ -65,7 +65,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       const timer = setTimeout(() => {
         setIsLoading(false)
         setCurrentStep("auth")
-      }, 3000)
+      }, 4000)
 
       return () => clearTimeout(timer)
     }
@@ -79,26 +79,17 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-        {/* Video Background */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0"
-        >
-          <source src="/Video.mp4" type="video/mp4" />
-        </video>
-        
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/30 z-10"></div>
-        
-        {/* Content */}
-        <h1 className="text-5xl font-bold text-white tracking-wide relative z-20 drop-shadow-lg">
-          Lovesathi.
-        </h1>
-      </div>
+      <div 
+        className="overflow-hidden"
+        style={{
+          width: '100%',
+          height: '100vh',
+          backgroundImage: 'url(/assets/image52.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
     )
   }
 
@@ -148,7 +139,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   if (currentStep === "complete") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <h2 className="text-3xl font-bold">You're all set!</h2>
           <p className="text-muted-foreground">Enjoy your experience.</p>
@@ -159,25 +150,16 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-      {/* Video Background */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover z-0"
-      >
-        <source src="/Video.mp4" type="video/mp4" />
-      </video>
-      
-      {/* Overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/30 z-10"></div>
-      
-      {/* Content */}
-      <h1 className="text-5xl font-bold text-white tracking-wide relative z-20 drop-shadow-lg">
-        Lovesathi
-      </h1>
-    </div>
+    <div 
+      className="overflow-hidden"
+      style={{
+        width: '100%',
+        height: '100vh',
+        backgroundImage: 'url(/assets/image52.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    />
   )
 }

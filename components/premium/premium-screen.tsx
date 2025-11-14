@@ -104,7 +104,7 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
   const [selectedPlan, setSelectedPlan] = useState<string>("quarterly")
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 glass-apple bg-gradient-to-br from-[#4A0E0E] to-[#6E1414] text-white p-6">
         <div className="text-center space-y-4">

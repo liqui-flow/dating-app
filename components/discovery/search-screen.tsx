@@ -181,7 +181,7 @@ export function SearchScreen() {
   )
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border">
         <div className="flex items-center space-x-3">

@@ -327,7 +327,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterShee
         </div>
 
         {/* Apply Button */}
-        <div className="sticky bottom-0 bg-background border-t border-border p-4">
+        <div className="sticky bottom-0 border-t border-border p-4">
           <Button onClick={handleApply} className="w-full" size="lg">
             Apply Matrimony Filters
           </Button>

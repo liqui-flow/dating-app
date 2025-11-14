@@ -120,7 +120,7 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
             <Button
               type="button"
               variant="outline"
-              className="text-xs sm:text-sm"
+              className="text-xs sm:text-sm bg-white/10 text-white border-white/20 rounded-full px-4 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
               onClick={async () => {
                 const input = document.createElement("input")
                 input.type = "file"

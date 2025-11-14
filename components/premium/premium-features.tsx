@@ -12,7 +12,7 @@ export function PremiumFeatures({ onBack }: { onBack?: () => void }) {
   ]
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full">
       <div className="p-6 space-y-4">
         <h1 className="text-2xl font-bold">Your Premium Features</h1>
         <Card>

@@ -119,7 +119,7 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
         <div className="space-y-4">

@@ -165,7 +165,7 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
                   onClick={() => field.onChange(!field.value)}
                   className={`w-12 h-10 rounded-lg flex items-center justify-center transition-all ${
                     field.value
-                      ? "bg-[#4A0E0E] text-white"
+                      ? "bg-black text-white border border-black"
                       : "bg-white text-gray-700 border border-gray-300"
                   }`}
                 >

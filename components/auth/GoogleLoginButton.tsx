@@ -28,8 +28,8 @@ export default function GoogleLoginButton() {
   return (
     <Button
       variant="outline"
-      className={`w-full h-11 sm:h-10 bg-transparent text-black border-black/20 font-medium transition-all ${
-        isPressed || isLoading ? "opacity-70" : ""
+      className={`oauth-btn w-full h-11 sm:h-10 bg-white/10 text-white border-black/50 font-medium transition-all backdrop-blur-md active:bg-white/15 ${
+        isPressed || isLoading ? "opacity-80" : ""
       }`}
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}

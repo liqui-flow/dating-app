@@ -126,13 +126,11 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-3 sm:p-4">
+    <div className="min-h-screen flex items-center justify-center p-3 sm:p-4">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center space-y-3 sm:space-y-4 px-4 sm:px-6 pt-6 sm:pt-6">
-          <div className="flex items-center justify-center">
-            <h1 className="text-xl sm:text-2xl font-bold text-primary font-sans">Lovesathi</h1>
-          </div>
-          <CardDescription className="text-sm sm:text-base">
+          <h1 className="text-xl sm:text-2xl font-bold text-white font-sans">Lovesathi</h1>
+          <CardDescription className="text-sm sm:text-base text-gray-300">
             Join thousands finding meaningful connections
           </CardDescription>
         </CardHeader>
@@ -140,10 +138,10 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
         <CardContent className="px-4 sm:px-6 pb-6 sm:pb-6">
           <Tabs defaultValue="signup" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-2 h-12 sm:h-10 bg-muted/50 p-1 rounded-lg">
-              <TabsTrigger value="signup" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all rounded-md flex items-center justify-center">
+              <TabsTrigger value="signup" className="text-sm font-medium data-[state=active]:shadow-sm transition-all rounded-md flex items-center justify-center">
                 Sign Up
               </TabsTrigger>
-              <TabsTrigger value="login" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all rounded-md flex items-center justify-center">
+              <TabsTrigger value="login" className="text-sm font-medium data-[state=active]:shadow-sm transition-all rounded-md flex items-center justify-center">
                 Login
               </TabsTrigger>
             </TabsList>
@@ -152,22 +150,22 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
             <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-primary">Full Name</Label>
+                  <Label htmlFor="name" className="text-white">Full Name</Label>
                   <Input id="name" placeholder="Enter your full name" required value={formData.name} onChange={handleChange} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-primary">Email</Label>
+                  <Label htmlFor="email" className="text-white">Email</Label>
                   <Input id="email" type="email" placeholder="Enter your email" required value={formData.email} onChange={handleChange} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-primary">Phone Number</Label>
+                  <Label htmlFor="phone" className="text-white">Phone Number</Label>
                   <Input id="phone" type="tel" placeholder="Enter your phone number" value={formData.phone} onChange={handleChange} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-primary">Password</Label>
+                  <Label htmlFor="password" className="text-white">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -202,7 +200,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                     <Separator className="w-full" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    <span className="px-2 text-muted-foreground">Or continue with</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -216,12 +214,12 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
             <TabsContent value="login" className="space-y-4">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-primary">Email</Label>
+                  <Label htmlFor="email" className="text-white">Email</Label>
                   <Input id="email" type="email" placeholder="Enter your email" required value={formData.email} onChange={handleChange} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-primary">Password</Label>
+                  <Label htmlFor="password" className="text-white">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -262,7 +260,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                     <Separator className="w-full" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    <span className="px-2 text-muted-foreground">Or continue with</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -273,11 +271,11 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
             </TabsContent>
           </Tabs>
 
-          <div className="mt-6 text-center text-xs text-muted-foreground">
+          <div className="mt-6 text-center text-xs text-gray-400">
             By continuing, you agree to our{" "}
-            <Button variant="link" className="p-0 h-auto text-xs text-primary">Terms of Service</Button>{" "}
+            <Button variant="link" className="p-0 h-auto text-xs text-white hover:text-gray-300">Terms of Service</Button>{" "}
             and{" "}
-            <Button variant="link" className="p-0 h-auto text-xs text-primary">Privacy Policy</Button>
+            <Button variant="link" className="p-0 h-auto text-xs text-white hover:text-gray-300">Privacy Policy</Button>
           </div>
         </CardContent>
       </Card>

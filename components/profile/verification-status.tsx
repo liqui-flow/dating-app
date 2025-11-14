@@ -22,7 +22,7 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full">
       <div className="p-6 space-y-6">
         <h1 className="text-2xl font-bold">Profile Verification</h1>
         {verified ? (

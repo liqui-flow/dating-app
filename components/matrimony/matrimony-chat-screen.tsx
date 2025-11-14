@@ -286,9 +286,9 @@ export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-border glass-apple bg-background">
+      <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button 

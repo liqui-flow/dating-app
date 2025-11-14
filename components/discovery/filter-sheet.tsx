@@ -144,18 +144,24 @@ export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
 
           {/* Relationship Goals */}
           <div className="space-y-3">
-            <Label>Relationship Goal</Label>
+            <Label className="text-white/80 text-sm tracking-wide">Relationship Goal</Label>
             <Select 
               value={filters.relationshipGoal}
               onValueChange={(value) => setFilters((prev) => ({ ...prev, relationshipGoal: value }))}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Any relationship goal" />
+              <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/70 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition-all duration-200 px-4">
+                <SelectValue placeholder="Any relationship goal" className="text-white" />
               </SelectTrigger>
-              <SelectContent className="bg-white/80 backdrop-blur-md border-primary/20">
-                <SelectItem value="any">Any relationship goal</SelectItem>
+              <SelectContent className="bg-white/90 text-black border border-white/40 shadow-[0_15px_40px_rgba(0,0,0,0.3)] rounded-2xl">
+                <SelectItem value="any" className="text-sm data-[state=checked]:bg-black/5 data-[state=checked]:text-black rounded-xl">
+                  Any relationship goal
+                </SelectItem>
                 {relationshipGoals.map((goal) => (
-                  <SelectItem key={goal} value={goal}>
+                  <SelectItem
+                    key={goal}
+                    value={goal}
+                    className="text-sm data-[state=checked]:bg-black/5 data-[state=checked]:text-black rounded-xl"
+                  >
                     {goal}
                   </SelectItem>
                 ))}

@@ -26,7 +26,7 @@ export function AppLayout({
   currentScreen
 }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Settings Icon - Only show on profile page */}
       {showSettingsButton && onSettingsClick && currentScreen === "profile" && (
         <div className="fixed top-4 right-4 z-40">

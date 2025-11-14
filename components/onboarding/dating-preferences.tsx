@@ -96,7 +96,7 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
+    <div className="min-h-screen flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-primary">Who do you prefer to date?</CardTitle>
@@ -120,21 +120,31 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
                 <Button
                   key={option.id}
                   variant="outline"
-                  className={`h-auto p-6 flex flex-col items-center space-y-3 transition-all duration-200 ${
+                  className={`group h-auto p-6 flex flex-col items-center space-y-3 transition-all duration-200 ${
                     isSelected
-                      ? "bg-primary text-white border-primary hover:bg-primary"
-                      : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
+                      ? "!bg-white !text-black !border-black shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
+                      : "bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black"
                   }`}
                   onClick={() => handlePreferenceSelect(option.id)}
                 >
-                  <div className="w-12 h-12 rounded-full bg-current/10 flex items-center justify-center">
-                    <Icon className={`w-6 h-6 ${
-                      isSelected ? "text-white" : "text-primary group-hover:text-white"
-                    }`} />
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                    isSelected ? "bg-black/10" : "bg-white/15 group-hover:bg-black/10"
+                  }`}>
+                    <Icon
+                      className={`w-6 h-6 transition-colors ${
+                        isSelected ? "text-black" : "text-white group-hover:text-black"
+                      }`}
+                    />
                   </div>
                   <div className="text-center">
-                    <div className="text-lg font-medium">{option.label}</div>
-                    <div className="text-sm opacity-80">{option.description}</div>
+                    <div className="text-lg font-medium transition-colors">{option.label}</div>
+                    <div
+                      className={`text-sm transition-colors ${
+                        isSelected ? "text-black/70" : "text-white/70 group-hover:text-black/60"
+                      }`}
+                    >
+                      {option.description}
+                    </div>
                   </div>
                 </Button>
               )
@@ -159,7 +169,7 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
             <Button 
               variant="ghost" 
               onClick={onBack} 
-              className="text-primary"
+              className="bg-white/10 text-white border border-white/20 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
               disabled={isLoading}
             >
               Back
@@ -167,7 +177,7 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
             <Button 
               onClick={handleNext}
               disabled={!selectedPreference || isLoading}
-              className="bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+              className="px-6 py-2 rounded-full font-semibold bg-gradient-to-r from-white to-white text-black shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isLoading ? "Saving..." : "Next"}
             </Button>
