@@ -11,12 +11,12 @@ export const welcomeIdentitySchema = z.object({
 
 export const personalPhysicalSchema = z.object({
   heightCm: z.number().min(90).max(250),
-  complexion: z.enum(["Fair", "Wheatish", "Dark"]).optional(),
-  bodyType: z.enum(["Slim", "Athletic", "Average", "Heavy"]).optional(),
-  diet: z.enum(["Vegetarian", "Non-vegetarian", "Eggetarian", "Vegan", "Jain"]).optional(),
+  complexion: z.enum(["Fair", "Wheatish", "Dusky", "Dark"]).optional(),
+  bodyType: z.enum(["Slim", "Athletic", "Average", "Plus-size"]).optional(),
+  diet: z.enum(["Vegetarian", "Eggetarian", "Non-vegetarian", "Pescatarian", "Vegan", "Jain", "Other"]).optional(),
   smoker: z.boolean().optional(),
   drinker: z.boolean().optional(),
-  maritalStatus: z.enum(["Never Married", "Divorced", "Widowed", "Annulled"]),
+  maritalStatus: z.enum(["Never Married", "Divorced", "Widowed", "Annulled", "Separated"]),
 })
 
 export const careerEducationSchema = z.object({
@@ -29,15 +29,15 @@ export const careerEducationSchema = z.object({
 })
 
 export const familySchema = z.object({
-  familyType: z.enum(["Joint", "Nuclear"]).optional(),
-  familyValues: z.enum(["Traditional", "Moderate", "Modern"]).optional(),
+  familyType: z.enum(["Joint", "Nuclear", "Extended", "Single Parent"]).optional(),
+  familyValues: z.enum(["Traditional", "Moderate", "Modern", "Progressive"]).optional(),
   fatherOccupation: z.string().optional(),
   fatherCompany: z.string().optional(),
   motherOccupation: z.string().optional(),
   motherCompany: z.string().optional(),
   brothers: z.number().int().min(0).max(10).optional(),
   sisters: z.number().int().min(0).max(10).optional(),
-  siblingsMarried: z.enum(["None", "Some", "All"]).optional(),
+  siblingsMarried: z.enum(["None", "Some", "All", "Mostly Married", "Mostly Single"]).optional(),
   showOnProfile: z.boolean().optional(),
 })
 

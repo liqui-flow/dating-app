@@ -8,6 +8,7 @@ import { personalPhysicalSchema } from "@/lib/schemas/matrimony"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
 import { Check } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
@@ -143,9 +144,20 @@ export function Step2PersonalPhysical({ onNext, onBack }: { onNext: () => void; 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Complexion / Skin tone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Fair, Wheatish, Dark" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/50 transition">
+                        <SelectValue placeholder="Select complexion" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                      {["Fair", "Wheatish", "Dusky", "Dark"].map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -157,9 +169,20 @@ export function Step2PersonalPhysical({ onNext, onBack }: { onNext: () => void; 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Body Type</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Slim, Athletic, Average, Heavy" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/50 transition">
+                        <SelectValue placeholder="Select body type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                      {["Slim", "Athletic", "Average", "Plus-size"].map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -173,9 +196,28 @@ export function Step2PersonalPhysical({ onNext, onBack }: { onNext: () => void; 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Dietary Habits</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Vegetarian, Non-vegetarian, Eggetarian, Vegan, Jain" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/50 transition">
+                        <SelectValue placeholder="Select dietary preference" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                      {[
+                        "Vegetarian",
+                        "Eggetarian",
+                        "Non-vegetarian",
+                        "Pescatarian",
+                        "Vegan",
+                        "Jain",
+                        "Other",
+                      ].map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -237,9 +279,22 @@ export function Step2PersonalPhysical({ onNext, onBack }: { onNext: () => void; 
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Marital Status</FormLabel>
-                <FormControl>
-                  <Input placeholder="Never Married, Divorced, Widowed, Annulled" {...field} />
-                </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/50 transition">
+                      <SelectValue placeholder="Select marital status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                    {["Never Married", "Divorced", "Widowed", "Annulled", "Separated"].map(
+                      (option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

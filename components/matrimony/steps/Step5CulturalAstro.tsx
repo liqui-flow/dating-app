@@ -27,7 +27,7 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
       community: cultural.community || "",
       subCaste: cultural.subCaste || "",
       dob: cultural.dob || "",
-      tob: cultural.tob || "",
+      tob: cultural.tob || "00:00",
       pob: cultural.pob || "",
       star: cultural.star || "",
       gotra: cultural.gotra || "",

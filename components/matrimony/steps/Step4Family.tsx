@@ -8,6 +8,7 @@ import { familySchema } from "@/lib/schemas/matrimony"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
 import { saveDraft, saveStep4 } from "@/lib/matrimonyService"
 import { Check } from "lucide-react"
@@ -88,14 +89,40 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
             <FormField control={form.control} name="familyType" render={({ field }) => (
               <FormItem>
                 <FormLabel>Family Type</FormLabel>
-                <FormControl><Input placeholder="Joint, Nuclear" {...field} /></FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                      <SelectValue placeholder="Select family type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                    {["Joint", "Nuclear", "Extended", "Single Parent"].map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="familyValues" render={({ field }) => (
               <FormItem>
                 <FormLabel>Family Values</FormLabel>
-                <FormControl><Input placeholder="Traditional, Moderate, Modern" {...field} /></FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                      <SelectValue placeholder="Select values" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                    {["Traditional", "Moderate", "Modern", "Progressive"].map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )} />
@@ -150,7 +177,20 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
             <FormField control={form.control} name="siblingsMarried" render={({ field }) => (
               <FormItem>
                 <FormLabel>Marital Status of Siblings</FormLabel>
-                <FormControl><Input placeholder="None, Some, All" {...field} /></FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                    {["None", "Some", "All", "Mostly Married", "Mostly Single"].map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )} />
