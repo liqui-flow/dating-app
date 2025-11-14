@@ -79,15 +79,26 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
     async function fetchProfiles() {
       try {
         setLoading(true)
+        console.log("Starting to fetch matrimony profiles...")
 
         // Get current user
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
         
-        if (!user) {
+        if (authError) {
+          console.error("Auth error:", authError)
           setProfiles([])
           setLoading(false)
           return
         }
+
+        if (!user) {
+          console.log("No user found, redirecting to auth...")
+          setProfiles([])
+          setLoading(false)
+          return
+        }
+
+        console.log("User authenticated:", user.id)
 
         // Fetch current user's gender from user_profiles
         const { data: currentUserProfile, error: currentUserError } = await supabase
@@ -101,6 +112,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         }
 
         // Fetch matrimony profiles from consolidated table (only completed ones)
+        console.log("Fetching matrimony profiles from matrimony_profile_full...")
         const { data: matrimonyProfiles, error: profilesError } = await supabase
           .from("matrimony_profile_full")
           .select(`
@@ -118,10 +130,21 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
 
         if (profilesError) {
           console.error("Error fetching matrimony profiles:", profilesError)
+          console.error("Error details:", {
+            message: profilesError.message,
+            details: profilesError.details,
+            hint: profilesError.hint,
+            code: profilesError.code
+          })
+          setProfiles([])
+          setLoading(false)
           return
         }
 
+        console.log(`Found ${matrimonyProfiles?.length || 0} completed matrimony profiles`)
+
         if (!matrimonyProfiles || matrimonyProfiles.length === 0) {
+          console.log("No completed matrimony profiles found")
           setProfiles([])
           setLoading(false)
           return
@@ -129,6 +152,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
 
         // Get user IDs for verifications
         const userIds = matrimonyProfiles.map((p) => p.user_id)
+        console.log(`Fetching verifications for ${userIds.length} users...`)
 
         // Fetch ID verifications (for verified status)
         const { data: verifications, error: verificationsError } = await supabase
@@ -142,6 +166,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
 
         // Get current user's gender for filtering
         const currentUserGender = currentUserProfile?.gender
+        console.log("Current user gender:", currentUserGender)
 
         // Combine all data from consolidated table
         const combinedProfiles: MatrimonyProfile[] = matrimonyProfiles
@@ -220,9 +245,11 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
           })
           .filter((profile): profile is MatrimonyProfile => profile !== null)
 
+        console.log(`Successfully processed ${combinedProfiles.length} matrimony profiles for display`)
         setProfiles(combinedProfiles)
       } catch (error) {
-        console.error("Error fetching matrimony profiles:", error)
+        console.error("Unexpected error fetching matrimony profiles:", error)
+        setProfiles([])
       } finally {
         setLoading(false)
       }

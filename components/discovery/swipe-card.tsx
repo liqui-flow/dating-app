@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { motion, useMotionValue, useTransform, animate } from "framer-motion"
+import { AnimatePresence, motion, useMotionValue, useTransform, animate } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -39,6 +39,15 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [showInfo, setShowInfo] = useState(false)
   const { animation, showHeartBurst, showXBurst, hideAnimation } = useSwipeAnimation()
+
+  const visibleInterests = profile.interests.slice(0, 4)
+  const remainingInterestCount = Math.max(0, profile.interests.length - visibleInterests.length)
+  const highlightItems = [
+    { label: "Location", value: profile.location },
+    { label: "Work", value: profile.occupation },
+    { label: "Education", value: profile.education },
+    { label: "Values", value: profile.religion },
+  ].filter((item) => item.value && item.value.trim().length > 0)
 
   // Framer Motion values for smooth dragging
   const x = useMotionValue(0)
@@ -211,64 +220,120 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
           <Button
             variant="secondary"
             size="sm"
-            className="rounded-full w-8 h-8 sm:w-9 sm:h-9 p-0 shadow-lg bg-white/25 border border-white/40 backdrop-blur-xl hover:bg-white/35 hover:scale-110 transition-all duration-200 relative z-10"
+            type="button"
+            className={cn(
+              "group rounded-full w-8 h-8 sm:w-9 sm:h-9 p-0 shadow-lg border border-white/40 backdrop-blur-xl hover:bg-white/40 hover:scale-110 transition-all duration-200 relative z-10 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/70 focus-visible:ring-offset-transparent",
+              showInfo ? "bg-white text-slate-900 border-white/80 shadow-[0_0_25px_rgba(255,255,255,0.45)]" : "bg-white/25",
+            )}
             onClick={(e) => {
               e.stopPropagation()
               setShowInfo((v) => !v)
             }}
+            aria-pressed={showInfo}
+            aria-label="Toggle profile details"
           >
-            <Info className="w-3 h-3 sm:w-4 sm:h-4 text-white drop-shadow" />
+            <motion.span
+              initial={false}
+              animate={{ rotate: showInfo ? 20 : 0, scale: showInfo ? 1.05 : 1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 15 }}
+              className="flex items-center justify-center w-full h-full"
+            >
+              <Info
+                className={cn(
+                  "w-3 h-3 sm:w-4 sm:h-4 drop-shadow transition-colors duration-200",
+                  showInfo ? "text-slate-900" : "text-white",
+                )}
+              />
+            </motion.span>
+            <span className="sr-only">{showInfo ? "Hide quick profile info" : "Show quick profile info"}</span>
           </Button>
         </div>
       )}
 
       {/* Expandable glass info panel */}
       {stackIndex === 0 && (
-        <div
-          className={cn(
-            "absolute left-2 right-2 sm:left-4 sm:right-4 z-10 overflow-hidden transition-all duration-300",
-            showInfo ? "bottom-20 sm:bottom-24" : "bottom-20 sm:bottom-24 max-h-0 opacity-0",
-          )}
-          style={{ opacity: showInfo ? 1 : 0 }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="rounded-xl sm:rounded-2xl bg-white/[0.15] border border-white/30 backdrop-blur-xl p-3 sm:p-5 text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)] relative overflow-hidden">
-            {/* Inner glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-            <div className="relative z-10">
-              <div className="space-y-2 text-xs sm:text-sm">
-                <div className="font-semibold text-sm sm:text-base">About</div>
-                <div className="text-white/90 line-clamp-3 sm:line-clamp-5 leading-relaxed">{profile.bio}</div>
-                <div className="pt-2 flex flex-wrap gap-1 sm:gap-2">
-                  <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm text-xs px-2 py-1">
-                    {profile.occupation}
-                  </Badge>
-                  <Badge variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm text-xs px-2 py-1">
-                    {profile.education}
-                  </Badge>
-                  {profile.interests.slice(0, 3).map((interest) => (
-                    <Badge key={interest} variant="outline" className="bg-white/15 border-white/40 text-white shadow-sm backdrop-blur-sm text-xs px-2 py-1">
-                      {interest}
-                    </Badge>
-                  ))}
-                </div>
-                <div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:bg-white/25 font-medium text-xs sm:text-sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onProfileClick()
-                    }}
-                  >
-                    View full profile
-                  </Button>
+        <AnimatePresence>
+          {showInfo && (
+            <motion.div
+              key="profile-info-panel"
+              initial={{ opacity: 0, y: 20, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.97 }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
+              className="absolute left-2 right-2 sm:left-4 sm:right-4 bottom-24 sm:bottom-28 z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="rounded-2xl bg-white/[0.18] border border-white/35 backdrop-blur-2xl p-4 sm:p-6 text-white shadow-[0_15px_45px_rgba(0,0,0,0.45)] relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-white/5 to-transparent opacity-70 pointer-events-none" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.35),_transparent_55%)] pointer-events-none" />
+                <div className="relative z-10 space-y-4 text-sm sm:text-base">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-white/60">About</p>
+                      <p className="text-base sm:text-lg font-semibold text-white drop-shadow">{profile.name}</p>
+                    </div>
+                    {profile.distance && (
+                      <Badge className="bg-white/25 text-white border border-white/40 rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide">
+                        {profile.distance}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <p className="text-white/90 leading-relaxed text-xs sm:text-sm line-clamp-5">{profile.bio}</p>
+
+                  {highlightItems.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2 text-left">
+                      {highlightItems.map((item) => (
+                        <div
+                          key={item.label}
+                          className="rounded-xl border border-white/20 bg-white/10 px-3 py-2 sm:px-4 sm:py-3 shadow-inner shadow-white/5"
+                        >
+                          <p className="text-[10px] uppercase tracking-[0.3em] text-white/60 mb-1">{item.label}</p>
+                          <p className="text-sm font-semibold text-white/95 leading-tight">{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {visibleInterests.length > 0 && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-white/60">Interests</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {visibleInterests.map((interest) => (
+                          <span
+                            key={interest}
+                            className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]"
+                          >
+                            {interest}
+                          </span>
+                        ))}
+                        {remainingInterestCount > 0 && (
+                          <span className="rounded-full bg-white/25 text-white font-semibold text-xs px-3 py-1">
+                            +{remainingInterestCount} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white font-semibold text-xs sm:text-sm hover:bg-white/25 hover:text-white/95 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onProfileClick()
+                      }}
+                    >
+                      View full profile
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       )}
 
       {/* Visible card edges for stacked cards */}

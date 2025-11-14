@@ -51,21 +51,35 @@ export function DiscoveryScreen() {
 	const [passedProfiles, setPassedProfiles] = useState<string[]>([])
 	const [profiles, setProfiles] = useState<Profile[]>([])
 	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
 
 	// Fetch profiles from Supabase
-	useEffect(() => {
-		async function fetchProfiles() {
-			try {
-				setLoading(true)
+	const fetchProfiles = async () => {
+		try {
+			setLoading(true)
+			setError(null)
+			console.log("Starting to fetch dating profiles...")
 
-				// Get current user
-				const { data: { user } } = await supabase.auth.getUser()
-				
-				if (!user) {
-					setProfiles([])
-					setLoading(false)
-					return
-				}
+			// Get current user
+			const { data: { user }, error: authError } = await supabase.auth.getUser()
+			
+			if (authError) {
+				console.error("Auth error:", authError)
+				setError(`Authentication error: ${authError.message}`)
+				setProfiles([])
+				setLoading(false)
+				return
+			}
+
+			if (!user) {
+				console.log("No user found, redirecting to auth...")
+				setError("Please log in to view profiles")
+				setProfiles([])
+				setLoading(false)
+				return
+			}
+
+			console.log("User authenticated:", user.id)
 
 			// Fetch user's dating preferences from new consolidated table
 			const { data: userProfileFull, error: userProfileError } = await supabase
@@ -79,6 +93,8 @@ export function DiscoveryScreen() {
 			}
 
 			// Fetch all dating profiles from new consolidated table
+			console.log("Fetching dating profiles from dating_profile_full...")
+			// Select only columns that exist - bio might not exist in some databases
 			const { data: datingProfiles, error: profilesError } = await supabase
 				.from("dating_profile_full")
 				.select(`
@@ -86,7 +102,6 @@ export function DiscoveryScreen() {
 					name,
 					dob,
 					gender,
-					bio,
 					photos,
 					interests,
 					relationship_goals,
@@ -97,10 +112,22 @@ export function DiscoveryScreen() {
 
 			if (profilesError) {
 				console.error("Error fetching dating profiles:", profilesError)
+				console.error("Error details:", {
+					message: profilesError.message,
+					details: profilesError.details,
+					hint: profilesError.hint,
+					code: profilesError.code
+				})
+				setError(`Failed to fetch profiles: ${profilesError.message}. Make sure RLS policies are set up correctly.`)
+				setProfiles([])
+				setLoading(false)
 				return
 			}
 
+			console.log(`Found ${datingProfiles?.length || 0} completed dating profiles`)
+
 			if (!datingProfiles || datingProfiles.length === 0) {
+				console.log("No completed dating profiles found")
 				setProfiles([])
 				setLoading(false)
 				return
@@ -108,6 +135,7 @@ export function DiscoveryScreen() {
 
 			// Get user IDs for fetching additional data
 			const userIds = datingProfiles.map((p) => p.user_id)
+			console.log(`Fetching additional data for ${userIds.length} users...`)
 
 			// Fetch user profiles (for date_of_birth if not in dating_profile_full)
 			const { data: userProfiles, error: userProfilesError } = await supabase
@@ -132,6 +160,7 @@ export function DiscoveryScreen() {
 			// Get user's preference for filtering
 			const userPrefs = (userProfileFull?.preferences as any) || {}
 			const lookingFor = userPrefs.looking_for || 'everyone'
+			console.log("User looking for:", lookingFor)
 
 			// Combine all data from consolidated table
 			const combinedProfiles: Profile[] = datingProfiles
@@ -154,7 +183,8 @@ export function DiscoveryScreen() {
 					const profilePhotos = (datingProfile.photos as string[]) || []
 					const profileInterests = (datingProfile.interests as string[]) || []
 					const profileGender = datingProfile.gender || userProfile?.gender
-					const profileBio = datingProfile.bio || datingProfile.relationship_goals || "No bio available"
+					// bio might not exist in the table, so use relationship_goals as fallback
+					const profileBio = (datingProfile as any).bio || datingProfile.relationship_goals || "No bio available"
 					const verification = verifications?.find((v) => v.user_id === datingProfile.user_id)
 
 					// Filter by gender preference
@@ -185,14 +215,21 @@ export function DiscoveryScreen() {
 				})
 				.filter((profile): profile is Profile => profile !== null)
 
-				setProfiles(combinedProfiles)
-			} catch (error) {
-				console.error("Error fetching profiles:", error)
-			} finally {
-				setLoading(false)
+			console.log(`Successfully processed ${combinedProfiles.length} profiles for display`)
+			setProfiles(combinedProfiles)
+			if (combinedProfiles.length === 0) {
+				setError("No profiles found. Make sure there are completed profiles in the database.")
 			}
+		} catch (error: any) {
+			console.error("Unexpected error fetching profiles:", error)
+			setError(`Unexpected error: ${error?.message || "Unknown error"}`)
+			setProfiles([])
+		} finally {
+			setLoading(false)
 		}
+	}
 
+	useEffect(() => {
 		fetchProfiles()
 	}, [])
 
@@ -273,16 +310,28 @@ export function DiscoveryScreen() {
 											<Heart className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
 										</div>
 										<div className="space-y-2">
-											<h3 className="text-base sm:text-lg font-semibold">No more profiles</h3>
+											<h3 className="text-base sm:text-lg font-semibold">
+												{error ? "Error loading profiles" : "No more profiles"}
+											</h3>
 											<p className="text-xs sm:text-sm text-muted-foreground">
-												{profiles.length === 0 
+												{error || (profiles.length === 0 
 													? "No profiles available. Check back later!" 
-													: "Check back later for new matches or adjust your filters"}
+													: "Check back later for new matches or adjust your filters")}
 											</p>
+											{error && (
+												<p className="text-xs text-muted-foreground mt-2">
+													Check browser console (F12) for more details
+												</p>
+											)}
 										</div>
-										{profiles.length > 0 && (
-											<Button onClick={() => setCurrentCardIndex(0)} className="text-sm">Start Over</Button>
-										)}
+										<div className="flex gap-2 justify-center">
+											{profiles.length > 0 && (
+												<Button onClick={() => setCurrentCardIndex(0)} className="text-sm">Start Over</Button>
+											)}
+											{error && (
+												<Button onClick={fetchProfiles} className="text-sm">Retry</Button>
+											)}
+										</div>
 									</CardContent>
 								</Card>
 							)}
