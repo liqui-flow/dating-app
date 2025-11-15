@@ -182,6 +182,13 @@ export function MatrimonySwipeCard({
           stackIndex === 2 && "blur-[4px] brightness-65 contrast-80",
           stackIndex > 2 && "blur-[6px] brightness-60 contrast-75",
         )}
+        onError={(e) => {
+          const target = e.target as HTMLImageElement
+          if (target.src !== "/placeholder.svg") {
+            target.src = "/placeholder.svg"
+          }
+        }}
+        crossOrigin="anonymous"
       />
 
       {/* Frosted glass overlay with gradient */}

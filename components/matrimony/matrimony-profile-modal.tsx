@@ -61,6 +61,13 @@ export function MatrimonyProfileModal({ profile, open, onOpenChange, onConnect, 
               src={profile.photos[currentPhotoIndex] || "/placeholder.svg"}
               alt={`${profile.name} photo ${currentPhotoIndex + 1}`}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                if (target.src !== "/placeholder.svg") {
+                  target.src = "/placeholder.svg"
+                }
+              }}
+              crossOrigin="anonymous"
             />
 
             {/* Gradient overlay for better text readability */}
