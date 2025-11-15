@@ -24,6 +24,7 @@ import {
   Bug,
 } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface SettingsSection {
   title: string
@@ -90,7 +91,10 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      {/* Static Background */}
+      <StaticBackground />
+      
       {/* Header */}
       <div className="flex-shrink-0 p-6 border-b border-border glass-apple">
         <div className="flex items-center space-x-4">

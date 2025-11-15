@@ -11,6 +11,7 @@ import { MatrimonySwipeCard } from "@/components/matrimony/matrimony-swipe-card"
 import { MatrimonyChatList } from "@/components/matrimony/matrimony-chat-list"
 import { MatrimonyChatScreen } from "@/components/matrimony/matrimony-chat-screen"
 import { MatrimonyFilterSheet } from "@/components/matrimony/matrimony-filter-sheet"
+import { DynamicBackground } from "@/components/discovery/dynamic-background"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
 import { SettingsScreen } from "@/components/settings/settings-screen"
 import { AppSettings } from "@/components/settings/app-settings"
@@ -297,7 +298,10 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       )}
 
       {currentScreen === "discover" && (
-        <div className="h-screen overflow-hidden flex flex-col">
+        <div className="h-screen overflow-hidden flex flex-col relative">
+          {/* Dynamic Background */}
+          <DynamicBackground imageUrl={currentProfile?.photos?.[0] || null} />
+          
           <div className="p-4 pb-20 mt-10 max-w-3xl mx-auto w-full flex-1 overflow-hidden">
             {loading ? (
               <div className="flex items-center justify-center h-[60vh] md:h-[500px]">

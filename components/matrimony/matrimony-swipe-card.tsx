@@ -55,10 +55,8 @@ export function MatrimonySwipeCard({
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   
-  // Transform motion values to rotation and opacity
+  // Transform motion values to rotation only (no opacity overlays)
   const rotate = useTransform(x, [-300, 300], [-30, 30])
-  const likeOpacity = useTransform(x, [0, 120], [0, 1])
-  const passOpacity = useTransform(x, [-120, 0], [1, 0])
 
   const depthStyles = useMemo(() => {
     // Enhanced visual stacking for realistic deck-of-cards effect

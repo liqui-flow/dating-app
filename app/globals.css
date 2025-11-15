@@ -143,8 +143,6 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     letter-spacing: 0.01em;
-    background: url("/image 52.png") no-repeat center center fixed;
-    background-size: cover;
     background-color: #000000;
     color: #FFFFFF;
   }

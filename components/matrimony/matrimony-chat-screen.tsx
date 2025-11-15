@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Phone, Video, MoreVertical, Send, ImageIcon, Smile, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface Message {
   id: string
@@ -286,7 +287,10 @@ export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen relative">
+      {/* Static Background */}
+      <StaticBackground />
+      
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
         <div className="flex items-center justify-between">
@@ -345,60 +349,63 @@ export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-        {messages.map((message, index) => (
-          <div key={message.id} className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
-            {message.type === "match" ? (
-              <div className="flex justify-center">
-                <div className="bg-gradient-to-r from-pink-500/20 to-red-500/20 text-primary px-4 py-3 rounded-full text-sm font-medium flex items-center space-x-2 shadow-lg animate-pulse">
-                  <Heart className="w-4 h-4 fill-current animate-bounce" />
-                  <span>{message.text}</span>
-                </div>
-              </div>
-            ) : (
-              <div className={cn("flex", message.isOwn ? "justify-end" : "justify-start")}>
-                <div
-                  className={cn(
-                    "max-w-[85%] sm:max-w-[80%] px-4 py-3 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md",
-                    message.isOwn
-                      ? "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-br-md"
-                      : "bg-gradient-to-r from-muted to-muted/80 text-foreground rounded-bl-md",
-                  )}
-                >
-                  <p className="text-sm leading-relaxed">{message.text}</p>
-                  <div
-                    className={cn(
-                      "flex items-center justify-end space-x-1 mt-1",
-                      message.isOwn ? "text-primary-foreground/70" : "text-muted-foreground",
-                    )}
-                  >
-                    <span className="text-xs">{message.timestamp}</span>
-                    {message.isOwn && (
-                      <div
-                        className={cn(
-                          "w-4 h-4 rounded-full flex items-center justify-center transition-colors",
-                          message.isRead ? "text-primary-foreground/70" : "text-primary-foreground/50",
-                        )}
-                      >
-                        <div className="w-2 h-2 rounded-full bg-current" />
-                      </div>
-                    )}
+      <div className="flex-1 overflow-y-auto p-4 min-h-0">
+        <div className="space-y-3">
+          {messages.map((message, index) => (
+            <div key={message.id} className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+              {message.type === "match" ? (
+                <div className="flex justify-center my-3">
+                  <div className="bg-gradient-to-r from-pink-500/20 to-red-500/20 text-primary px-4 py-3 rounded-full text-sm font-medium flex items-center space-x-2 shadow-lg animate-pulse">
+                    <Heart className="w-4 h-4 fill-current animate-bounce" />
+                    <span>{message.text}</span>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
+              ) : (
+                <div className={cn("flex mb-3", message.isOwn ? "justify-end" : "justify-start")}>
+                  <div
+                    className={cn(
+                      "max-w-[85%] sm:max-w-[80%] px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl",
+                      "backdrop-blur-sm border",
+                      message.isOwn
+                        ? "bg-white/20 border-white/30 text-white rounded-br-md"
+                        : "bg-white/15 border-white/20 text-white rounded-bl-md",
+                    )}
+                  >
+                    <p className="text-sm leading-relaxed">{message.text}</p>
+                    <div
+                      className={cn(
+                        "flex items-center justify-end space-x-1 mt-2",
+                        message.isOwn ? "text-white/70" : "text-white/60",
+                      )}
+                    >
+                      <span className="text-xs">{message.timestamp}</span>
+                      {message.isOwn && (
+                        <div
+                          className={cn(
+                            "w-4 h-4 rounded-full flex items-center justify-center transition-colors",
+                            message.isRead ? "text-white/70" : "text-white/50",
+                          )}
+                        >
+                          <div className="w-2 h-2 rounded-full bg-current" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
         
         {/* Typing Indicator */}
         {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-muted text-foreground rounded-2xl rounded-bl-md px-4 py-2 max-w-[85%] sm:max-w-[80%]">
+          <div className="flex justify-start mb-3">
+            <div className="bg-white/15 border border-white/20 backdrop-blur-sm text-white rounded-2xl rounded-bl-md px-4 py-2 max-w-[85%] sm:max-w-[80%] shadow-lg">
               <div className="flex items-center space-x-1">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="w-2 h-2 bg-white/70 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-white/70 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-white/70 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </div>

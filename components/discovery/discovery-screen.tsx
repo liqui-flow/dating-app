@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { SwipeCard } from "@/components/discovery/swipe-card"
 import { FilterSheet } from "@/components/discovery/filter-sheet"
 import { ProfileModal } from "@/components/discovery/profile-modal"
+import { DynamicBackground } from "@/components/discovery/dynamic-background"
 import { Heart, Filter } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 
@@ -305,8 +306,14 @@ export function DiscoveryScreen() {
 		}
 	}
 
+	// Get current profile's first photo for background
+	const currentProfileImage = currentProfile?.photos?.[0] || null
+
 	return (
-		<div className="h-screen overflow-hidden flex flex-col">
+		<div className="h-screen overflow-hidden flex flex-col relative">
+			{/* Dynamic Background */}
+			<DynamicBackground imageUrl={currentProfileImage} />
+			
 			{/* Floating header elements */}
 			<div className="fixed top-3 left-4 z-40 text-lg sm:text-xl font-semibold">For you</div>
 			<div className="fixed top-3 right-3 z-40">

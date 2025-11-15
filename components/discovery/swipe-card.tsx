@@ -124,11 +124,12 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
 
   return (
     <>
-      {/* Swipe Animations */}
+      {/* Swipe Animations - overlay disabled */}
       <SwipeAnimations 
         show={animation.show} 
         type={animation.type} 
         onComplete={hideAnimation}
+        hideOverlay={true}
       />
 
       <motion.div
