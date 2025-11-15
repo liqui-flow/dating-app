@@ -128,6 +128,7 @@ export function DiscoveryScreen() {
 
 			if (!datingProfiles || datingProfiles.length === 0) {
 				console.log("No completed dating profiles found")
+				setError("No profiles found. Make sure there are completed profiles in the database.")
 				setProfiles([])
 				setLoading(false)
 				return
@@ -161,6 +162,22 @@ export function DiscoveryScreen() {
 			const userPrefs = (userProfileFull?.preferences as any) || {}
 			const lookingFor = userPrefs.looking_for || 'everyone'
 			console.log("User looking for:", lookingFor)
+			console.log("User preferences object:", userPrefs)
+			
+			// Log sample of profile genders for debugging
+			if (datingProfiles.length > 0) {
+				const sampleGenders = datingProfiles.slice(0, 5).map(p => ({
+					name: p.name,
+					gender: p.gender,
+					user_id: p.user_id
+				}))
+				console.log("Sample profile genders:", sampleGenders)
+			}
+
+			// Track filtering reasons for debugging
+			let filteredOutNoDob = 0
+			let filteredOutCurrentUser = 0
+			let filteredOutGender = 0
 
 			// Combine all data from consolidated table
 			const combinedProfiles: Profile[] = datingProfiles
@@ -169,29 +186,39 @@ export function DiscoveryScreen() {
 					const userProfile = userProfiles?.find((up) => up.user_id === datingProfile.user_id)
 					const dob = datingProfile.dob || userProfile?.date_of_birth
 					
-					// Skip if no dob available
+					// Skip if no dob available (we need it to calculate age)
 					if (!dob) {
+						filteredOutNoDob++
+						console.log(`Profile ${datingProfile.user_id} (${datingProfile.name}) filtered out: missing date of birth`)
 						return null
 					}
 
 					// Exclude current user's profile
 					if (user && datingProfile.user_id === user.id) {
+						filteredOutCurrentUser++
 						return null
 					}
 
 					// Get data from consolidated table
 					const profilePhotos = (datingProfile.photos as string[]) || []
 					const profileInterests = (datingProfile.interests as string[]) || []
-					const profileGender = datingProfile.gender || userProfile?.gender
+					const profileGenderRaw = datingProfile.gender || userProfile?.gender
+					// Normalize gender to lowercase for consistent comparison
+					const profileGender = profileGenderRaw ? profileGenderRaw.toString().toLowerCase() : null
 					// bio might not exist in the table, so use relationship_goals as fallback
 					const profileBio = (datingProfile as any).bio || datingProfile.relationship_goals || "No bio available"
 					const verification = verifications?.find((v) => v.user_id === datingProfile.user_id)
 
-					// Filter by gender preference
+					// Filter by gender preference (case-insensitive comparison)
+					// Normalize lookingFor to match profileGender format
 					if (lookingFor === 'women' && profileGender !== 'female') {
+						filteredOutGender++
+						console.log(`Profile ${datingProfile.user_id} (${datingProfile.name}) filtered out: gender "${profileGenderRaw}" doesn't match preference "women"`)
 						return null
 					}
 					if (lookingFor === 'men' && profileGender !== 'male') {
+						filteredOutGender++
+						console.log(`Profile ${datingProfile.user_id} (${datingProfile.name}) filtered out: gender "${profileGenderRaw}" doesn't match preference "men"`)
 						return null
 					}
 					// If lookingFor is 'everyone', show all profiles
@@ -216,9 +243,27 @@ export function DiscoveryScreen() {
 				.filter((profile): profile is Profile => profile !== null)
 
 			console.log(`Successfully processed ${combinedProfiles.length} profiles for display`)
+			console.log(`Filtering stats: ${filteredOutNoDob} no DOB, ${filteredOutCurrentUser} current user, ${filteredOutGender} gender mismatch`)
+			
 			setProfiles(combinedProfiles)
 			if (combinedProfiles.length === 0) {
-				setError("No profiles found. Make sure there are completed profiles in the database.")
+				let errorMsg = "No profiles found. "
+				if (datingProfiles.length > 0) {
+					errorMsg += `Found ${datingProfiles.length} profiles but they were filtered out. `
+					if (filteredOutNoDob > 0) {
+						errorMsg += `${filteredOutNoDob} missing date of birth. `
+					}
+					if (filteredOutGender > 0) {
+						errorMsg += `${filteredOutGender} don't match your gender preference. `
+					}
+					errorMsg += "Make sure there are completed profiles in the database."
+				} else {
+					errorMsg += "Make sure there are completed profiles in the database."
+				}
+				setError(errorMsg)
+			} else {
+				// Clear error if we have profiles
+				setError(null)
 			}
 		} catch (error: any) {
 			console.error("Unexpected error fetching profiles:", error)
