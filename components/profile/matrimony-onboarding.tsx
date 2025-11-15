@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { MatrimonyPreferences } from "@/components/profile/matrimony-preferences"
 import { useState } from "react"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface MatrimonyOnboardingProps {
   onComplete?: () => void
@@ -26,7 +27,8 @@ export function MatrimonyOnboarding({ onComplete }: MatrimonyOnboardingProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <StaticBackground />
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <div className="space-y-2">

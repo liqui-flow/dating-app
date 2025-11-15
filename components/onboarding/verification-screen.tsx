@@ -13,6 +13,7 @@ import {
   saveGender, 
   completeIDVerification 
 } from "@/lib/verificationApi"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface VerificationScreenProps {
   onComplete?: () => void
@@ -321,7 +322,8 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <StaticBackground />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 export function VerificationStatus({ onBack }: { onBack?: () => void }) {
   const [verified, setVerified] = useState(false)
@@ -22,7 +23,8 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      <StaticBackground />
       <div className="p-6 space-y-6">
         <h1 className="text-2xl font-bold">Profile Verification</h1>
         {verified ? (

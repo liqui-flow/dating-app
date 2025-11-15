@@ -11,6 +11,7 @@ import { Sparkles, Zap, Heart } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { completeQuestionnaire } from "@/lib/datingProfileService"
 import { useToast } from "@/hooks/use-toast"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface InterestQuestionnaireProps {
   onComplete?: () => void
@@ -167,7 +168,8 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
+    <div className="min-h-screen flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white relative">
+      <StaticBackground />
       <Card className="w-full max-w-4xl bg-white/10 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl rounded-[32px]">
         <CardHeader className="text-center space-y-3">
           <CardTitle className="text-3xl font-bold text-white drop-shadow">What's your vibe?</CardTitle>

@@ -12,6 +12,7 @@ import { PhotoGrid } from "@/components/profile/photo-grid"
 import { MatrimonyPreferences } from "@/components/profile/matrimony-preferences"
 import { User, Camera } from "lucide-react"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface ProfileSetupProps {
   onComplete?: () => void
@@ -43,7 +44,8 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      <StaticBackground />
       <div className="sticky top-0 glass-apple border-b border-border z-10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-3">

@@ -7,6 +7,7 @@ import { useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { saveUserPath, upsertUserPath } from "@/lib/pathService"
 import { useToast } from "@/hooks/use-toast"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface PathSelectProps {
   onSelect: (path: "dating" | "matrimony") => void
@@ -62,7 +63,8 @@ export function PathSelect({ onSelect, onBack }: PathSelectProps) {
     }
   }
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <StaticBackground />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Choose Your Path</CardTitle>

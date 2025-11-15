@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { MapPin, Briefcase, GraduationCap, Users, Edit, Share, MoreVertical } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface ProfileViewProps {
   isOwnProfile?: boolean
@@ -48,7 +49,8 @@ export function ProfileView({ isOwnProfile = false, onEdit }: ProfileViewProps) 
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      <StaticBackground />
       {/* Header */}
       <div className="sticky top-0 backdrop-blur-sm border-b border-border z-10">
         <div className="flex items-center justify-between p-4">

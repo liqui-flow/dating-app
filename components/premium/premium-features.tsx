@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle } from "lucide-react"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 export function PremiumFeatures({ onBack }: { onBack?: () => void }) {
   const features = [
@@ -12,7 +13,8 @@ export function PremiumFeatures({ onBack }: { onBack?: () => void }) {
   ]
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      <StaticBackground />
       <div className="p-6 space-y-4">
         <h1 className="text-2xl font-bold">Your Premium Features</h1>
         <Card>

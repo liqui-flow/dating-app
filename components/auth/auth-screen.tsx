@@ -12,6 +12,7 @@ import GoogleLoginButton from "@/components/auth/GoogleLoginButton"
 import AppleLoginButton from "@/components/auth/AppleLoginButton"
 import { Eye, EyeOff } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface AuthScreenProps {
   onAuthSuccess?: () => void
@@ -126,7 +127,8 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-3 sm:p-4">
+    <div className="min-h-screen flex items-center justify-center p-3 sm:p-4 relative">
+      <StaticBackground />
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center space-y-3 sm:space-y-4 px-4 sm:px-6 pt-6 sm:pt-6">
           <h1 className="text-xl sm:text-2xl font-bold text-white font-sans">Lovesathi</h1>

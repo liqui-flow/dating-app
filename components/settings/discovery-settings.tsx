@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, MapPin, Users, Filter } from "lucide-react"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface DiscoverySettings {
   ageRange: [number, number]
@@ -69,7 +70,8 @@ export function DiscoverySettings() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      <StaticBackground />
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border">
         <div className="flex items-center space-x-3">

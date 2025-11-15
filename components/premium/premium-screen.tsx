@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Crown, Eye, MessageCircle, Zap, Star, Check } from "lucide-react"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface PremiumPlan {
   id: string
@@ -104,7 +105,8 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
   const [selectedPlan, setSelectedPlan] = useState<string>("quarterly")
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      <StaticBackground />
       {/* Header */}
       <div className="flex-shrink-0 glass-apple bg-gradient-to-br from-[#4A0E0E] to-[#6E1414] text-white p-6">
         <div className="text-center space-y-4">

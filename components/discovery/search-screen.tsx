@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Filter, MapPin, Heart, X } from "lucide-react"
 import { FilterSheet } from "./filter-sheet"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface Profile {
   id: string
@@ -181,7 +182,8 @@ export function SearchScreen() {
   )
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      <StaticBackground />
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border">
         <div className="flex items-center space-x-3">

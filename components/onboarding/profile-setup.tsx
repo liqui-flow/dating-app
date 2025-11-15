@@ -9,6 +9,7 @@ import { Camera, Upload, Video, X } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { completeProfileSetup } from "@/lib/datingProfileService"
 import { useToast } from "@/hooks/use-toast"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface ProfileSetupProps {
   onComplete: () => void
@@ -135,7 +136,8 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
   const isComplete = name.trim() && photos.length >= 3
 
   return (
-    <div className="h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white overflow-hidden relative">
+      <StaticBackground />
       <Card className="w-full max-w-2xl h-full max-h-[90vh] flex flex-col">
         <CardHeader className="text-center flex-shrink-0 pb-4">
           <CardTitle className="text-2xl font-bold text-primary">Let's build your profile</CardTitle>

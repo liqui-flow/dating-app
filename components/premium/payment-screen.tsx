@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 export function PaymentScreen({ planId, onSuccess, onCancel }: { planId: string; onSuccess?: () => void; onCancel?: () => void }) {
   const [cardNumber, setCardNumber] = useState("")
@@ -21,7 +22,8 @@ export function PaymentScreen({ planId, onSuccess, onCancel }: { planId: string;
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      <StaticBackground />
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         <Card>
           <CardHeader>

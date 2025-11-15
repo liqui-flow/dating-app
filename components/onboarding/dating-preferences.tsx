@@ -9,6 +9,7 @@ import { User, Users, HeartHandshake } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { saveDatingPreferences } from "@/lib/datingProfileService"
 import { useToast } from "@/hooks/use-toast"
+import { StaticBackground } from "@/components/discovery/static-background"
 
 interface DatingPreferencesProps {
   onComplete: () => void
@@ -96,7 +97,8 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white">
+    <div className="min-h-screen flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white relative">
+      <StaticBackground />
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-primary">Who do you prefer to date?</CardTitle>
