@@ -57,8 +57,16 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   
-  // Transform motion values to rotation
-  const rotate = useTransform(x, [-300, 300], [-30, 30])
+  // Transform motion values to rotation with smoother curve
+  const rotate = useTransform(x, [-400, 400], [-25, 25])
+  
+  // Visual feedback during drag - opacity and scale (renamed to avoid conflicts)
+  const dragOpacity = useTransform(x, [-400, -100, 100, 400], [0.7, 1, 1, 0.7])
+  const dragScale = useTransform(x, [-400, 0, 400], [0.95, 1, 0.95])
+  
+  // Like/Pass overlay opacity based on drag direction
+  const likeOverlayOpacity = useTransform(x, [0, 100, 200], [0, 0.3, 0.6])
+  const passOverlayOpacity = useTransform(x, [0, -100, -200], [0, 0.3, 0.6])
 
   const depthStyles = useMemo(() => {
     // Enhanced visual stacking for realistic deck-of-cards effect
@@ -102,27 +110,52 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
   }
 
   const handleDragEnd = (event: any, info: any) => {
-    const threshold = 120
+    // Lower threshold for easier swiping, better velocity detection
+    const threshold = 80
     const velocity = info.velocity.x
+    const velocityThreshold = 300 // Lower velocity threshold for more responsive swipes
     
-    if (info.offset.x > threshold || velocity > 500) {
-      // Like - trigger heart animation and swipe out
+    // Use both distance and velocity for more natural feel
+    const shouldLike = info.offset.x > threshold || velocity > velocityThreshold
+    const shouldPass = info.offset.x < -threshold || velocity < -velocityThreshold
+    
+    if (shouldLike) {
+      // Like - trigger heart animation and swipe out with smooth spring
       showHeartBurst()
-      animate(x, 1000, { duration: 0.4, ease: "easeInOut" })
+      animate(x, 1000, { 
+        type: "spring",
+        stiffness: 200,
+        damping: 20,
+        mass: 0.5
+      })
       setTimeout(() => {
         onLike()
-      }, 400)
-    } else if (info.offset.x < -threshold || velocity < -500) {
-      // Pass - trigger X animation and swipe out
-      showXBurst()
-      animate(x, -1000, { duration: 0.4, ease: "easeInOut" })
+      }, 300)
+    } else if (shouldPass) {
+      // Pass - swipe out with smooth spring (no X animation)
+      animate(x, -1000, { 
+        type: "spring",
+        stiffness: 200,
+        damping: 20,
+        mass: 0.5
+      })
       setTimeout(() => {
         onPass()
-      }, 400)
+      }, 300)
     } else {
-      // Reset card position smoothly with spring animation
-      animate(x, 0, { duration: 0.6, ease: "easeOut" })
-      animate(y, 0, { duration: 0.6, ease: "easeOut" })
+      // Reset card position smoothly with optimized spring animation
+      animate(x, 0, { 
+        type: "spring",
+        stiffness: 400,
+        damping: 35,
+        mass: 0.6
+      })
+      animate(y, 0, { 
+        type: "spring",
+        stiffness: 400,
+        damping: 35,
+        mass: 0.6
+      })
     }
   }
 
@@ -144,6 +177,17 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
   // Transform for back side opacity (fade in as card turns)
   const backOpacity = useTransform(rotateY, [90, 180], [0, 1])
   const frontOpacity = useTransform(rotateY, [0, 90], [1, 0])
+  
+  // Combined transforms for final style values
+  // Use useTransform to combine drag feedback with depth styles
+  const combinedScale = useTransform(
+    dragScale,
+    (ds) => ds * depthStyles.scale
+  )
+  const combinedOpacity = useTransform(
+    dragOpacity,
+    (doVal) => doVal * depthStyles.opacity
+  )
 
   return (
     <>
@@ -171,21 +215,23 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
           x,
           y,
           rotate: stackIndex === 0 ? rotate : depthStyles.rotate,
-          scale: depthStyles.scale,
+          scale: stackIndex === 0 ? combinedScale : depthStyles.scale,
           translateY: depthStyles.translateY,
           translateX: depthStyles.translateX,
           zIndex: depthStyles.zIndex,
-          opacity: depthStyles.opacity,
+          opacity: stackIndex === 0 ? combinedOpacity : depthStyles.opacity,
         }}
-        drag={stackIndex === 0 && !isFlipped ? "x" : false}
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.2}
+        drag={stackIndex === 0 && !isFlipped ? true : false}
+        dragConstraints={{ left: -500, right: 500, top: -200, bottom: 200 }}
+        dragElastic={0.7}
+        dragMomentum={true}
+        dragTransition={{ bounceStiffness: 300, bounceDamping: 30 }}
         onDragEnd={handleDragEnd}
         transition={{
           type: "spring",
-          stiffness: 300,
-          damping: 30,
-          mass: 0.8
+          stiffness: 400,
+          damping: 35,
+          mass: 0.6
         }}
       >
         {/* 3D Flip Container */}
@@ -236,7 +282,6 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
           {profile.premium && <Badge className="bg-[#4A0E0E] text-white text-xs px-2 py-1">Premium</Badge>}
         </div>
       )}
-
 
       {/* Bottom profile information overlay - Simplified design */}
       {stackIndex === 0 && (
