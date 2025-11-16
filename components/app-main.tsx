@@ -18,6 +18,7 @@ import { PaymentScreen } from "./premium/payment-screen"
 import { VerificationStatus } from "./profile/verification-status"
 import { PremiumFeatures } from "./premium/premium-features"
 import { ProfileView } from "@/components/profile/profile-view"
+import { EditProfile } from "@/components/profile/edit-profile"
 import { ActivityScreen } from "@/components/activity/activity-screen"
 import { handleLogout } from "@/lib/logout"
 
@@ -31,6 +32,7 @@ type Screen =
   | "chat"
   | "premium"
   | "profile-setup"
+  | "edit-profile"
   | "payment"
   | "verification-status"
   | "premium-features"
@@ -140,7 +142,7 @@ export function AppMain() {
         return (
           <SettingsScreen
             onNavigate={(id) => {
-              if (id === "profile") handleNavigation("profile-setup")
+              if (id === "profile") handleNavigation("edit-profile")
               else if (id === "premium") handleNavigation("premium")
               else if (id === "verification") handleNavigation("verification-status")
               else if (id === "help_faq") window.alert("FAQ coming soon")
@@ -150,6 +152,16 @@ export function AppMain() {
             }
             }
             onLogout={handleLogout}
+          />
+        )
+      case "edit-profile":
+        return (
+          <EditProfile
+            onBack={() => handleNavigation("profile")}
+            onSave={() => {
+              // Profile will refresh automatically
+              handleNavigation("profile")
+            }}
           />
         )
       case "premium":

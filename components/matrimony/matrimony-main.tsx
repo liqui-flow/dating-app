@@ -21,6 +21,7 @@ import { PremiumScreen } from "@/components/premium/premium-screen"
 import { PaymentScreen } from "@/components/premium/payment-screen"
 import { PremiumFeatures } from "@/components/premium/premium-features"
 import { VerificationStatus } from "@/components/profile/verification-status"
+import { EditProfile } from "@/components/profile/edit-profile"
 import { type MatrimonyProfile } from "@/lib/mockMatrimonyProfiles"
 import { supabase } from "@/lib/supabaseClient"
 import { handleLogout } from "@/lib/logout"
@@ -67,6 +68,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
     | "chat"
     | "profile"
     | "profile-setup"
+    | "edit-profile"
     | "premium"
     | "payment"
     | "premium-features"
@@ -424,12 +426,24 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       {currentScreen === "profile" && (
         <SettingsScreen
           onNavigate={(id) => {
-            if (id === "profile") setCurrentScreen("profile-setup")
+            if (id === "profile") setCurrentScreen("edit-profile")
             else if (id === "premium") setCurrentScreen("premium")
             else if (id === "verification") setCurrentScreen("verification-status")
           }}
           onLogout={handleLogout}
         />
+      )}
+
+      {currentScreen === "edit-profile" && (
+        <div className="p-0 pb-0 mt-0">
+          <EditProfile
+            onBack={() => setCurrentScreen("profile")}
+            onSave={() => {
+              // Profile will refresh automatically
+              setCurrentScreen("profile")
+            }}
+          />
+        </div>
       )}
 
       {currentScreen === "profile-setup" && (

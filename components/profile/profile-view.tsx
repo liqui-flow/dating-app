@@ -11,6 +11,7 @@ import { StaticBackground } from "@/components/discovery/static-background"
 import { supabase } from "@/lib/supabaseClient"
 import type { DatingProfileFull } from "@/lib/datingProfileService"
 import type { MatrimonyProfileFull } from "@/lib/matrimonyService"
+import { EditProfile } from "./edit-profile"
 
 interface ProfileViewProps {
   isOwnProfile?: boolean
@@ -37,10 +38,24 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileVie
   const [datingProfile, setDatingProfile] = useState<DatingProfileFull | null>(null)
   const [matrimonyProfile, setMatrimonyProfile] = useState<MatrimonyProfileFull | null>(null)
   const [verified, setVerified] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
     fetchProfile()
   }, [userId, isOwnProfile])
+
+  const handleEdit = () => {
+    setIsEditing(true)
+  }
+
+  const handleEditBack = () => {
+    setIsEditing(false)
+  }
+
+  const handleEditSave = () => {
+    fetchProfile() // Refresh profile data
+    setIsEditing(false)
+  }
 
   const fetchProfile = async () => {
     try {
@@ -100,6 +115,10 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileVie
     }
   }
 
+  if (isEditing && isOwnProfile) {
+    return <EditProfile onBack={handleEditBack} onSave={handleEditSave} />
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen relative">
@@ -138,7 +157,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileVie
           <div className="flex items-center space-x-2">
             {isOwnProfile ? (
               <>
-                <Button variant="outline" size="sm" onClick={onEdit}>
+                <Button variant="outline" size="sm" onClick={handleEdit}>
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
