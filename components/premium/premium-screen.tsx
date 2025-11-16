@@ -108,7 +108,7 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
     <div className="flex flex-col h-full relative">
       <StaticBackground />
       {/* Header */}
-      <div className="flex-shrink-0 glass-apple bg-gradient-to-br from-[#4A0E0E] to-[#6E1414] text-white p-6">
+      <div className="flex-shrink-0 glass-apple bg-gradient-to-br from-purple-600/90 via-blue-600/90 to-indigo-700/90 text-white p-6">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
             <Crown className="w-16 h-16 fill-current" />
@@ -145,11 +145,11 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
           {/* Plans Section */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-center">Choose Your Plan</h2>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {premiumPlans.map((plan) => (
                 <Card
                   key={plan.id}
-                  className={`cursor-pointer transition-all ${
+                  className={`cursor-pointer transition-all h-full flex flex-col ${
                     selectedPlan === plan.id ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"
                   } ${plan.isPopular ? "relative" : ""}`}
                   onClick={() => setSelectedPlan(plan.id)}
@@ -180,18 +180,19 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
                     </div>
                   </CardHeader>
 
-                  <CardContent className="pt-0">
-                    <div className="space-y-2">
+                  <CardContent className="pt-0 flex-1 flex flex-col">
+                    <div className="space-y-2 flex-1">
                       {plan.features.map((feature) => (
                         <div key={feature} className="flex items-center space-x-2">
                           <Check className="w-4 h-4 text-primary flex-shrink-0" />
                           <span className="text-sm">{feature}</span>
                         </div>
                       ))}
-                      <div className="pt-2">
+                      <div className="pt-2 mt-auto">
                         <Button
                           variant={selectedPlan === plan.id ? "default" : "outline"}
                           size="sm"
+                          className="w-full"
                           onClick={(e) => {
                             e.stopPropagation()
                             setSelectedPlan(plan.id)

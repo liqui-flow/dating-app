@@ -22,10 +22,13 @@ import {
   Info,
   Mail,
   Bug,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { supabase } from "@/lib/supabaseClient"
+import { getIDVerification } from "@/lib/verificationApi"
 
 interface SettingsSection {
   title: string
@@ -97,10 +100,26 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
     userPath: null
   })
   const [loading, setLoading] = useState(true)
+  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'approved' | 'rejected' | 'in_review' | null>(null)
 
   useEffect(() => {
     fetchUserInfo()
+    checkVerificationStatus()
   }, [])
+
+  const checkVerificationStatus = async () => {
+    try {
+      const result = await getIDVerification()
+      if (result.success && result.data) {
+        setVerificationStatus(result.data.verification_status as 'pending' | 'approved' | 'rejected' | 'in_review')
+      } else {
+        setVerificationStatus(null)
+      }
+    } catch (error) {
+      console.error('Error checking verification status:', error)
+      setVerificationStatus(null)
+    }
+  }
 
   const fetchUserInfo = async () => {
     try {
@@ -310,8 +329,32 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
                                   {item.badge}
                                 </Badge>
                               )}
+                              {/* Verification Status Indicator */}
+                              {item.id === "verification" && verificationStatus && (
+                                <>
+                                  {verificationStatus === 'approved' ? (
+                                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                                      <CheckCircle className="w-3.5 h-3.5 text-white" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                                      <AlertCircle className="w-3.5 h-3.5 text-white" />
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </div>
-                            {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
+                            {item.description && (
+                              <p className="text-sm text-muted-foreground">
+                                {item.description}
+                                {item.id === "verification" && verificationStatus === 'approved' && (
+                                  <span className="ml-2 text-green-500 text-xs font-medium">Verification completed</span>
+                                )}
+                                {item.id === "verification" && verificationStatus && verificationStatus !== 'approved' && (
+                                  <span className="ml-2 text-red-500 text-xs font-medium">Pending verification</span>
+                                )}
+                              </p>
+                            )}
                           </div>
                         </div>
 
