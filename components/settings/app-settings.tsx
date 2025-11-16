@@ -26,6 +26,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/lib/supabaseClient"
 import { useToast } from "@/hooks/use-toast"
 import { StaticBackground } from "@/components/discovery/static-background"
+import { handleLogout } from "@/lib/logout"
 
 interface SettingsSection {
   title: string
@@ -225,9 +226,6 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
         return
       }
 
-      // Sign out the user
-      await supabase.auth.signOut()
-
       toast({
         title: "Account Deleted",
         description: "Your account and all data have been permanently deleted.",
@@ -235,7 +233,7 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
 
       // Call logout handler to redirect user
       setTimeout(() => {
-        onLogout?.()
+        handleLogout()
       }, 1500)
 
     } catch (error: any) {

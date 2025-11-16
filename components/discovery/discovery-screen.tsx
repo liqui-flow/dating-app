@@ -66,6 +66,14 @@ export function DiscoveryScreen() {
 			
 			if (authError) {
 				console.error("Auth error:", authError)
+				// Check if this is a session missing error (common during logout)
+				// If so, silently redirect instead of showing error
+				if (authError.message?.includes('session') || authError.message?.includes('Auth session missing')) {
+					console.log("Session missing, likely during logout - redirecting silently")
+					// Don't set error, just redirect
+					window.location.replace('/auth')
+					return
+				}
 				setError(`Authentication error: ${authError.message}`)
 				setProfiles([])
 				setLoading(false)
@@ -74,9 +82,9 @@ export function DiscoveryScreen() {
 
 			if (!user) {
 				console.log("No user found, redirecting to auth...")
-				setError("Please log in to view profiles")
-				setProfiles([])
-				setLoading(false)
+				// Don't show error if user is null (could be during logout)
+				// Just redirect silently
+				window.location.replace('/auth')
 				return
 			}
 

@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react"
 import { motion, useMotionValue, useTransform, animate } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Check, X, Info, MoreHorizontal } from "lucide-react"
+import { Check, X, Info, MoreHorizontal, MapPin } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "../discovery/swipe-animations"
 import { MatrimonyProfileModal } from "./matrimony-profile-modal"
@@ -217,9 +217,30 @@ export function MatrimonySwipeCard({
       )}
 
 
+      {/* Bottom profile information overlay - Simplified design */}
+      {stackIndex === 0 && (
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          {/* Dark gradient overlay */}
+          <div className="bg-gradient-to-t from-black/80 via-black/60 to-transparent h-40 rounded-b-3xl" />
+          
+          {/* Profile information - positioned above the buttons */}
+          <div className="absolute bottom-20 left-4 right-4 z-10">
+            <h2 className="text-white text-xl sm:text-2xl font-bold drop-shadow-lg mb-1">
+              {name}, {age}
+            </h2>
+            {location && (
+              <div className="flex items-center space-x-1 text-white/90">
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-sm sm:text-base">{location}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Glass circle with X mark in bottom left corner */}
       {stackIndex === 0 && (
-        <div className="absolute bottom-4 left-16 z-30">
+        <div className="absolute bottom-4 left-4 z-30">
           <div 
             className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-lg hover:bg-white/30 transition-all duration-200 cursor-pointer"
             onClick={(e) => {
@@ -239,7 +260,7 @@ export function MatrimonySwipeCard({
 
       {/* Glass circle with tick mark in bottom right corner */}
       {stackIndex === 0 && (
-        <div className="absolute bottom-4 right-16 z-30">
+        <div className="absolute bottom-4 right-4 z-30">
           <div 
             className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-lg hover:bg-white/30 transition-all duration-200 cursor-pointer"
             onClick={(e) => {
@@ -253,27 +274,6 @@ export function MatrimonySwipeCard({
             }}
           >
             <Check className="w-6 h-6 text-white drop-shadow-sm" />
-          </div>
-        </div>
-      )}
-
-      {/* Bottom profile information overlay */}
-      {stackIndex === 0 && (
-        <div className="absolute bottom-0 left-0 right-0 z-20">
-          {/* Dark overlay background */}
-          <div className="bg-gradient-to-t from-black/80 via-black/60 to-transparent h-32 rounded-b-3xl" />
-          
-          {/* Profile information */}
-          <div className="absolute bottom-20 left-4 right-4 z-10">
-            <h2 className="text-white text-2xl font-bold drop-shadow-lg mb-2">
-              {name}
-            </h2>
-            
-            <div className="space-y-1">
-              <p className="text-white/90 text-sm">
-                {age} yrs{height && `, ${height}`}
-              </p>
-            </div>
           </div>
         </div>
       )}

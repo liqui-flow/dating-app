@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { StaticBackground } from "@/components/discovery/static-background"
+import { supabase } from "@/lib/supabaseClient"
 
 interface SettingsSection {
   title: string
@@ -74,7 +75,140 @@ const settingsSections: SettingsSection[] = [
   },
 ]
 
+interface UserInfo {
+  name: string
+  email: string
+  photo: string | null
+  accountType: string
+}
+
 export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: SettingsNavigateHandler; onLogout?: () => void }) {
+  const [userInfo, setUserInfo] = useState<UserInfo>({
+    name: "Loading...",
+    email: "Loading...",
+    photo: null,
+    accountType: "Free Account"
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchUserInfo()
+  }, [])
+
+  const fetchUserInfo = async () => {
+    try {
+      setLoading(true)
+      
+      // Get auth user for email
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        console.error("Error fetching auth user:", authError)
+        setUserInfo({
+          name: "User",
+          email: "Not available",
+          photo: null,
+          accountType: "Free Account"
+        })
+        setLoading(false)
+        return
+      }
+
+      const email = user.email || "Not available"
+
+      // Get user's selected path
+      const { data: userProfile, error: userProfileError } = await supabase
+        .from('user_profiles')
+        .select('selected_path')
+        .eq('user_id', user.id)
+        .single()
+
+      let name = "User"
+      let photo: string | null = null
+
+      // Try to fetch from dating profile first
+      if (!userProfileError && userProfile?.selected_path === 'dating') {
+        const { data: datingProfile, error: datingError } = await supabase
+          .from('dating_profile_full')
+          .select('name, photos')
+          .eq('user_id', user.id)
+          .single()
+
+        if (!datingError && datingProfile) {
+          name = datingProfile.name || name
+          const photos = (datingProfile.photos as string[]) || []
+          photo = photos.length > 0 ? photos[0] : null
+        }
+      } 
+      // Try matrimony profile
+      else if (!userProfileError && userProfile?.selected_path === 'matrimony') {
+        const { data: matrimonyProfile, error: matrimonyError } = await supabase
+          .from('matrimony_profile_full')
+          .select('name, photos')
+          .eq('user_id', user.id)
+          .single()
+
+        if (!matrimonyError && matrimonyProfile) {
+          name = matrimonyProfile.name || name
+          const photos = (matrimonyProfile.photos as string[]) || []
+          photo = photos.length > 0 ? photos[0] : null
+        }
+      }
+      // If no path selected, try both
+      else {
+        // Try dating first
+        const { data: datingProfile } = await supabase
+          .from('dating_profile_full')
+          .select('name, photos')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (datingProfile) {
+          name = datingProfile.name || name
+          const photos = (datingProfile.photos as string[]) || []
+          photo = photos.length > 0 ? photos[0] : null
+        } else {
+          // Try matrimony
+          const { data: matrimonyProfile } = await supabase
+            .from('matrimony_profile_full')
+            .select('name, photos')
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+          if (matrimonyProfile) {
+            name = matrimonyProfile.name || name
+            const photos = (matrimonyProfile.photos as string[]) || []
+            photo = photos.length > 0 ? photos[0] : null
+          }
+        }
+      }
+
+      // Get initials for fallback
+      const initials = name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2) || "U"
+
+      setUserInfo({
+        name,
+        email,
+        photo,
+        accountType: "Free Account" // TODO: Check subscription status if you have a subscriptions table
+      })
+    } catch (error) {
+      console.error("Error fetching user info:", error)
+      setUserInfo({
+        name: "User",
+        email: "Not available",
+        photo: null,
+        accountType: "Free Account"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleNavigation = (id: string) => {
     if (onNavigate) onNavigate(id)
@@ -90,6 +224,16 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
     }
   }
 
+  // Get initials for avatar fallback
+  const getInitials = (name: string): string => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || "U"
+  }
+
   return (
     <div className="flex flex-col h-full relative">
       {/* Static Background */}
@@ -99,14 +243,14 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
       <div className="flex-shrink-0 p-6 border-b border-border glass-apple">
         <div className="flex items-center space-x-4">
           <Avatar className="w-16 h-16">
-            <AvatarImage src="/professional-headshot.png" alt="Profile" />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarImage src={userInfo.photo || "/placeholder-user.jpg"} alt="Profile" />
+            <AvatarFallback>{getInitials(userInfo.name)}</AvatarFallback>
           </Avatar>
           <div className="space-y-1">
-            <h1 className="text-xl font-bold">John Doe</h1>
-            <p className="text-sm text-muted-foreground">john.doe@example.com</p>
+            <h1 className="text-xl font-bold">{userInfo.name}</h1>
+            <p className="text-sm text-muted-foreground">{userInfo.email}</p>
             <Badge variant="secondary" className="text-xs">
-              Free Account
+              {userInfo.accountType}
             </Badge>
           </div>
         </div>

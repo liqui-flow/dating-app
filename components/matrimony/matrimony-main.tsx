@@ -22,6 +22,7 @@ import { PremiumFeatures } from "@/components/premium/premium-features"
 import { VerificationStatus } from "@/components/profile/verification-status"
 import { type MatrimonyProfile } from "@/lib/mockMatrimonyProfiles"
 import { supabase } from "@/lib/supabaseClient"
+import { handleLogout } from "@/lib/logout"
 
 // Helper function to calculate age from date of birth
 function calculateAge(dob: string | null, ageFromProfile: number | null): number {
@@ -394,10 +395,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
             else if (id === "premium") setCurrentScreen("premium")
             else if (id === "verification") setCurrentScreen("verification-status")
           }}
-          onLogout={async () => {
-            await supabase.auth.signOut()
-            window.location.href = "/auth"
-          }}
+          onLogout={handleLogout}
         />
       )}
 
@@ -451,10 +449,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
               else if (id === "help_report_bug") window.alert("Bug report submitted")
               else if (id === "app_settings") window.alert("Open App Settings")
             }}
-            onLogout={async () => {
-              await supabase.auth.signOut()
-              window.location.href = "/auth"
-            }}
+            onLogout={handleLogout}
             onBack={() => setCurrentScreen("profile")}
           />
         </div>

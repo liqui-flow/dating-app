@@ -19,7 +19,7 @@ import { PaymentScreen } from "./premium/payment-screen"
 import { VerificationStatus } from "./profile/verification-status"
 import { PremiumFeatures } from "./premium/premium-features"
 import { ProfileView } from "@/components/profile/profile-view"
-import { supabase } from "@/lib/supabaseClient"
+import { handleLogout } from "@/lib/logout"
 
 type Screen =
   | "discover"
@@ -138,10 +138,7 @@ export function AppMain() {
               else if (id === "app_settings") window.alert("Open App Settings")
             }
             }
-            onLogout={async () => {
-              await supabase.auth.signOut()
-              window.location.href = "/auth"
-            }}
+            onLogout={handleLogout}
           />
         )
       case "premium":
@@ -183,10 +180,7 @@ export function AppMain() {
               else if (id === "help_report_bug") window.alert("Bug report submitted")
               else if (id === "app_settings") window.alert("Open App Settings")
             }}
-            onLogout={async () => {
-              await supabase.auth.signOut()
-              window.location.href = "/auth"
-            }}
+            onLogout={handleLogout}
             onBack={() => handleNavigation("profile")}
           />
         )

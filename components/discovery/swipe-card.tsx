@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useMotionValue, useTransform, animate } from "
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Info } from "lucide-react"
+import { Info, MapPin } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "./swipe-animations"
 
@@ -198,55 +198,45 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
       )}
 
 
-      {/* Bottom glassmorphic bar with name/age and info button - Enhanced 3D */}
+      {/* Bottom profile information overlay - Simplified design */}
       {stackIndex === 0 && (
-        <div
-          className={cn(
-            "absolute left-2 right-2 sm:left-4 sm:right-4 top-95 z-10 w-11/12",
-            "rounded-xl sm:rounded-2xl p-2 sm:p-3 flex items-center justify-between",
-            "bg-white/[0.15] border border-white/30",
-            "backdrop-blur-xl supports-[backdrop-filter]:bg-white/[0.15]",
-            // Enhanced shadow for floating effect
-            "shadow-[0_8px_32px_rgba(0,0,0,0.3),0_2px_8px_rgba(0,0,0,0.2)]",
-            // Subtle inner glow
-            "before:absolute before:inset-0 before:rounded-xl sm:before:rounded-2xl before:bg-gradient-to-br before:from-white/20 before:to-transparent before:pointer-events-none",
-            "relative overflow-hidden",
-          )}
-        >
-          <div className="min-w-0 relative z-10">
-            <h2 className="text-white text-lg sm:text-xl font-bold truncate drop-shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          {/* Dark gradient overlay */}
+          <div className="bg-gradient-to-t from-black/80 via-black/60 to-transparent h-32 rounded-b-2xl sm:rounded-b-3xl" />
+          
+          {/* Profile information */}
+          <div className="absolute bottom-4 left-4 right-16 z-10">
+            <h2 className="text-white text-xl sm:text-2xl font-bold drop-shadow-lg mb-1">
               {profile.name}, {profile.age}
             </h2>
+            {profile.location && (
+              <div className="flex items-center space-x-1 text-white/90">
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-sm sm:text-base">{profile.location}</span>
+              </div>
+            )}
           </div>
+
+          {/* Info button at bottom right */}
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
             type="button"
             className={cn(
-              "group rounded-full w-8 h-8 sm:w-9 sm:h-9 p-0 shadow-lg border border-white/40 backdrop-blur-xl hover:bg-white/40 hover:scale-110 transition-all duration-200 relative z-10 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/70 focus-visible:ring-offset-transparent",
-              showInfo ? "bg-white text-slate-900 border-white/80 shadow-[0_0_25px_rgba(255,255,255,0.45)]" : "bg-white/25",
+              "absolute bottom-4 right-4 z-30",
+              "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
+              "bg-white/20 backdrop-blur-md border border-white/30",
+              "hover:bg-white/30 hover:scale-110",
+              "transition-all duration-200",
+              "shadow-lg"
             )}
             onClick={(e) => {
               e.stopPropagation()
-              setShowInfo((v) => !v)
+              onProfileClick()
             }}
-            aria-pressed={showInfo}
-            aria-label="Toggle profile details"
+            aria-label="View full profile"
           >
-            <motion.span
-              initial={false}
-              animate={{ rotate: showInfo ? 20 : 0, scale: showInfo ? 1.05 : 1 }}
-              transition={{ type: "spring", stiffness: 260, damping: 15 }}
-              className="flex items-center justify-center w-full h-full"
-            >
-              <Info
-                className={cn(
-                  "w-3 h-3 sm:w-4 sm:h-4 drop-shadow transition-colors duration-200",
-                  showInfo ? "text-slate-900" : "text-white",
-                )}
-              />
-            </motion.span>
-            <span className="sr-only">{showInfo ? "Hide quick profile info" : "Show quick profile info"}</span>
+            <Info className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
           </Button>
         </div>
       )}
