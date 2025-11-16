@@ -4,12 +4,14 @@ import React, { useState, useRef, useEffect, useMemo } from "react"
 import { motion, useMotionValue, useTransform, animate } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Check, X, Info, MoreHorizontal, MapPin, Briefcase, GraduationCap, Users } from "lucide-react"
+import { Check, X, Info, MoreHorizontal, MapPin, Briefcase, GraduationCap, Users, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "../discovery/swipe-animations"
 import { MatrimonyProfileModal } from "./matrimony-profile-modal"
+import { getMatrimonyProfile, type MatrimonyProfileFull } from "@/lib/matrimonyService"
 
 interface MatrimonySwipeCardProps {
+  profileId: string // user_id for fetching full profile
   name: string
   age: number
   height?: string
@@ -29,6 +31,7 @@ interface MatrimonySwipeCardProps {
 }
 
 export function MatrimonySwipeCard({
+  profileId,
   name,
   age,
   height,
@@ -48,8 +51,11 @@ export function MatrimonySwipeCard({
 }: MatrimonySwipeCardProps) {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [expandedPhotoIndex, setExpandedPhotoIndex] = useState(0)
   const [showInfo, setShowInfo] = useState(false)
   const [isFlipped, setIsFlipped] = useState(false)
+  const [fullProfile, setFullProfile] = useState<MatrimonyProfileFull | null>(null)
+  const [loadingProfile, setLoadingProfile] = useState(false)
   const { animation, showHeartBurst, showXBurst, hideAnimation } = useSwipeAnimation()
   
   // Motion value for 3D rotation
@@ -161,15 +167,46 @@ export function MatrimonySwipeCard({
     }
   }
 
-  const handleInfoClick = (e: React.MouseEvent) => {
+  const handleInfoClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (stackIndex === 0) {
       const newFlippedState = !isFlipped
       setIsFlipped(newFlippedState)
+      
+      // Reset photo index when flipping
+      if (newFlippedState) {
+        setExpandedPhotoIndex(0)
+      }
+      
+      // Fetch full profile data when flipping to back side
+      if (newFlippedState && !fullProfile) {
+        setLoadingProfile(true)
+        try {
+          const result = await getMatrimonyProfile(profileId)
+          if (result.success && result.data) {
+            setFullProfile(result.data as MatrimonyProfileFull)
+          }
+        } catch (error) {
+          console.error("Error fetching full profile:", error)
+        } finally {
+          setLoadingProfile(false)
+        }
+      }
+      
       animate(rotateY, newFlippedState ? 180 : 0, {
         duration: 0.8,
         ease: [0.4, 0, 0.2, 1], // Custom cubic-bezier for natural motion
       })
+    }
+  }
+  
+  const handlePhotoNavigation = (direction: 'prev' | 'next', e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    const profilePhotos = fullProfile?.photos || photos
+    if (direction === 'next' && expandedPhotoIndex < profilePhotos.length - 1) {
+      setExpandedPhotoIndex(prev => prev + 1)
+    } else if (direction === 'prev' && expandedPhotoIndex > 0) {
+      setExpandedPhotoIndex(prev => prev - 1)
     }
   }
 
@@ -211,10 +248,12 @@ export function MatrimonySwipeCard({
 
       <motion.div
         className={cn(
-          "w-full max-w-sm h-[60vh] md:h-[480px] cursor-grab active:cursor-grabbing select-none touch-none",
+          "w-full max-w-sm cursor-grab active:cursor-grabbing select-none touch-none",
           "relative",
           // 3D perspective container
           "perspective-[1200px]",
+          // Base height for card expansion calculation
+          stackIndex === 0 && isFlipped ? "h-[77vh] sm:h-[84vh] md:h-[672px]" : "h-[60vh] md:h-[480px]",
           // Enhanced shadows for realistic depth
           stackIndex === 0 && "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)]",
           stackIndex === 1 && "shadow-[0_15px_45px_-12px_rgba(0,0,0,0.35),0_8px_25px_-8px_rgba(0,0,0,0.25)]",
@@ -391,8 +430,10 @@ export function MatrimonySwipeCard({
           {stackIndex === 0 && (
             <motion.div
               className={cn(
-                "absolute inset-0 w-full h-full overflow-y-auto overflow-x-hidden rounded-3xl",
-                "backface-hidden"
+                "absolute inset-0 w-full h-full overflow-y-auto overflow-x-hidden",
+                "rounded-2xl sm:rounded-3xl",
+                "backface-hidden",
+                "hide-scrollbar"
               )}
               style={{
                 opacity: backOpacity,
@@ -400,126 +441,343 @@ export function MatrimonySwipeCard({
                 transformStyle: "preserve-3d",
               }}
             >
-              {/* Background photo - same position as front */}
-              <div className="absolute inset-0">
-                <img
-                  src={photos[currentPhotoIndex] || "/placeholder.svg"}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{ objectPosition: "center" }}
-                />
-                <div className="absolute inset-0 bg-black/70" />
-              </div>
-
-              {/* Close button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                className={cn(
-                  "absolute top-4 right-4 z-30",
-                  "w-8 h-8 p-0 rounded-full",
-                  "bg-white/20 backdrop-blur-md border border-white/30",
-                  "hover:bg-white/30 hover:scale-110",
-                  "transition-all duration-200",
-                  "shadow-lg"
-                )}
-                onClick={handleInfoClick}
-                aria-label="Close profile"
-              >
-                <X className="w-4 h-4 text-white drop-shadow-sm" />
-              </Button>
-
-              {/* Profile Content */}
-              <div className="relative z-10 p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-full">
-                {/* Header */}
-                <div className="space-y-2 pt-12">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">
-                    {name}, {age}
-                    {height && <span className="text-xl sm:text-2xl font-normal text-white/80"> • {height}</span>}
-                  </h1>
-                  {location && (
-                    <div className="flex items-center space-x-2 text-white/90">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm sm:text-base">{location}</span>
-                    </div>
-                  )}
+              {loadingProfile ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+                  <div className="text-white">Loading profile...</div>
                 </div>
-
-                {/* Bio */}
-                {bio && (
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-white text-sm sm:text-base">About</h3>
-                    <p className="text-white/90 text-sm sm:text-base leading-relaxed">{bio}</p>
+              ) : (
+                <>
+                  {/* Black Overlay Header with Name and Age */}
+                  <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-sm border-b border-white/10 rounded-t-2xl sm:rounded-t-3xl">
+                    <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
+                      <div>
+                        <h1 className="text-xl sm:text-2xl font-bold text-white">
+                          {fullProfile?.name || name}, {fullProfile?.age || age}
+                        </h1>
+                        {location && (
+                          <div className="flex items-center space-x-1 text-white/80 text-sm mt-1">
+                            <MapPin className="w-3 h-3" />
+                            <span>{location}</span>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        className={cn(
+                          "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
+                          "bg-white/20 backdrop-blur-md border border-white/30",
+                          "hover:bg-white/30 hover:scale-110",
+                          "transition-all duration-200",
+                          "shadow-lg"
+                        )}
+                        onClick={handleInfoClick}
+                        aria-label="Close profile"
+                      >
+                        <X className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
+                      </Button>
+                    </div>
                   </div>
-                )}
 
-                {/* Details Grid */}
-                {highlightItems.length > 0 && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {highlightItems.map((item) => {
-                      const Icon = item.icon
-                      return (
-                        <div
-                          key={item.label}
-                          className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-sm"
-                        >
-                          <p className="text-[10px] uppercase tracking-wider text-white/60 mb-1">{item.label}</p>
-                          <div className="flex items-center space-x-1">
-                            <Icon className="w-3 h-3 text-white/60" />
-                            <p className="text-sm font-semibold text-white leading-tight">{item.value}</p>
+                  {/* Scrollable Content */}
+                  <div className="relative bg-gradient-to-b from-black/95 via-black/90 to-black/95 overflow-hidden">
+                    {/* Photo Gallery Section */}
+                    <div className="relative w-full bg-black px-4 sm:px-6 pt-6">
+                      <div className="relative w-full aspect-square mx-auto rounded-xl sm:rounded-2xl overflow-hidden">
+                        {(() => {
+                          const profilePhotos = fullProfile?.photos || photos
+                          const currentPhoto = profilePhotos[expandedPhotoIndex] || "/placeholder.svg"
+                          
+                          return (
+                            <>
+                              <img
+                                src={currentPhoto}
+                                alt={`Photo ${expandedPhotoIndex + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            
+                            {/* Photo Navigation Arrows */}
+                            {profilePhotos.length > 1 && (
+                              <>
+                                {expandedPhotoIndex > 0 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 border border-white/20 z-20"
+                                    onClick={(e) => handlePhotoNavigation('prev', e)}
+                                  >
+                                    <ChevronLeft className="w-5 h-5 text-white" />
+                                  </Button>
+                                )}
+                                {expandedPhotoIndex < profilePhotos.length - 1 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 border border-white/20 z-20"
+                                    onClick={(e) => handlePhotoNavigation('next', e)}
+                                  >
+                                    <ChevronRight className="w-5 h-5 text-white" />
+                                  </Button>
+                                )}
+                                
+                                {/* Photo Counter */}
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs z-20">
+                                  {expandedPhotoIndex + 1} / {profilePhotos.length}
+                                </div>
+                              </>
+                            )}
+                          </>
+                        )
+                      })()}
+                      </div>
+                    </div>
+
+                    {/* Profile Information Sections */}
+                    <div className="px-4 sm:px-6 py-6 space-y-6">
+                      {/* Bio Section */}
+                      {(fullProfile?.bio || bio) && (
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-white text-base sm:text-lg">About</h3>
+                          <p className="text-white/90 text-sm sm:text-base leading-relaxed">
+                            {fullProfile?.bio || bio}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Personal Details Section */}
+                      {fullProfile?.personal && (
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-white text-base sm:text-lg">Personal Details</h3>
+                          <div className="space-y-2">
+                            {fullProfile.personal.height_cm && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Height: </span>
+                                {fullProfile.personal.height_unit === 'ft' 
+                                  ? (() => {
+                                      const totalInches = Math.round(fullProfile.personal.height_cm! / 2.54)
+                                      const feet = Math.floor(totalInches / 12)
+                                      const inches = totalInches % 12
+                                      return `${feet}'${inches}"`
+                                    })()
+                                  : `${fullProfile.personal.height_cm} cm`}
+                              </div>
+                            )}
+                            {fullProfile.personal.complexion && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Complexion: </span>
+                                {fullProfile.personal.complexion}
+                              </div>
+                            )}
+                            {fullProfile.personal.body_type && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Body Type: </span>
+                                {fullProfile.personal.body_type}
+                              </div>
+                            )}
+                            {fullProfile.personal.diet && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Diet: </span>
+                                {fullProfile.personal.diet}
+                              </div>
+                            )}
+                            {fullProfile.personal.marital_status && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Marital Status: </span>
+                                {fullProfile.personal.marital_status}
+                              </div>
+                            )}
+                            {(fullProfile.personal.smoker !== undefined || fullProfile.personal.drinker !== undefined) && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Lifestyle: </span>
+                                {[
+                                  fullProfile.personal.smoker ? 'Smoker' : null,
+                                  fullProfile.personal.drinker ? 'Drinker' : null
+                                ].filter(Boolean).join(', ') || 'Non-smoker, Non-drinker'}
+                              </div>
+                            )}
                           </div>
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
+                      )}
 
-                {/* Interests */}
-                {interests && interests.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-white text-sm sm:text-base">Interests</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {interests.map((interest) => (
-                        <Badge
-                          key={interest}
-                          className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white/90"
+                      {/* Career & Education Section */}
+                      {fullProfile?.career && (
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-white text-base sm:text-lg">Career & Education</h3>
+                          <div className="space-y-2">
+                            {fullProfile.career.highest_education && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Education: </span>
+                                {fullProfile.career.highest_education}
+                                {fullProfile.career.college && `, ${fullProfile.career.college}`}
+                              </div>
+                            )}
+                            {fullProfile.career.job_title && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Profession: </span>
+                                {fullProfile.career.job_title}
+                                {fullProfile.career.company && ` at ${fullProfile.career.company}`}
+                              </div>
+                            )}
+                            {fullProfile.career.annual_income && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Annual Income: </span>
+                                {fullProfile.career.annual_income}
+                              </div>
+                            )}
+                            {fullProfile.career.work_location && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Work Location: </span>
+                                {[
+                                  fullProfile.career.work_location.city,
+                                  fullProfile.career.work_location.state,
+                                  fullProfile.career.work_location.country
+                                ].filter(Boolean).join(', ') || 'Not specified'}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Family Information Section */}
+                      {fullProfile?.family && fullProfile.family.show_on_profile && (
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-white text-base sm:text-lg">Family Information</h3>
+                          <div className="space-y-2">
+                            {fullProfile.family.family_type && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Family Type: </span>
+                                {fullProfile.family.family_type}
+                              </div>
+                            )}
+                            {fullProfile.family.family_values && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Family Values: </span>
+                                {fullProfile.family.family_values}
+                              </div>
+                            )}
+                            {(fullProfile.family.father_occupation || fullProfile.family.mother_occupation) && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Parents: </span>
+                                {[
+                                  fullProfile.family.father_occupation && `Father - ${fullProfile.family.father_occupation}${fullProfile.family.father_company ? ` (${fullProfile.family.father_company})` : ''}`,
+                                  fullProfile.family.mother_occupation && `Mother - ${fullProfile.family.mother_occupation}${fullProfile.family.mother_company ? ` (${fullProfile.family.mother_company})` : ''}`
+                                ].filter(Boolean).join(', ')}
+                              </div>
+                            )}
+                            {(fullProfile.family.brothers !== undefined || fullProfile.family.sisters !== undefined) && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Siblings: </span>
+                                {[
+                                  fullProfile.family.brothers !== undefined && fullProfile.family.brothers > 0 && `${fullProfile.family.brothers} brother${fullProfile.family.brothers > 1 ? 's' : ''}`,
+                                  fullProfile.family.sisters !== undefined && fullProfile.family.sisters > 0 && `${fullProfile.family.sisters} sister${fullProfile.family.sisters > 1 ? 's' : ''}`
+                                ].filter(Boolean).join(', ') || 'None'}
+                              </div>
+                            )}
+                            {fullProfile.family.siblings_married && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Siblings Married: </span>
+                                {fullProfile.family.siblings_married}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Cultural & Religious Section */}
+                      {fullProfile?.cultural && (
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-white text-base sm:text-lg">Cultural & Religious</h3>
+                          <div className="space-y-2">
+                            {fullProfile.cultural.religion && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Religion: </span>
+                                {fullProfile.cultural.religion}
+                              </div>
+                            )}
+                            {fullProfile.cultural.mother_tongue && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Mother Tongue: </span>
+                                {fullProfile.cultural.mother_tongue}
+                              </div>
+                            )}
+                            {fullProfile.cultural.community && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Community: </span>
+                                {fullProfile.cultural.community}
+                              </div>
+                            )}
+                            {fullProfile.cultural.sub_caste && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Sub-caste: </span>
+                                {fullProfile.cultural.sub_caste}
+                              </div>
+                            )}
+                            {fullProfile.cultural.date_of_birth && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Date of Birth: </span>
+                                {new Date(fullProfile.cultural.date_of_birth).toLocaleDateString()}
+                              </div>
+                            )}
+                            {fullProfile.cultural.time_of_birth && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Time of Birth: </span>
+                                {fullProfile.cultural.time_of_birth}
+                              </div>
+                            )}
+                            {fullProfile.cultural.place_of_birth && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Place of Birth: </span>
+                                {fullProfile.cultural.place_of_birth}
+                              </div>
+                            )}
+                            {fullProfile.cultural.star_raashi && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Star/Raashi: </span>
+                                {fullProfile.cultural.star_raashi}
+                              </div>
+                            )}
+                            {fullProfile.cultural.gotra && (
+                              <div className="text-white/90 text-sm sm:text-base">
+                                <span className="text-white/60">Gotra: </span>
+                                {fullProfile.cultural.gotra}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Buttons at Bottom */}
+                      <div className="flex items-center justify-center space-x-6 pt-6 pb-8">
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground bg-transparent border-2"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleInfoClick(e)
+                            setTimeout(() => onNotNow(), 300)
+                          }}
                         >
-                          {interest}
-                        </Badge>
-                      ))}
+                          <X className="w-8 h-8 sm:w-10 sm:h-10" />
+                        </Button>
+
+                        <Button
+                          size="lg"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white shadow-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleInfoClick(e)
+                            setTimeout(() => onConnect(), 300)
+                          }}
+                        >
+                          <Check className="w-8 h-8 sm:w-10 sm:h-10" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex items-center justify-center space-x-4 pt-4 pb-8">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground bg-transparent"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleInfoClick(e)
-                      setTimeout(() => onNotNow(), 300)
-                    }}
-                  >
-                    <X className="w-6 h-6 sm:w-8 sm:h-8" />
-                  </Button>
-
-                  <Button
-                    size="lg"
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0 text-sm sm:text-base"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleInfoClick(e)
-                      setTimeout(() => onConnect(), 300)
-                    }}
-                  >
-                    <Check className="w-6 h-6 sm:w-8 sm:h-8" />
-                  </Button>
-                </div>
-              </div>
+                </>
+              )}
             </motion.div>
           )}
         </motion.div>

@@ -339,6 +339,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
                         .map((profile, index) => (
                           <div key={profile.id} className="absolute inset-0 flex items-center justify-center">
                             <MatrimonySwipeCard
+                              profileId={profile.id}
                               name={profile.name}
                               age={profile.age}
                               height={profile.height}
