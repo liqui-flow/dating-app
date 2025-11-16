@@ -287,6 +287,16 @@ export function DiscoveryScreen() {
 		fetchProfiles()
 	}, [])
 
+	// Prevent body scroll when on discover screen
+	useEffect(() => {
+		document.body.style.overflow = 'hidden'
+		document.documentElement.style.overflow = 'hidden'
+		return () => {
+			document.body.style.overflow = ''
+			document.documentElement.style.overflow = ''
+		}
+	}, [])
+
 	const currentProfile = profiles[currentCardIndex]
 	const hasMoreProfiles = currentCardIndex < profiles.length
 
@@ -318,7 +328,7 @@ export function DiscoveryScreen() {
 	const currentProfileImage = currentProfile?.photos?.[0] || null
 
 	return (
-		<div className="h-screen overflow-hidden flex flex-col relative">
+		<div className="fixed inset-0 h-screen w-screen overflow-hidden flex flex-col relative">
 			{/* Dynamic Background */}
 			<DynamicBackground imageUrl={currentProfileImage} />
 			
@@ -335,18 +345,18 @@ export function DiscoveryScreen() {
 				</Button>
 			</div>
 
-			<div className="p-2 sm:p-4 pb-20 mt-8 sm:mt-10 flex-1 overflow-visible">
+			<div className="flex-1 overflow-hidden flex items-center justify-center p-2 sm:p-4">
 				{loading ? (
-					<div className="flex items-center justify-center h-[65vh]">
+					<div className="flex items-center justify-center h-full w-full">
 						<div className="text-center space-y-4">
 							<div className="w-12 h-12 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
 							<p className="text-sm text-muted-foreground">Loading profiles...</p>
 						</div>
 					</div>
 				) : viewMode === "cards" ? (
-					<div className="space-y-6">
+					<div className="w-full h-full flex items-center justify-center">
 						{/* Card Stack */}
-						<div className="relative h-[65vh] sm:h-[70vh] md:h-[600px] flex items-center justify-center transform -translate-y-8 sm:-translate-y-14 md:-translate-y-16 overflow-visible">
+						<div className="relative w-full max-w-xs sm:max-w-sm h-full flex items-center justify-center overflow-hidden">
 							{hasMoreProfiles && profiles.length > 0 ? (
 								<div className="relative w-full max-w-xs sm:max-w-sm h-full overflow-visible">
 									{profiles

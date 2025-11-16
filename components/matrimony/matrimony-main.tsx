@@ -260,6 +260,21 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
     fetchProfiles()
   }, [])
 
+  // Prevent body scroll when on discover screen
+  useEffect(() => {
+    if (currentScreen === "discover") {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+  }, [currentScreen])
+
   const currentProfile = profiles[currentCardIndex]
   const hasMoreProfiles = currentCardIndex < profiles.length
 
@@ -299,24 +314,24 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       )}
 
       {currentScreen === "discover" && (
-        <div className="h-screen overflow-hidden flex flex-col relative">
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden flex flex-col relative">
           {/* Dynamic Background */}
           <DynamicBackground imageUrl={currentProfile?.photos?.[0] || null} />
           
-          <div className="p-4 pb-20 mt-10 max-w-3xl mx-auto w-full flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden flex items-center justify-center p-4">
             {loading ? (
-              <div className="flex items-center justify-center h-[60vh] md:h-[500px]">
+              <div className="flex items-center justify-center h-full w-full">
                 <div className="text-center space-y-4">
                   <div className="w-12 h-12 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
                   <p className="text-sm text-muted-foreground">Loading profiles...</p>
                 </div>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="w-full h-full flex items-center justify-center">
                 {/* Card Stack */}
-                <div className="relative h-[60vh] md:h-[500px] flex items-center justify-center transform -translate-y-2 md:-translate-y-4 overflow-visible">
+                <div className="relative w-full max-w-sm h-full flex items-center justify-center overflow-hidden">
                   {hasMoreProfiles && profiles.length > 0 ? (
-                    <div className="relative w-full max-w-sm h-full overflow-visible">
+                    <div className="relative w-full h-full overflow-visible">
                       {profiles
                         .slice(currentCardIndex, Math.min(currentCardIndex + 4, profiles.length))
                         .map((profile, index) => (

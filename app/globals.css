@@ -544,6 +544,12 @@
       box-shadow: 0 25px 70px -15px rgba(0,0,0,0.5), 0 15px 40px -10px rgba(0,0,0,0.35);
     }
   }
+
+  /* 3D Card Flip */
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   * {

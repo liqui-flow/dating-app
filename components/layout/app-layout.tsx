@@ -25,8 +25,10 @@ export function AppLayout({
   showSettingsButton = true,
   currentScreen
 }: AppLayoutProps) {
+  const isDiscoverScreen = currentScreen === "discover"
+  
   return (
-    <div className="min-h-screen">
+    <div className={cn("min-h-screen", isDiscoverScreen && "h-screen overflow-hidden")}>
       {/* Settings Icon - Only show on profile page */}
       {showSettingsButton && onSettingsClick && currentScreen === "profile" && (
         <div className="fixed top-4 right-4 z-40">
@@ -37,7 +39,11 @@ export function AppLayout({
         </div>
       )}
 
-      <main className={cn("pb-16 sm:pb-20", !showBottomTabs && "pb-0")}>{children}</main>
+      <main className={cn(
+        "pb-16 sm:pb-20", 
+        !showBottomTabs && "pb-0",
+        isDiscoverScreen && "h-full overflow-hidden"
+      )}>{children}</main>
 
       {showBottomTabs && <BottomTabs activeTab={activeTab} onTabChange={onTabChange} />}
     </div>
