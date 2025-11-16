@@ -12,7 +12,6 @@ import { PremiumScreen } from "@/components/premium/premium-screen"
 import { ProfileSetup } from "@/components/profile/profile-setup"
 import { MatchNotification } from "@/components/chat/match-notification"
 import { SuperLikeModal } from "@/components/premium/super-like-modal"
-import { DiscoverySettings } from "@/components/settings/discovery-settings"
 import { QuickActions } from "@/components/navigation/quick-actions"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
 import { PaymentScreen } from "./premium/payment-screen"
@@ -32,7 +31,6 @@ type Screen =
   | "chat"
   | "premium"
   | "profile-setup"
-  | "discovery-settings"
   | "payment"
   | "verification-status"
   | "premium-features"
@@ -168,8 +166,6 @@ export function AppMain() {
         )
       case "profile-setup":
         return <ProfileSetup onComplete={() => handleNavigation("discover")} onBack={() => handleNavigation("profile")} />
-      case "discovery-settings":
-        return <DiscoverySettings />
       case "payment":
         return (
           <PaymentScreen

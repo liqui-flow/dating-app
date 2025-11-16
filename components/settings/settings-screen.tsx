@@ -45,41 +45,47 @@ interface SettingsItem {
 
 type SettingsNavigateHandler = (id: string) => void
 
-const settingsSections: SettingsSection[] = [
-  {
-    title: "Account",
-    items: [
-      {
-        id: "profile",
-        label: "Edit Profile",
-        description: "Update your photos and information",
-        icon: User,
-        type: "navigation",
-      },
-      {
-        id: "premium",
-        label: "Premium Features",
-        description: "Upgrade to unlock all features",
-        icon: Crown,
-        type: "navigation",
-        badge: "Upgrade",
-      },
-      {
-        id: "verification",
-        label: "Profile Verification",
-        description: "Verify your profile with photo ID",
-        icon: Shield,
-        type: "navigation",
-      },
-    ],
-  },
-]
+// Settings sections will be generated dynamically based on user path
+const getSettingsSections = (userPath: 'dating' | 'matrimony' | null): SettingsSection[] => {
+  const sections: SettingsSection[] = [
+    {
+      title: "Account",
+      items: [
+        {
+          id: "profile",
+          label: "Edit Profile",
+          description: "Update your photos and information",
+          icon: User,
+          type: "navigation",
+        },
+        {
+          id: "premium",
+          label: "Premium Features",
+          description: "Upgrade to unlock all features",
+          icon: Crown,
+          type: "navigation",
+          badge: "Upgrade",
+        },
+        {
+          id: "verification",
+          label: "Profile Verification",
+          description: "Verify your profile with photo ID",
+          icon: Shield,
+          type: "navigation",
+        },
+      ],
+    },
+  ]
+
+  return sections
+}
 
 interface UserInfo {
   name: string
   email: string
   photo: string | null
   accountType: string
+  userPath: 'dating' | 'matrimony' | null
 }
 
 export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: SettingsNavigateHandler; onLogout?: () => void }) {
@@ -87,7 +93,8 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
     name: "Loading...",
     email: "Loading...",
     photo: null,
-    accountType: "Free Account"
+    accountType: "Free Account",
+    userPath: null
   })
   const [loading, setLoading] = useState(true)
 
@@ -108,7 +115,8 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
           name: "User",
           email: "Not available",
           photo: null,
-          accountType: "Free Account"
+          accountType: "Free Account",
+          userPath: null
         })
         setLoading(false)
         return
@@ -122,6 +130,9 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
         .select('selected_path')
         .eq('user_id', user.id)
         .single()
+
+      const userPath = (!userProfileError && userProfile?.selected_path) ? 
+        (userProfile.selected_path as 'dating' | 'matrimony') : null
 
       let name = "User"
       let photo: string | null = null
@@ -195,7 +206,8 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
         name,
         email,
         photo,
-        accountType: "Free Account" // TODO: Check subscription status if you have a subscriptions table
+        accountType: "Free Account", // TODO: Check subscription status if you have a subscriptions table
+        userPath
       })
     } catch (error) {
       console.error("Error fetching user info:", error)
@@ -203,7 +215,8 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
         name: "User",
         email: "Not available",
         photo: null,
-        accountType: "Free Account"
+        accountType: "Free Account",
+        userPath: null
       })
     } finally {
       setLoading(false)
@@ -259,7 +272,7 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
       {/* Settings */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6">
-          {settingsSections.map((section) => (
+          {getSettingsSections(userInfo.userPath).map((section) => (
             <div key={section.title} className="space-y-3">
               <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{section.title}</h2>
 

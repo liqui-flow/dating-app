@@ -43,10 +43,15 @@ function calculateAge(dob: string): number {
 	return age
 }
 
-export function DiscoveryScreen() {
+interface DiscoveryScreenProps {
+	openFiltersOnMount?: boolean
+	onBackToProfile?: () => void
+}
+
+export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }: DiscoveryScreenProps = {}) {
 	const [viewMode, setViewMode] = useState<ViewMode>("cards")
 	const [currentCardIndex, setCurrentCardIndex] = useState(0)
-	const [showFilters, setShowFilters] = useState(false)
+	const [showFilters, setShowFilters] = useState(openFiltersOnMount)
 	const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
 	const [likedProfiles, setLikedProfiles] = useState<string[]>([])
 	const [passedProfiles, setPassedProfiles] = useState<string[]>([])
@@ -411,7 +416,16 @@ export function DiscoveryScreen() {
 			</div>
 
 			{/* Filter Sheet */}
-			<FilterSheet open={showFilters} onOpenChange={setShowFilters} />
+			<FilterSheet 
+				open={showFilters} 
+				onOpenChange={(open) => {
+					setShowFilters(open)
+					// If closing and we came from settings, go back to profile
+					if (!open && openFiltersOnMount && onBackToProfile) {
+						onBackToProfile()
+					}
+				}} 
+			/>
 
 			{/* Profile Modal */}
 			{selectedProfile && (

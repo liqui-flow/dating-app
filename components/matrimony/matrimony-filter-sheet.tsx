@@ -95,7 +95,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterShee
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+      <SheetContent side="right" className="w-full sm:w-[500px] overflow-y-auto">
         <SheetHeader className="space-y-3">
           <div className="flex items-center justify-between">
             <SheetTitle>Matrimony Filters</SheetTitle>
@@ -164,12 +164,19 @@ export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterShee
 
           <Separator />
 
-          {/* Education Preferences */}
+          {/* Advanced Filters - Premium */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Education Preferences</h3>
-              <span className="text-sm text-muted-foreground">{filters.educationPrefs.length} selected</span>
+              <h3 className="font-semibold">Advanced Filters</h3>
+              <Badge variant="secondary" className="text-xs">Premium</Badge>
             </div>
+
+            {/* Education Preferences */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-sm">Education Preferences</h4>
+                <span className="text-sm text-muted-foreground">{filters.educationPrefs.length} selected</span>
+              </div>
             <div className="flex flex-wrap gap-2">
               {educationOptions.map((education) => (
                 <Badge
@@ -185,14 +192,14 @@ export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterShee
             </div>
           </div>
 
-          <Separator />
+              <Separator />
 
-          {/* Profession Preferences */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Profession Preferences</h3>
-              <span className="text-sm text-muted-foreground">{filters.professionPrefs.length} selected</span>
-            </div>
+              {/* Profession Preferences */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-sm">Profession Preferences</h4>
+                  <span className="text-sm text-muted-foreground">{filters.professionPrefs.length} selected</span>
+                </div>
             <div className="flex flex-wrap gap-2">
               {professionOptions.map((profession) => (
                 <Badge
@@ -208,14 +215,14 @@ export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterShee
             </div>
           </div>
 
-          <Separator />
+                <Separator />
 
-          {/* Community Preferences */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Community/Caste Preferences</h3>
-              <span className="text-sm text-muted-foreground">{filters.communities.length} selected</span>
-            </div>
+                {/* Community Preferences */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Community/Caste Preferences</h4>
+                    <span className="text-sm text-muted-foreground">{filters.communities.length} selected</span>
+                  </div>
             <div className="flex flex-wrap gap-2">
               {communityOptions.map((community) => (
                 <Badge
@@ -231,14 +238,14 @@ export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterShee
             </div>
           </div>
 
-          <Separator />
+                  <Separator />
 
-          {/* Family Type Preferences */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Family Type Preferences</h3>
-              <span className="text-sm text-muted-foreground">{filters.familyTypePrefs.length} selected</span>
-            </div>
+                  {/* Family Type Preferences */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-sm">Family Type Preferences</h4>
+                      <span className="text-sm text-muted-foreground">{filters.familyTypePrefs.length} selected</span>
+                    </div>
             <div className="flex flex-wrap gap-2">
               {familyTypeOptions.map((familyType) => (
                 <Badge
@@ -251,8 +258,9 @@ export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterShee
                   {filters.familyTypePrefs.includes(familyType) && <X className="w-3 h-3 ml-1" />}
                 </Badge>
               ))}
+                    </div>
+                  </div>
             </div>
-          </div>
 
           <Separator />
 

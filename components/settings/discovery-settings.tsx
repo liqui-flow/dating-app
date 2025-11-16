@@ -11,6 +11,10 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, MapPin, Users, Filter } from "lucide-react"
 import { StaticBackground } from "@/components/discovery/static-background"
 
+interface DiscoverySettingsProps {
+  onBack?: () => void
+}
+
 interface DiscoverySettings {
   ageRange: [number, number]
   maxDistance: number
@@ -37,7 +41,7 @@ const lifestyleOptions = [
   "Pet lover",
 ]
 
-export function DiscoverySettings() {
+export function DiscoverySettings({ onBack }: DiscoverySettingsProps = {}) {
   const [settings, setSettings] = useState<DiscoverySettings>({
     ageRange: [22, 35],
     maxDistance: 50,
@@ -75,9 +79,11 @@ export function DiscoverySettings() {
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border">
         <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="sm" className="p-2">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+          {onBack && (
+            <Button variant="ghost" size="sm" className="p-2" onClick={onBack}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
           <h1 className="text-xl font-semibold">Discovery Settings</h1>
         </div>
       </div>
