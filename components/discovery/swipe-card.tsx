@@ -434,19 +434,19 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                   {/* Scrollable Content */}
                   <div className="relative bg-gradient-to-b from-black/95 via-black/90 to-black/95 overflow-hidden">
                     {/* Photo Gallery Section */}
-                    <div className="relative w-full aspect-[3/4] bg-black overflow-hidden">
-                      {(() => {
-                        const photos = fullProfile?.photos || profile.photos
-                        const currentPhoto = photos[expandedPhotoIndex] || "/placeholder.svg"
-                        const hasPrompts = fullProfile?.prompts && fullProfile.prompts.length > 0
-                        
-                        return (
-                          <>
-                            <img
-                              src={currentPhoto}
-                              alt={`Photo ${expandedPhotoIndex + 1}`}
-                              className="w-full h-full object-cover"
-                            />
+                    <div className="relative w-full bg-black px-4 sm:px-6 pt-6">
+                      <div className="relative w-full aspect-square mx-auto rounded-xl sm:rounded-2xl overflow-hidden">
+                        {(() => {
+                          const photos = fullProfile?.photos || profile.photos
+                          const currentPhoto = photos[expandedPhotoIndex] || "/placeholder.svg"
+                          
+                          return (
+                            <>
+                              <img
+                                src={currentPhoto}
+                                alt={`Photo ${expandedPhotoIndex + 1}`}
+                                className="w-full h-full object-cover"
+                              />
                             
                             {/* Photo Navigation Arrows */}
                             {photos.length > 1 && (
@@ -478,21 +478,10 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                                 </div>
                               </>
                             )}
-                            
-                            {/* Prompt Box (if prompts exist and match photo index) */}
-                            {hasPrompts && fullProfile.prompts && fullProfile.prompts[expandedPhotoIndex] && (
-                              <div className="absolute bottom-16 left-4 right-4 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-4 z-20">
-                                <p className="text-white/90 text-sm font-medium mb-1">
-                                  {fullProfile.prompts[expandedPhotoIndex].prompt}
-                                </p>
-                                <p className="text-white text-base">
-                                  {fullProfile.prompts[expandedPhotoIndex].answer}
-                                </p>
-                              </div>
-                            )}
                           </>
                         )
                       })()}
+                      </div>
                     </div>
 
                     {/* Profile Information Sections */}
