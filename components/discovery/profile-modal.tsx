@@ -57,10 +57,10 @@ export function ProfileModal({ profile, open, onOpenChange, onLike, onPass }: Pr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm sm:max-w-md p-0 gap-0 max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-white/10 backdrop-blur-md border-white/20 mx-2 sm:mx-0">
-        <div className="flex flex-col h-full">
+      <DialogContent className="max-w-sm sm:max-w-md p-0 gap-0 max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-white/10 backdrop-blur-md border-white/20 mx-2 sm:mx-0 rounded-2xl sm:rounded-3xl">
+        <div className="flex flex-col h-full overflow-hidden rounded-2xl sm:rounded-3xl">
           {/* Photo Section */}
-          <div className="relative h-80 sm:h-96 flex-shrink-0" onClick={handlePhotoClick}>
+          <div className="relative h-80 sm:h-96 flex-shrink-0 rounded-t-2xl sm:rounded-t-3xl overflow-hidden" onClick={handlePhotoClick}>
             <img
               src={profile.photos[currentPhotoIndex] || "/placeholder.svg"}
               alt={`${profile.name} photo ${currentPhotoIndex + 1}`}
@@ -152,7 +152,7 @@ export function ProfileModal({ profile, open, onOpenChange, onLike, onPass }: Pr
           </div>
 
           {/* Action Buttons */}
-          <div className="flex-shrink-0 p-4 sm:p-6 border-t border-border">
+          <div className="flex-shrink-0 p-4 sm:p-6 border-t border-border rounded-b-2xl sm:rounded-b-3xl">
             <div className="flex items-center justify-center space-x-3 sm:space-x-4">
               <Button
                 variant="outline"

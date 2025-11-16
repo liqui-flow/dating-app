@@ -7,9 +7,10 @@ import { AnimatePresence, motion, useMotionValue, useTransform, animate } from "
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Info, MapPin, X, Briefcase, GraduationCap, Users } from "lucide-react"
+import { Info, MapPin, X, Briefcase, GraduationCap, Users, Heart, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "./swipe-animations"
+import { getDatingProfile, type DatingProfileFull } from "@/lib/datingProfileService"
 
 interface Profile {
   id: string
@@ -39,10 +40,16 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [showInfo, setShowInfo] = useState(false)
   const [isFlipped, setIsFlipped] = useState(false)
+  const [fullProfile, setFullProfile] = useState<DatingProfileFull | null>(null)
+  const [loadingProfile, setLoadingProfile] = useState(false)
+  const [expandedPhotoIndex, setExpandedPhotoIndex] = useState(0)
   const { animation, showHeartBurst, showXBurst, hideAnimation } = useSwipeAnimation()
   
   // Motion value for 3D rotation
   const rotateY = useMotionValue(0)
+  
+  // Base height for card expansion calculation
+  const baseHeight = "h-[55vh] sm:h-[60vh] md:h-[480px]"
 
   const visibleInterests = profile.interests.slice(0, 4)
   const remainingInterestCount = Math.max(0, profile.interests.length - visibleInterests.length)
@@ -159,15 +166,46 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
     }
   }
 
-  const handleInfoClick = (e: React.MouseEvent) => {
+  const handleInfoClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (stackIndex === 0) {
       const newFlippedState = !isFlipped
       setIsFlipped(newFlippedState)
+      
+      // Reset photo index when flipping
+      if (newFlippedState) {
+        setExpandedPhotoIndex(0)
+      }
+      
+      // Fetch full profile data when flipping to back side
+      if (newFlippedState && !fullProfile) {
+        setLoadingProfile(true)
+        try {
+          const result = await getDatingProfile(profile.id)
+          if (result.success && result.data) {
+            setFullProfile(result.data as DatingProfileFull)
+          }
+        } catch (error) {
+          console.error("Error fetching full profile:", error)
+        } finally {
+          setLoadingProfile(false)
+        }
+      }
+      
       animate(rotateY, newFlippedState ? 180 : 0, {
         duration: 0.8,
         ease: [0.4, 0, 0.2, 1], // Custom cubic-bezier for natural motion
       })
+    }
+  }
+  
+  const handlePhotoNavigation = (direction: 'prev' | 'next', e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    const photos = fullProfile?.photos || profile.photos
+    if (direction === 'next' && expandedPhotoIndex < photos.length - 1) {
+      setExpandedPhotoIndex(prev => prev + 1)
+    } else if (direction === 'prev' && expandedPhotoIndex > 0) {
+      setExpandedPhotoIndex(prev => prev - 1)
     }
   }
 
@@ -201,7 +239,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
 
       <motion.div
         className={cn(
-          "w-full max-w-xs sm:max-w-sm h-[55vh] sm:h-[60vh] md:h-[480px] cursor-grab active:cursor-grabbing select-none touch-none",
+          "w-full max-w-xs sm:max-w-sm cursor-grab active:cursor-grabbing select-none touch-none",
           "relative",
           // 3D perspective container
           "perspective-[1200px]",
@@ -210,6 +248,8 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
           stackIndex === 1 && "shadow-[0_15px_45px_-12px_rgba(0,0,0,0.35),0_8px_25px_-8px_rgba(0,0,0,0.25)]",
           stackIndex === 2 && "shadow-[0_12px_35px_-10px_rgba(0,0,0,0.3),0_6px_20px_-6px_rgba(0,0,0,0.2)]",
           stackIndex > 2 && "shadow-[0_8px_25px_-8px_rgba(0,0,0,0.25),0_4px_15px_-4px_rgba(0,0,0,0.15)]",
+          // Height expansion when flipped: +10% top, +30% bottom = 1.4x total
+          stackIndex === 0 && isFlipped ? "h-[77vh] sm:h-[84vh] md:h-[672px]" : baseHeight
         )}
         style={{
           x,
@@ -341,8 +381,10 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
           {stackIndex === 0 && (
             <motion.div
               className={cn(
-                "absolute inset-0 w-full h-full overflow-y-auto overflow-x-hidden rounded-2xl sm:rounded-3xl",
-                "backface-hidden"
+                "absolute inset-0 w-full h-full overflow-y-auto overflow-x-hidden",
+                "rounded-2xl sm:rounded-3xl",
+                "backface-hidden",
+                "hide-scrollbar"
               )}
               style={{
                 opacity: backOpacity,
@@ -350,119 +392,231 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                 transformStyle: "preserve-3d",
               }}
             >
-              {/* Background photo - same position as front */}
-              <div className="absolute inset-0">
-                <img
-                  src={profile.photos[currentPhotoIndex] || "/placeholder.svg"}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{ objectPosition: "center" }}
-                />
-                <div className="absolute inset-0 bg-black/70" />
-              </div>
-
-              {/* Close button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                className={cn(
-                  "absolute top-4 right-4 z-30",
-                  "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
-                  "bg-white/20 backdrop-blur-md border border-white/30",
-                  "hover:bg-white/30 hover:scale-110",
-                  "transition-all duration-200",
-                  "shadow-lg"
-                )}
-                onClick={handleInfoClick}
-                aria-label="Close profile"
-              >
-                <X className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
-              </Button>
-
-              {/* Profile Content */}
-              <div className="relative z-10 p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-full">
-                {/* Header */}
-                <div className="space-y-2 pt-12">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">
-                    {profile.name}, {profile.age}
-                  </h1>
-                  {profile.location && (
-                    <div className="flex items-center space-x-2 text-white/90">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm sm:text-base">{profile.location}</span>
-                    </div>
-                  )}
+              {loadingProfile ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+                  <div className="text-white">Loading profile...</div>
                 </div>
-
-                {/* Bio */}
-                {profile.bio && (
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-white text-sm sm:text-base">About</h3>
-                    <p className="text-white/90 text-sm sm:text-base leading-relaxed">{profile.bio}</p>
-                  </div>
-                )}
-
-                {/* Details Grid */}
-                {highlightItems.length > 0 && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {highlightItems.map((item) => (
-                      <div
-                        key={item.label}
-                        className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-sm"
-                      >
-                        <p className="text-[10px] uppercase tracking-wider text-white/60 mb-1">{item.label}</p>
-                        <p className="text-sm font-semibold text-white leading-tight">{item.value}</p>
+              ) : (
+                <>
+                  {/* Black Overlay Header with Name and Age */}
+                  <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-sm border-b border-white/10 rounded-t-2xl sm:rounded-t-3xl">
+                    <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
+                      <div>
+                        <h1 className="text-xl sm:text-2xl font-bold text-white">
+                          {fullProfile?.name || profile.name}, {profile.age}
+                        </h1>
+                        {profile.location && (
+                          <div className="flex items-center space-x-1 text-white/80 text-sm mt-1">
+                            <MapPin className="w-3 h-3" />
+                            <span>{profile.location}</span>
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Interests */}
-                {profile.interests.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-white text-sm sm:text-base">Interests</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.interests.map((interest) => (
-                        <Badge
-                          key={interest}
-                          className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white/90"
-                        >
-                          {interest}
-                        </Badge>
-                      ))}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        className={cn(
+                          "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
+                          "bg-white/20 backdrop-blur-md border border-white/30",
+                          "hover:bg-white/30 hover:scale-110",
+                          "transition-all duration-200",
+                          "shadow-lg"
+                        )}
+                        onClick={handleInfoClick}
+                        aria-label="Close profile"
+                      >
+                        <X className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
+                      </Button>
                     </div>
                   </div>
-                )}
 
-                {/* Action Buttons */}
-                <div className="flex items-center justify-center space-x-4 pt-4 pb-8">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground bg-transparent"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleInfoClick(e)
-                      setTimeout(() => onPass(), 300)
-                    }}
-                  >
-                    <X className="w-6 h-6 sm:w-8 sm:h-8" />
-                  </Button>
+                  {/* Scrollable Content */}
+                  <div className="relative bg-gradient-to-b from-black/95 via-black/90 to-black/95 overflow-hidden">
+                    {/* Photo Gallery Section */}
+                    <div className="relative w-full aspect-[3/4] bg-black overflow-hidden">
+                      {(() => {
+                        const photos = fullProfile?.photos || profile.photos
+                        const currentPhoto = photos[expandedPhotoIndex] || "/placeholder.svg"
+                        const hasPrompts = fullProfile?.prompts && fullProfile.prompts.length > 0
+                        
+                        return (
+                          <>
+                            <img
+                              src={currentPhoto}
+                              alt={`Photo ${expandedPhotoIndex + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            
+                            {/* Photo Navigation Arrows */}
+                            {photos.length > 1 && (
+                              <>
+                                {expandedPhotoIndex > 0 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 border border-white/20 z-20"
+                                    onClick={(e) => handlePhotoNavigation('prev', e)}
+                                  >
+                                    <ChevronLeft className="w-5 h-5 text-white" />
+                                  </Button>
+                                )}
+                                {expandedPhotoIndex < photos.length - 1 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 border border-white/20 z-20"
+                                    onClick={(e) => handlePhotoNavigation('next', e)}
+                                  >
+                                    <ChevronRight className="w-5 h-5 text-white" />
+                                  </Button>
+                                )}
+                                
+                                {/* Photo Counter */}
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs z-20">
+                                  {expandedPhotoIndex + 1} / {photos.length}
+                                </div>
+                              </>
+                            )}
+                            
+                            {/* Prompt Box (if prompts exist and match photo index) */}
+                            {hasPrompts && fullProfile.prompts && fullProfile.prompts[expandedPhotoIndex] && (
+                              <div className="absolute bottom-16 left-4 right-4 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-4 z-20">
+                                <p className="text-white/90 text-sm font-medium mb-1">
+                                  {fullProfile.prompts[expandedPhotoIndex].prompt}
+                                </p>
+                                <p className="text-white text-base">
+                                  {fullProfile.prompts[expandedPhotoIndex].answer}
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        )
+                      })()}
+                    </div>
 
-                  <Button
-                    size="lg"
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0 text-sm sm:text-base"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleInfoClick(e)
-                      setTimeout(() => onLike(), 300)
-                    }}
-                  >
-                    Like
-                  </Button>
-                </div>
-              </div>
+                    {/* Profile Information Sections */}
+                    <div className="px-4 sm:px-6 py-6 space-y-6">
+                      {/* Bio Section */}
+                      {(fullProfile?.bio || profile.bio) && (
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-white text-base sm:text-lg">About</h3>
+                          <p className="text-white/90 text-sm sm:text-base leading-relaxed">
+                            {fullProfile?.bio || profile.bio}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Interests Section */}
+                      {(() => {
+                        const interests = fullProfile?.interests || profile.interests
+                        return interests && interests.length > 0 ? (
+                          <div className="space-y-3">
+                            <h3 className="font-semibold text-white text-base sm:text-lg">Interests</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {interests.map((interest, idx) => (
+                                <Badge
+                                  key={idx}
+                                  className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white/90"
+                                >
+                                  {interest}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null
+                      })()}
+
+                      {/* Prompts Section (all prompts, not just photo-specific) */}
+                      {fullProfile?.prompts && fullProfile.prompts.length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="font-semibold text-white text-base sm:text-lg">Prompts</h3>
+                          {fullProfile.prompts.map((promptItem, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 space-y-2"
+                            >
+                              <p className="text-white/80 text-sm font-medium">{promptItem.prompt}</p>
+                              <p className="text-white text-base">{promptItem.answer}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* This or That Section */}
+                      {fullProfile?.this_or_that_choices && fullProfile.this_or_that_choices.length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="font-semibold text-white text-base sm:text-lg">This or That</h3>
+                          {fullProfile.this_or_that_choices.map((choice, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={cn(
+                                  "flex-1 p-3 rounded-lg text-center text-sm",
+                                  choice.selected === 0 
+                                    ? "bg-white/20 text-white font-semibold" 
+                                    : "bg-white/5 text-white/60"
+                                )}>
+                                  {choice.option_a}
+                                </div>
+                                <span className="text-white/40">vs</span>
+                                <div className={cn(
+                                  "flex-1 p-3 rounded-lg text-center text-sm",
+                                  choice.selected === 1 
+                                    ? "bg-white/20 text-white font-semibold" 
+                                    : "bg-white/5 text-white/60"
+                                )}>
+                                  {choice.option_b}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Relationship Goals Section */}
+                      {fullProfile?.relationship_goals && (
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-white text-base sm:text-lg">Relationship Goals</h3>
+                          <p className="text-white/90 text-sm sm:text-base leading-relaxed">
+                            {fullProfile.relationship_goals}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Action Buttons at Bottom */}
+                      <div className="flex items-center justify-center space-x-6 pt-6 pb-8">
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground bg-transparent border-2"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleInfoClick(e)
+                            setTimeout(() => onPass(), 300)
+                          }}
+                        >
+                          <X className="w-8 h-8 sm:w-10 sm:h-10" />
+                        </Button>
+
+                        <Button
+                          size="lg"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white shadow-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleInfoClick(e)
+                            setTimeout(() => onLike(), 300)
+                          }}
+                        >
+                          <Heart className="w-8 h-8 sm:w-10 sm:h-10 fill-white" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </motion.div>
           )}
         </motion.div>

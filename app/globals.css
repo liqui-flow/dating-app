@@ -550,6 +550,15 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
+
+  /* Hide scrollbar but keep scrolling functionality */
+  .hide-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   * {

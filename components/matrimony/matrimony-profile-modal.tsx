@@ -53,10 +53,10 @@ export function MatrimonyProfileModal({ profile, open, onOpenChange, onConnect, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm sm:max-w-md p-0 gap-0 max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-white mx-2 sm:mx-0 rounded-2xl shadow-2xl" showCloseButton={false}>
-        <div className="flex flex-col h-full">
+      <DialogContent className="max-w-sm sm:max-w-md p-0 gap-0 max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-white mx-2 sm:mx-0 rounded-2xl sm:rounded-3xl shadow-2xl" showCloseButton={false}>
+        <div className="flex flex-col h-full overflow-hidden rounded-2xl sm:rounded-3xl">
           {/* Photo Section */}
-          <div className="relative h-80 sm:h-96 flex-shrink-0 overflow-hidden rounded-t-2xl" onClick={handlePhotoClick}>
+          <div className="relative h-80 sm:h-96 flex-shrink-0 overflow-hidden rounded-t-2xl sm:rounded-t-3xl" onClick={handlePhotoClick}>
             <img
               src={profile.photos[currentPhotoIndex] || "/placeholder.svg"}
               alt={`${profile.name} photo ${currentPhotoIndex + 1}`}
@@ -267,7 +267,7 @@ export function MatrimonyProfileModal({ profile, open, onOpenChange, onConnect, 
           </div>
 
           {/* Action Buttons */}
-          <div className="flex-shrink-0 p-5 sm:p-6 border-t border-gray-200 bg-gray-50/50">
+          <div className="flex-shrink-0 p-5 sm:p-6 border-t border-gray-200 bg-gray-50/50 rounded-b-2xl sm:rounded-b-3xl">
             <div className="flex items-center justify-center space-x-4">
               <Button
                 variant="outline"
