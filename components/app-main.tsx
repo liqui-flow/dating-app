@@ -19,6 +19,7 @@ import { PaymentScreen } from "./premium/payment-screen"
 import { VerificationStatus } from "./profile/verification-status"
 import { PremiumFeatures } from "./premium/premium-features"
 import { ProfileView } from "@/components/profile/profile-view"
+import { ActivityScreen } from "@/components/activity/activity-screen"
 import { handleLogout } from "@/lib/logout"
 
 type Screen =
@@ -26,6 +27,7 @@ type Screen =
   | "search"
   | "explore"
   | "messages"
+  | "activity"
   | "profile"
   | "chat"
   | "premium"
@@ -112,6 +114,17 @@ export function AppMain() {
             chatUserId: chatId
           }))
         }} />
+      case "activity":
+        return (
+          <ActivityScreen
+            onProfileClick={(userId) => {
+              handleNavigation("my-profile")
+            }}
+            onMatchClick={(userId) => {
+              handleNavigation("chat", { chatUserId: userId })
+            }}
+          />
+        )
       case "chat":
         return (
           <div className="fixed inset-0 z-50">
@@ -202,7 +215,7 @@ export function AppMain() {
         {renderScreen()}
       </AppLayout>
 
-      {(appState.currentScreen === "messages" || appState.currentScreen === "profile") && (
+      {(appState.currentScreen === "messages" || appState.currentScreen === "activity" || appState.currentScreen === "profile") && (
         <BackFloatingButton
           onClick={() => setAppState((prev) => ({ ...prev, currentScreen: "discover", activeTab: "discover" }))}
         />
@@ -210,8 +223,12 @@ export function AppMain() {
 
       {appState.currentScreen !== "chat" && (
         <QuickActions
+          activeTab={appState.activeTab}
           onOpenChat={() =>
             setAppState((prev) => ({ ...prev, currentScreen: "messages", activeTab: "messages" }))
+          }
+          onOpenActivity={() =>
+            setAppState((prev) => ({ ...prev, currentScreen: "activity", activeTab: "activity" }))
           }
           onOpenProfile={() =>
             setAppState((prev) => ({ ...prev, currentScreen: "profile", activeTab: "profile" }))

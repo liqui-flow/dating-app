@@ -14,6 +14,7 @@ import { MatrimonyFilterSheet } from "@/components/matrimony/matrimony-filter-sh
 import { DynamicBackground } from "@/components/discovery/dynamic-background"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
 import { SettingsScreen } from "@/components/settings/settings-screen"
+import { ActivityScreen } from "@/components/activity/activity-screen"
 import { AppSettings } from "@/components/settings/app-settings"
 import { ProfileSetup } from "@/components/profile/profile-setup"
 import { PremiumScreen } from "@/components/premium/premium-screen"
@@ -62,6 +63,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
   const [currentScreen, setCurrentScreen] = useState<
     | "discover"
     | "messages"
+    | "activity"
     | "chat"
     | "profile"
     | "profile-setup"
@@ -394,6 +396,21 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         </div>
       )}
 
+      {currentScreen === "activity" && (
+        <div className="p-4 pb-20 mt-2 w-full">
+          <ActivityScreen
+            onProfileClick={(userId) => {
+              // Navigate to profile view if needed
+              console.log("Profile clicked:", userId)
+            }}
+            onMatchClick={(userId) => {
+              setSelectedChatId(userId)
+              setCurrentScreen("chat")
+            }}
+          />
+        </div>
+      )}
+
       {currentScreen === "chat" && selectedChatId && (
         <div className="fixed inset-0 z-50 bg-background">
           <MatrimonyChatScreen 
@@ -470,13 +487,15 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         </div>
       )}
 
-      {(currentScreen === "messages" || currentScreen === "profile") && (
+      {(currentScreen === "messages" || currentScreen === "activity" || currentScreen === "profile") && (
         <BackFloatingButton onClick={() => setCurrentScreen("discover")} />
       )}
 
       {currentScreen !== "chat" && (
         <QuickActions
+          activeTab={currentScreen}
           onOpenChat={() => setCurrentScreen("messages")}
+          onOpenActivity={() => setCurrentScreen("activity")}
           onOpenProfile={() => setCurrentScreen("profile")}
           onDiscover={() => setCurrentScreen("discover")}
         />

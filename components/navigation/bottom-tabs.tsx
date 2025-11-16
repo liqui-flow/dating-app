@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Heart, Search, MessageCircle, User, Compass } from "lucide-react"
+import { Heart, Search, MessageCircle, User, Compass, Bell } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface TabItem {
@@ -14,6 +14,7 @@ interface TabItem {
 
 const tabs: TabItem[] = [
   { id: "messages", label: "Messages", icon: MessageCircle },
+  { id: "activity", label: "Activity", icon: Bell },
   { id: "profile", label: "Profile", icon: User },
 ]
 
