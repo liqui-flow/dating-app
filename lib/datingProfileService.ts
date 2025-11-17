@@ -17,6 +17,7 @@ export interface DatingProfileFull {
   interests?: string[] // Array of interest strings (e.g., ["Music", "Travel", "Food"])
   prompts?: Array<{ prompt: string; answer: string }> // Array of prompt/answer objects
   photos?: string[] // Array of photo URLs
+  photo_prompts?: string[] // Array of photo captions/prompts (e.g., ["Me in my element", "What I look like on a Sunday"])
   preferences?: {
     looking_for?: 'men' | 'women' | 'everyone'
     show_on_profile?: boolean
@@ -271,14 +272,19 @@ export async function saveProfilePhoto(
     // Update photos array - add new photo URL
     const existingPhotos = (existing?.photos as string[]) || []
     const updatedPhotos = [...existingPhotos, photoUrl]
+    
+    // Update photo_prompts array - add new caption
+    const existingPhotoPrompts = (existing?.photo_prompts as string[]) || []
+    const updatedPhotoPrompts = [...existingPhotoPrompts, caption || ""]
 
     // If profile doesn't exist, create it; otherwise update
     const profileData = existing
-      ? { photos: updatedPhotos }
+      ? { photos: updatedPhotos, photo_prompts: updatedPhotoPrompts }
       : {
           user_id: userId,
           name: '', // Will be set later in completeProfileSetup
           photos: updatedPhotos,
+          photo_prompts: updatedPhotoPrompts,
           interests: [],
           prompts: [],
           preferences: {},
@@ -355,11 +361,13 @@ export async function completeProfileSetup(
   try {
     // 1. Upload all photos first
     const photoUrls: string[] = []
+    const photoPrompts: string[] = []
     for (let i = 0; i < photos.length; i++) {
-      const { file } = photos[i]
+      const { file, caption } = photos[i]
       const uploadResult = await uploadProfilePhoto(userId, file)
       if (!uploadResult.success) throw new Error(uploadResult.error)
       photoUrls.push(uploadResult.data!)
+      photoPrompts.push(caption || "")
     }
 
     // 2. Upload video if provided
@@ -384,6 +392,7 @@ export async function completeProfileSetup(
       user_id: userId,
       name,
       photos: photoUrls,
+      photo_prompts: photoPrompts,
       video_url: videoUrl || null,
       video_file_name: videoFileName || null,
       setup_completed: true,
@@ -928,7 +937,7 @@ export async function getProfilePhotos(userId: string): Promise<ServiceResponse<
   try {
     const { data, error } = await supabase
       .from('dating_profile_full')
-      .select('photos')
+      .select('photos, photo_prompts')
       .eq('user_id', userId)
       .single()
 
@@ -936,10 +945,12 @@ export async function getProfilePhotos(userId: string): Promise<ServiceResponse<
 
     // Transform photos array to legacy format
     const photos = (data?.photos as string[]) || []
+    const photoPrompts = (data?.photo_prompts as string[]) || []
     const legacyPhotos: ProfilePhoto[] = photos.map((url, index) => ({
       id: `${userId}-${index}`,
       user_id: userId,
       photo_url: url,
+      caption: photoPrompts[index] || "",
       display_order: index,
       is_primary: index === 0,
     }))

@@ -124,7 +124,12 @@ export function EditProfile({ onBack, onSave }: EditProfileProps) {
         if (!error && data) {
           setDatingProfile(data as DatingProfileFull)
           // Initialize state from profile
-          const photos = (data.photos as string[] || []).map(url => ({ url }))
+          const photoUrls = (data.photos as string[] || [])
+          const photoPrompts = (data.photo_prompts as string[] || [])
+          const photos = photoUrls.map((url, index) => ({ 
+            url, 
+            caption: photoPrompts[index] || "" 
+          }))
           setDatingPhotos(photos)
           setDatingBio(data.bio || "")
           setDatingPromptsData((data.prompts as Array<{ prompt: string; answer: string }>) || [])
@@ -254,6 +259,7 @@ export function EditProfile({ onBack, onSave }: EditProfileProps) {
       if (userPath === 'dating') {
         // Upload new photos
         const photoUrls: string[] = []
+        const photoPrompts: string[] = []
         for (const photo of datingPhotos) {
           if (photo.file) {
             // Upload new photo using the dating profile service
@@ -267,6 +273,8 @@ export function EditProfile({ onBack, onSave }: EditProfileProps) {
             // Keep existing photo URL
             photoUrls.push(photo.url)
           }
+          // Save caption for each photo
+          photoPrompts.push(photo.caption || "")
         }
 
         // Update profile
@@ -280,6 +288,7 @@ export function EditProfile({ onBack, onSave }: EditProfileProps) {
           user_id: user.id,
           name: existing?.name || '',
           photos: photoUrls,
+          photo_prompts: photoPrompts,
           bio: datingBio,
           prompts: datingPromptsData.filter(p => p.prompt && p.answer),
           interests: datingInterests,
