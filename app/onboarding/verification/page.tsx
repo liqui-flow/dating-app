@@ -16,6 +16,7 @@ export default function VerificationPage() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("verification")
   const [selectedPath, setSelectedPath] = useState<PathMode | null>(null)
   const [isCheckingProfile, setIsCheckingProfile] = useState(true)
+  const [shouldRedirect, setShouldRedirect] = useState(false)
 
   // Check if user already completed onboarding
   useEffect(() => {
@@ -34,16 +35,96 @@ export default function VerificationPage() {
           .eq('user_id', user.id)
           .single()
 
-        if (!error && profile && profile.onboarding_completed) {
-          // User already completed onboarding, redirect to appropriate dashboard
+        // Check if onboarding is completed (explicitly true)
+        if (!error && profile && profile.onboarding_completed === true) {
+          console.log('Onboarding already completed, redirecting...', { 
+            selected_path: profile.selected_path,
+            onboarding_completed: profile.onboarding_completed 
+          })
+          
+          // Set redirect flag and redirect immediately
+          setShouldRedirect(true)
+          
+          // Use replace to prevent back navigation
           if (profile.selected_path === 'dating') {
-            router.push('/dating/dashboard')
+            router.replace('/dating/dashboard')
           } else if (profile.selected_path === 'matrimony') {
-            router.push('/matrimony/discovery')
+            router.replace('/matrimony/discovery')
+          } else {
+            // Fallback if path is not set
+            router.replace('/dating/dashboard')
           }
-        } else {
-          setIsCheckingProfile(false)
+          return
         }
+
+        // Fallback: Check if user has completed profiles even if onboarding_completed is not set
+        // This handles cases where accounts were created but onboarding_completed wasn't updated
+        if (!error && profile && profile.selected_path) {
+          let hasCompletedProfile = false
+          
+          if (profile.selected_path === 'dating') {
+            // Check if dating profile is completed
+            const { data: datingProfile } = await supabase
+              .from('dating_profile_full')
+              .select('questionnaire_completed')
+              .eq('user_id', user.id)
+              .single()
+            
+            if (datingProfile && datingProfile.questionnaire_completed) {
+              hasCompletedProfile = true
+              // Auto-fix: Update onboarding_completed
+              await supabase
+                .from('user_profiles')
+                .update({ 
+                  onboarding_completed: true,
+                  onboarding_completed_at: new Date().toISOString()
+                })
+                .eq('user_id', user.id)
+            }
+          } else if (profile.selected_path === 'matrimony') {
+            // Check if matrimony profile is completed
+            const { data: matrimonyProfile } = await supabase
+              .from('matrimony_profile_full')
+              .select('profile_completed')
+              .eq('user_id', user.id)
+              .single()
+            
+            if (matrimonyProfile && matrimonyProfile.profile_completed) {
+              hasCompletedProfile = true
+              // Auto-fix: Update onboarding_completed
+              await supabase
+                .from('user_profiles')
+                .update({ 
+                  onboarding_completed: true,
+                  onboarding_completed_at: new Date().toISOString()
+                })
+                .eq('user_id', user.id)
+            }
+          }
+          
+          if (hasCompletedProfile) {
+            console.log('Found completed profile, auto-fixing onboarding_completed and redirecting...')
+            setShouldRedirect(true)
+            if (profile.selected_path === 'dating') {
+              router.replace('/dating/dashboard')
+            } else {
+              router.replace('/matrimony/discovery')
+            }
+            return
+          }
+        }
+        
+        // Log if there's an error or profile not found
+        if (error) {
+          console.log('Profile check error (user may not have profile yet):', error.code)
+        } else if (profile && profile.onboarding_completed !== true) {
+          console.log('Onboarding not completed yet:', { 
+            onboarding_completed: profile.onboarding_completed,
+            selected_path: profile.selected_path 
+          })
+        }
+        
+        setIsCheckingProfile(false)
       } catch (err) {
         console.error('Error checking onboarding status:', err)
         setIsCheckingProfile(false)
@@ -53,7 +134,8 @@ export default function VerificationPage() {
     checkOnboardingStatus()
   }, [router])
 
-  if (isCheckingProfile) {
+  // Show loading while checking, or nothing if redirecting
+  if (isCheckingProfile || shouldRedirect) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Loading...</p>

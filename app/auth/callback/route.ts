@@ -27,7 +27,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL('/onboarding/verification', requestUrl.origin))
       }
 
-      if (!profile.onboarding_completed) {
+      // Check if onboarding is explicitly completed (true)
+      if (profile.onboarding_completed !== true) {
+        console.log('Onboarding not completed, sending to verification:', { 
+          onboarding_completed: profile.onboarding_completed 
+        })
         return NextResponse.redirect(new URL('/onboarding/verification', requestUrl.origin))
       }
 

@@ -79,7 +79,11 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
         return
       }
 
-      if (!profile.onboarding_completed) {
+      // Check if onboarding is explicitly completed (true)
+      if (profile.onboarding_completed !== true) {
+        console.log('Onboarding not completed, sending to verification:', { 
+          onboarding_completed: profile.onboarding_completed 
+        })
         router.push('/onboarding/verification')
         return
       }
