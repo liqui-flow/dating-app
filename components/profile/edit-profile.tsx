@@ -189,7 +189,7 @@ export function EditProfile({ onBack, onSave }: EditProfileProps) {
         newPhotos.push({
           url: URL.createObjectURL(file),
           file,
-          caption: photoPrompts[currentPhotos.length + i] || ""
+          caption: ""
         })
       }
 
@@ -466,7 +466,7 @@ export function EditProfile({ onBack, onSave }: EditProfileProps) {
                       </div>
                       {userPath === 'dating' && (
                         <Input
-                          placeholder="Caption (optional)"
+                          placeholder={photoPrompts[index] || "Caption (optional)"}
                           value={photo.caption || ""}
                           onChange={(e) => updatePhotoCaption(index, e.target.value)}
                           className="text-xs"

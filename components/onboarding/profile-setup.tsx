@@ -53,7 +53,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
           id: Date.now().toString() + i,
           file,
           preview: URL.createObjectURL(file),
-          caption: photoPrompts[photos.length + i] || ""
+          caption: ""
         }
         newPhotos.push(photo)
       }
