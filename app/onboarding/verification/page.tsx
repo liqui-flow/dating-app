@@ -4,11 +4,12 @@ import { useRouter } from "next/navigation"
 import { VerificationScreen } from "@/components/onboarding/verification-screen"
 import { PathSelect } from "@/components/onboarding/path-select"
 import { ProfileSetup } from "@/components/onboarding/profile-setup"
+import { AboutMyself } from "@/components/onboarding/about-myself"
 import { DatingPreferences } from "@/components/onboarding/dating-preferences"
 import { InterestQuestionnaire } from "@/components/onboarding/interest-questionnaire"
 import { supabase } from "@/lib/supabaseClient"
 
-type OnboardingStep = "verification" | "path-select" | "profile-setup" | "dating-preferences" | "questionnaire"
+type OnboardingStep = "verification" | "path-select" | "profile-setup" | "about-myself" | "dating-preferences" | "questionnaire"
 type PathMode = "dating" | "matrimony"
 
 export default function VerificationPage() {
@@ -181,8 +182,17 @@ export default function VerificationPage() {
   if (currentStep === "dating-preferences") {
     return (
       <DatingPreferences 
-        onComplete={() => setCurrentStep("questionnaire")} 
+        onComplete={() => setCurrentStep("about-myself")} 
         onBack={() => setCurrentStep("profile-setup")} 
+      />
+    )
+  }
+
+  if (currentStep === "about-myself") {
+    return (
+      <AboutMyself 
+        onComplete={() => setCurrentStep("questionnaire")} 
+        onBack={() => setCurrentStep("dating-preferences")} 
       />
     )
   }

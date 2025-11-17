@@ -9,6 +9,7 @@ import { InterestQuestionnaire } from "@/components/onboarding/interest-question
 import { PathSelect } from "@/components/onboarding/path-select"
 import { useRouter } from "next/navigation"
 import { ProfileSetup } from "@/components/onboarding/profile-setup"
+import { AboutMyself } from "@/components/onboarding/about-myself"
 import { DatingPreferences } from "@/components/onboarding/dating-preferences"
 import { MatrimonyOnboarding } from "@/components/profile/matrimony-onboarding"
 
@@ -18,6 +19,7 @@ type OnboardingStep =
   | "verification"
   | "path-select"
   | "profile-setup"
+  | "about-myself"
   | "dating-preferences"
   | "questionnaire"
   | "matrimony-onboarding"
@@ -126,7 +128,11 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   }
 
   if (currentStep === "dating-preferences") {
-    return <DatingPreferences onComplete={() => setCurrentStep("questionnaire")} onBack={() => setCurrentStep("profile-setup")} />
+    return <DatingPreferences onComplete={() => setCurrentStep("about-myself")} onBack={() => setCurrentStep("profile-setup")} />
+  }
+
+  if (currentStep === "about-myself") {
+    return <AboutMyself onComplete={() => setCurrentStep("questionnaire")} onBack={() => setCurrentStep("dating-preferences")} />
   }
 
   if (currentStep === "questionnaire") {

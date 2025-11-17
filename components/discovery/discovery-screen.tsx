@@ -116,6 +116,7 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 					name,
 					dob,
 					gender,
+					bio,
 					photos,
 					interests,
 					relationship_goals,
@@ -219,8 +220,8 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 					const profileGenderRaw = datingProfile.gender || userProfile?.gender
 					// Normalize gender to lowercase for consistent comparison
 					const profileGender = profileGenderRaw ? profileGenderRaw.toString().toLowerCase() : null
-					// bio might not exist in the table, so use relationship_goals as fallback
-					const profileBio = (datingProfile as any).bio || datingProfile.relationship_goals || "No bio available"
+					// Get bio from the profile, fallback to empty string if not available
+					const profileBio = (datingProfile as any).bio || ""
 					const verification = verifications?.find((v) => v.user_id === datingProfile.user_id)
 
 					// Filter by gender preference (case-insensitive comparison)

@@ -488,9 +488,9 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                     <div className="px-4 sm:px-6 py-6 space-y-6">
                       {/* Bio Section */}
                       {(fullProfile?.bio || profile.bio) && (
-                        <div className="space-y-2">
-                          <h3 className="font-semibold text-white text-base sm:text-lg">About</h3>
-                          <p className="text-white/90 text-sm sm:text-base leading-relaxed">
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-white text-base sm:text-lg mb-2">About</h3>
+                          <p className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
                             {fullProfile?.bio || profile.bio}
                           </p>
                         </div>

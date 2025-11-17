@@ -433,6 +433,71 @@ export async function completeProfileSetup(
   }
 }
 
+/**
+ * Save or update dating bio
+ */
+export async function saveDatingBio(
+  userId: string,
+  bio: string
+): Promise<ServiceResponse> {
+  try {
+    // Get existing profile to preserve other fields (handle case where profile doesn't exist)
+    const { data: existing, error: fetchError } = await supabase
+      .from('dating_profile_full')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle() // Use maybeSingle() to avoid error if no row exists
+
+    // Prepare profile data
+    const profileData: any = {
+      user_id: userId,
+      name: existing?.name || '',
+      bio: bio || null,
+    }
+
+    // Preserve other fields if profile exists
+    if (existing) {
+      profileData.interests = existing.interests || []
+      profileData.prompts = existing.prompts || []
+      profileData.photos = existing.photos || []
+      profileData.preferences = existing.preferences || {}
+      profileData.this_or_that_choices = existing.this_or_that_choices || []
+      profileData.setup_completed = existing.setup_completed || false
+      profileData.preferences_completed = existing.preferences_completed || false
+      profileData.questionnaire_completed = existing.questionnaire_completed || false
+      profileData.video_url = existing.video_url || null
+      profileData.video_file_name = existing.video_file_name || null
+      profileData.dob = existing.dob || null
+      profileData.gender = existing.gender || null
+      profileData.relationship_goals = existing.relationship_goals || null
+    } else {
+      // Initialize JSONB fields for new profile
+      profileData.interests = []
+      profileData.prompts = []
+      profileData.photos = []
+      profileData.preferences = {}
+      profileData.this_or_that_choices = []
+      profileData.setup_completed = false
+      profileData.preferences_completed = false
+      profileData.questionnaire_completed = false
+    }
+
+    const { error } = await supabase
+      .from('dating_profile_full')
+      .upsert(profileData, { onConflict: 'user_id' })
+
+    if (error) {
+      console.error('Supabase error saving bio:', error)
+      throw error
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error saving dating bio:', error)
+    return { success: false, error: error.message }
+  }
+}
+
 // ============================================
 // STEP 2: DATING PREFERENCES FUNCTIONS
 // ============================================
