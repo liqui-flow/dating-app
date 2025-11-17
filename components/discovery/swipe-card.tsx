@@ -586,6 +586,21 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                               </div>
                             )}
 
+                            {/* Video Section */}
+                            {fullProfile?.video_url && (
+                              <div className="space-y-3">
+                                <h3 className="font-semibold text-white text-base sm:text-lg">Video</h3>
+                                <div className="relative w-full aspect-video rounded-xl sm:rounded-2xl overflow-hidden bg-black/50">
+                                  <video
+                                    src={fullProfile.video_url}
+                                    controls
+                                    className="w-full h-full object-cover"
+                                    playsInline
+                                  />
+                                </div>
+                              </div>
+                            )}
+
                             {/* Action Buttons at Bottom */}
                             <div className="flex items-center justify-center space-x-6 pt-6 pb-8">
                               <Button
