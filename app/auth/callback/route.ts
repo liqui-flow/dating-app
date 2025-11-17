@@ -35,16 +35,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL('/onboarding/verification', requestUrl.origin))
       }
 
-      if (profile.selected_path === 'dating') {
-        return NextResponse.redirect(new URL('/dating/dashboard', requestUrl.origin))
-      }
-
-      if (profile.selected_path === 'matrimony') {
-        return NextResponse.redirect(new URL('/matrimony/discovery', requestUrl.origin))
-      }
-
-      // fallback
-      return NextResponse.redirect(new URL('/onboarding/verification', requestUrl.origin))
+      // If onboarding is completed, show path selection instead of going directly to dashboard
+      return NextResponse.redirect(new URL('/select-path', requestUrl.origin))
     }
   }
 

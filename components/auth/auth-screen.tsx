@@ -88,18 +88,9 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
         return
       }
 
-      if (profile.selected_path === 'dating') {
-        router.push('/dating/dashboard')
-        return
-      }
-
-      if (profile.selected_path === 'matrimony') {
-        router.push('/matrimony/discovery')
-        return
-      }
-
-      // fallback
-      router.push('/onboarding/verification')
+      // If onboarding is completed, show path selection instead of going directly to dashboard
+      router.push('/select-path')
+      return
     } catch (err) {
       console.error('Error checking profile:', err)
       router.push('/onboarding/verification')

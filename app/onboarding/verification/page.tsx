@@ -38,23 +38,14 @@ export default function VerificationPage() {
 
         // Check if onboarding is completed (explicitly true)
         if (!error && profile && profile.onboarding_completed === true) {
-          console.log('Onboarding already completed, redirecting...', { 
+          console.log('Onboarding already completed, redirecting to path selection...', { 
             selected_path: profile.selected_path,
             onboarding_completed: profile.onboarding_completed 
           })
           
-          // Set redirect flag and redirect immediately
+          // Set redirect flag and redirect to path selection
           setShouldRedirect(true)
-          
-          // Use replace to prevent back navigation
-          if (profile.selected_path === 'dating') {
-            router.replace('/dating/dashboard')
-          } else if (profile.selected_path === 'matrimony') {
-            router.replace('/matrimony/discovery')
-          } else {
-            // Fallback if path is not set
-            router.replace('/dating/dashboard')
-          }
+          router.replace('/select-path')
           return
         }
 
@@ -104,13 +95,9 @@ export default function VerificationPage() {
           }
           
           if (hasCompletedProfile) {
-            console.log('Found completed profile, auto-fixing onboarding_completed and redirecting...')
+            console.log('Found completed profile, auto-fixing onboarding_completed and redirecting to path selection...')
             setShouldRedirect(true)
-            if (profile.selected_path === 'dating') {
-              router.replace('/dating/dashboard')
-            } else {
-              router.replace('/matrimony/discovery')
-            }
+            router.replace('/select-path')
             return
           }
         }
