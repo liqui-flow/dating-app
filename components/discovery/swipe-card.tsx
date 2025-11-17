@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useMotionValue, useTransform, animate } from "
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Info, MapPin, X, Briefcase, GraduationCap, Users, Heart, ChevronLeft, ChevronRight } from "lucide-react"
+import { Info, MapPin, X, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "./swipe-animations"
 import { getDatingProfile, type DatingProfileFull } from "@/lib/datingProfileService"
@@ -42,7 +42,6 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
   const [isFlipped, setIsFlipped] = useState(false)
   const [fullProfile, setFullProfile] = useState<DatingProfileFull | null>(null)
   const [loadingProfile, setLoadingProfile] = useState(false)
-  const [expandedPhotoIndex, setExpandedPhotoIndex] = useState(0)
   const { animation, showHeartBurst, showXBurst, hideAnimation } = useSwipeAnimation()
   
   // Motion value for 3D rotation
@@ -172,11 +171,6 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
       const newFlippedState = !isFlipped
       setIsFlipped(newFlippedState)
       
-      // Reset photo index when flipping
-      if (newFlippedState) {
-        setExpandedPhotoIndex(0)
-      }
-      
       // Fetch full profile data when flipping to back side
       if (newFlippedState && !fullProfile) {
         setLoadingProfile(true)
@@ -196,16 +190,6 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
         duration: 0.8,
         ease: [0.4, 0, 0.2, 1], // Custom cubic-bezier for natural motion
       })
-    }
-  }
-  
-  const handlePhotoNavigation = (direction: 'prev' | 'next', e?: React.MouseEvent) => {
-    e?.stopPropagation()
-    const photos = fullProfile?.photos || profile.photos
-    if (direction === 'next' && expandedPhotoIndex < photos.length - 1) {
-      setExpandedPhotoIndex(prev => prev + 1)
-    } else if (direction === 'prev' && expandedPhotoIndex > 0) {
-      setExpandedPhotoIndex(prev => prev - 1)
     }
   }
 
@@ -433,176 +417,206 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
 
                   {/* Scrollable Content */}
                   <div className="relative bg-gradient-to-b from-black/95 via-black/90 to-black/95 overflow-hidden">
-                    {/* Photo Gallery Section */}
-                    <div className="relative w-full bg-black px-4 sm:px-6 pt-6">
-                      <div className="relative w-full aspect-square mx-auto rounded-xl sm:rounded-2xl overflow-hidden">
-                        {(() => {
-                          const photos = fullProfile?.photos || profile.photos
-                          const currentPhoto = photos[expandedPhotoIndex] || "/placeholder.svg"
-                          
-                          return (
-                            <>
-                              <img
-                                src={currentPhoto}
-                                alt={`Photo ${expandedPhotoIndex + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            
-                            {/* Photo Navigation Arrows */}
-                            {photos.length > 1 && (
-                              <>
-                                {expandedPhotoIndex > 0 && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 border border-white/20 z-20"
-                                    onClick={(e) => handlePhotoNavigation('prev', e)}
-                                  >
-                                    <ChevronLeft className="w-5 h-5 text-white" />
-                                  </Button>
-                                )}
-                                {expandedPhotoIndex < photos.length - 1 && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 border border-white/20 z-20"
-                                    onClick={(e) => handlePhotoNavigation('next', e)}
-                                  >
-                                    <ChevronRight className="w-5 h-5 text-white" />
-                                  </Button>
-                                )}
-                                
-                                {/* Photo Counter */}
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs z-20">
-                                  {expandedPhotoIndex + 1} / {photos.length}
-                                </div>
-                              </>
+                    {(() => {
+                      const photos = fullProfile?.photos || profile.photos
+                      const photoPrompts = (fullProfile?.photo_prompts as string[]) || []
+                      
+                      return (
+                        <>
+                          {/* Profile Picture (1st photo) */}
+                          {photos.length > 0 && (
+                            <div className="relative w-full bg-black px-4 sm:px-6 pt-6">
+                              <div className="relative w-full aspect-square mx-auto rounded-xl sm:rounded-2xl overflow-hidden">
+                                <img
+                                  src={photos[0] || "/placeholder.svg"}
+                                  alt="Profile photo"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              {photoPrompts[0] && photoPrompts[0].trim() && (
+                                <p className="text-white/80 text-sm sm:text-base mt-3 text-center px-2">
+                                  {photoPrompts[0]}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Profile Information Sections */}
+                          <div className="px-4 sm:px-6 py-6 space-y-6">
+                            {/* Bio Section */}
+                            {(fullProfile?.bio || profile.bio) && (
+                              <div className="space-y-3">
+                                <h3 className="font-semibold text-white text-base sm:text-lg mb-2">About</h3>
+                                <p className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
+                                  {fullProfile?.bio || profile.bio}
+                                </p>
+                              </div>
                             )}
-                          </>
-                        )
-                      })()}
-                      </div>
-                    </div>
 
-                    {/* Profile Information Sections */}
-                    <div className="px-4 sm:px-6 py-6 space-y-6">
-                      {/* Bio Section */}
-                      {(fullProfile?.bio || profile.bio) && (
-                        <div className="space-y-3">
-                          <h3 className="font-semibold text-white text-base sm:text-lg mb-2">About</h3>
-                          <p className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
-                            {fullProfile?.bio || profile.bio}
-                          </p>
-                        </div>
-                      )}
+                            {/* 2nd Picture */}
+                            {photos.length > 1 && (
+                              <div className="relative w-full space-y-3">
+                                <div className="relative w-full aspect-square mx-auto rounded-xl sm:rounded-2xl overflow-hidden">
+                                  <img
+                                    src={photos[1] || "/placeholder.svg"}
+                                    alt="Photo 2"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                {photoPrompts[1] && photoPrompts[1].trim() && (
+                                  <p className="text-white/80 text-sm sm:text-base text-center px-2">
+                                    {photoPrompts[1]}
+                                  </p>
+                                )}
+                              </div>
+                            )}
 
-                      {/* Interests Section */}
-                      {(() => {
-                        const interests = fullProfile?.interests || profile.interests
-                        return interests && interests.length > 0 ? (
-                          <div className="space-y-3">
-                            <h3 className="font-semibold text-white text-base sm:text-lg">Interests</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {interests.map((interest, idx) => (
-                                <Badge
-                                  key={idx}
-                                  className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white/90"
-                                >
-                                  {interest}
-                                </Badge>
-                              ))}
+                            {/* Interests Section */}
+                            {(() => {
+                              const interests = fullProfile?.interests || profile.interests
+                              return interests && interests.length > 0 ? (
+                                <div className="space-y-3">
+                                  <h3 className="font-semibold text-white text-base sm:text-lg">Interests</h3>
+                                  <div className="flex flex-wrap gap-2">
+                                    {interests.map((interest, idx) => (
+                                      <Badge
+                                        key={idx}
+                                        className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white/90"
+                                      >
+                                        {interest}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : null
+                            })()}
+
+                            {/* 3rd Picture */}
+                            {photos.length > 2 && (
+                              <div className="relative w-full space-y-3">
+                                <div className="relative w-full aspect-square mx-auto rounded-xl sm:rounded-2xl overflow-hidden">
+                                  <img
+                                    src={photos[2] || "/placeholder.svg"}
+                                    alt="Photo 3"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                {photoPrompts[2] && photoPrompts[2].trim() && (
+                                  <p className="text-white/80 text-sm sm:text-base text-center px-2">
+                                    {photoPrompts[2]}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Get to Know Me Section (formerly Prompts) */}
+                            {fullProfile?.prompts && fullProfile.prompts.length > 0 && (
+                              <div className="space-y-4">
+                                <h3 className="font-semibold text-white text-base sm:text-lg">Get to Know Me</h3>
+                                {fullProfile.prompts.map((promptItem, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 space-y-2"
+                                  >
+                                    <p className="text-white/80 text-sm font-medium">{promptItem.prompt}</p>
+                                    <p className="text-white text-base">{promptItem.answer}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* 4th Picture (if exists, between Get to Know Me and This or That) */}
+                            {photos.length > 3 && (
+                              <div className="relative w-full space-y-3">
+                                <div className="relative w-full aspect-square mx-auto rounded-xl sm:rounded-2xl overflow-hidden">
+                                  <img
+                                    src={photos[3] || "/placeholder.svg"}
+                                    alt="Photo 4"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                {photoPrompts[3] && photoPrompts[3].trim() && (
+                                  <p className="text-white/80 text-sm sm:text-base text-center px-2">
+                                    {photoPrompts[3]}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
+                            {/* This or That Section */}
+                            {fullProfile?.this_or_that_choices && fullProfile.this_or_that_choices.length > 0 && (
+                              <div className="space-y-4">
+                                <h3 className="font-semibold text-white text-base sm:text-lg">This or That</h3>
+                                {fullProfile.this_or_that_choices.map((choice, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className={cn(
+                                        "flex-1 p-3 rounded-lg text-center text-sm",
+                                        choice.selected === 0 
+                                          ? "bg-white/20 text-white font-semibold" 
+                                          : "bg-white/5 text-white/60"
+                                      )}>
+                                        {choice.option_a}
+                                      </div>
+                                      <span className="text-white/40">vs</span>
+                                      <div className={cn(
+                                        "flex-1 p-3 rounded-lg text-center text-sm",
+                                        choice.selected === 1 
+                                          ? "bg-white/20 text-white font-semibold" 
+                                          : "bg-white/5 text-white/60"
+                                      )}>
+                                        {choice.option_b}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Relationship Goals Section */}
+                            {fullProfile?.relationship_goals && (
+                              <div className="space-y-2">
+                                <h3 className="font-semibold text-white text-base sm:text-lg">Relationship Goals</h3>
+                                <p className="text-white/90 text-sm sm:text-base leading-relaxed">
+                                  {fullProfile.relationship_goals}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Action Buttons at Bottom */}
+                            <div className="flex items-center justify-center space-x-6 pt-6 pb-8">
+                              <Button
+                                variant="outline"
+                                size="lg"
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground bg-transparent border-2"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleInfoClick(e)
+                                  setTimeout(() => onPass(), 300)
+                                }}
+                              >
+                                <X className="w-8 h-8 sm:w-10 sm:h-10" />
+                              </Button>
+
+                              <Button
+                                size="lg"
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white shadow-lg"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleInfoClick(e)
+                                  setTimeout(() => onLike(), 300)
+                                }}
+                              >
+                                <Heart className="w-8 h-8 sm:w-10 sm:h-10 fill-white" />
+                              </Button>
                             </div>
                           </div>
-                        ) : null
-                      })()}
-
-                      {/* Prompts Section (all prompts, not just photo-specific) */}
-                      {fullProfile?.prompts && fullProfile.prompts.length > 0 && (
-                        <div className="space-y-4">
-                          <h3 className="font-semibold text-white text-base sm:text-lg">Prompts</h3>
-                          {fullProfile.prompts.map((promptItem, idx) => (
-                            <div
-                              key={idx}
-                              className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 space-y-2"
-                            >
-                              <p className="text-white/80 text-sm font-medium">{promptItem.prompt}</p>
-                              <p className="text-white text-base">{promptItem.answer}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* This or That Section */}
-                      {fullProfile?.this_or_that_choices && fullProfile.this_or_that_choices.length > 0 && (
-                        <div className="space-y-4">
-                          <h3 className="font-semibold text-white text-base sm:text-lg">This or That</h3>
-                          {fullProfile.this_or_that_choices.map((choice, idx) => (
-                            <div
-                              key={idx}
-                              className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className={cn(
-                                  "flex-1 p-3 rounded-lg text-center text-sm",
-                                  choice.selected === 0 
-                                    ? "bg-white/20 text-white font-semibold" 
-                                    : "bg-white/5 text-white/60"
-                                )}>
-                                  {choice.option_a}
-                                </div>
-                                <span className="text-white/40">vs</span>
-                                <div className={cn(
-                                  "flex-1 p-3 rounded-lg text-center text-sm",
-                                  choice.selected === 1 
-                                    ? "bg-white/20 text-white font-semibold" 
-                                    : "bg-white/5 text-white/60"
-                                )}>
-                                  {choice.option_b}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Relationship Goals Section */}
-                      {fullProfile?.relationship_goals && (
-                        <div className="space-y-2">
-                          <h3 className="font-semibold text-white text-base sm:text-lg">Relationship Goals</h3>
-                          <p className="text-white/90 text-sm sm:text-base leading-relaxed">
-                            {fullProfile.relationship_goals}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Action Buttons at Bottom */}
-                      <div className="flex items-center justify-center space-x-6 pt-6 pb-8">
-                        <Button
-                          variant="outline"
-                          size="lg"
-                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground bg-transparent border-2"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleInfoClick(e)
-                            setTimeout(() => onPass(), 300)
-                          }}
-                        >
-                          <X className="w-8 h-8 sm:w-10 sm:h-10" />
-                        </Button>
-
-                        <Button
-                          size="lg"
-                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white shadow-lg"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleInfoClick(e)
-                            setTimeout(() => onLike(), 300)
-                          }}
-                        >
-                          <Heart className="w-8 h-8 sm:w-10 sm:h-10 fill-white" />
-                        </Button>
-                      </div>
-                    </div>
+                        </>
+                      )
+                    })()}
                   </div>
                 </>
               )}

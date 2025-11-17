@@ -135,6 +135,9 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileVie
   const photos = (userPath === 'dating' 
     ? (datingProfile?.photos as string[] || [])
     : (matrimonyProfile?.photos as string[] || [])) || []
+  const photoPrompts = (userPath === 'dating' 
+    ? (datingProfile?.photo_prompts as string[] || [])
+    : []) || []
   const bio = userPath === 'dating' 
     ? datingProfile?.bio 
     : matrimonyProfile?.bio
@@ -206,6 +209,14 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileVie
                 {verified && <Badge className="bg-primary text-primary-foreground">Verified</Badge>}
               </div>
             </div>
+            {/* Photo Prompt */}
+            {userPath === 'dating' && photoPrompts[currentPhotoIndex] && photoPrompts[currentPhotoIndex].trim() && (
+              <div className="p-4 pt-2">
+                <p className="text-sm text-muted-foreground text-center">
+                  {photoPrompts[currentPhotoIndex]}
+                </p>
+              </div>
+            )}
           </Card>
         )}
 
