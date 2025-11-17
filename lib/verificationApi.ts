@@ -330,7 +330,6 @@ export async function saveGender(gender: 'male' | 'female' | 'prefer_not_to_say'
             cultural: {
               date_of_birth: userProfileForMatrimony.date_of_birth || null,
             },
-            partner_preferences: {},
           })
       }
     }

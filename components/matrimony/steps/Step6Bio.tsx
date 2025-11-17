@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
-import { saveDraft, saveStep6 } from "@/lib/matrimonyService"
+import { saveStep6 } from "@/lib/matrimonyService"
 import { supabase } from "@/lib/supabaseClient"
 import { toast } from "sonner"
 
@@ -26,9 +26,8 @@ export function Step6Bio({ onNext, onBack }: { onNext: () => void; onBack: () =>
   })
 
   useEffect(() => {
-    const sub = form.watch(async (values) => {
+    const sub = form.watch((values) => {
       setPartial("bio", values)
-      await saveDraft({ profile: { bio: values.bio } as any })
     })
     return () => sub.unsubscribe()
   }, [form, setPartial])
@@ -50,7 +49,6 @@ export function Step6Bio({ onNext, onBack }: { onNext: () => void; onBack: () =>
       const result = await saveStep6(user.id, values.bio)
 
       if (result.success) {
-        toast.success("Step 6 saved successfully!")
         onNext()
       } else {
         throw new Error(result.error || "Failed to save")
@@ -85,7 +83,7 @@ export function Step6Bio({ onNext, onBack }: { onNext: () => void; onBack: () =>
 
           <div className="flex justify-between pt-2">
             <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
-            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Next"}</Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Complete"}</Button>
           </div>
         </div>
       </form>

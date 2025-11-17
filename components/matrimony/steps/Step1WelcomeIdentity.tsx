@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Upload, X } from "lucide-react"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
-import { uploadAsset, saveDraft, saveStep1 } from "@/lib/matrimonyService"
+import { uploadAsset, saveStep1 } from "@/lib/matrimonyService"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import { toast } from "sonner"
@@ -38,14 +38,13 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
   })
 
   useEffect(() => {
-    const sub = form.watch(async (values) => {
+    const sub = form.watch((values) => {
       setPartial("welcome", {
         name: values.name,
         age: values.age,
         gender: values.gender,
         createdBy: values.createdBy,
       })
-      await saveDraft({ profile: { name: values.name, age: values.age as any } })
     })
     return () => sub.unsubscribe()
   }, [form, setPartial])
@@ -137,7 +136,6 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
                   const next = [...photos, ...urls].slice(0, 6)
                   setPhotos(next)
                   setPartial("welcome", { photoUrls: next })
-                  await saveDraft({ profile: { photoUrls: next } as any })
                 }
                 input.click()
               }}

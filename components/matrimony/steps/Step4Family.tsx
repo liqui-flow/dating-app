@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
-import { saveDraft, saveStep4 } from "@/lib/matrimonyService"
+import { saveStep4 } from "@/lib/matrimonyService"
 import { Check } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { toast } from "sonner"
@@ -39,9 +39,8 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
   })
 
   useEffect(() => {
-    const sub = form.watch(async (values) => {
+    const sub = form.watch((values) => {
       setPartial("family", values)
-      await saveDraft({ profile: { family: values } as any })
     })
     return () => sub.unsubscribe()
   }, [form, setPartial])

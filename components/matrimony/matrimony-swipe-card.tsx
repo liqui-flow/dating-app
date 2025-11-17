@@ -537,9 +537,9 @@ export function MatrimonySwipeCard({
                     <div className="px-4 sm:px-6 py-6 space-y-6">
                       {/* Bio Section */}
                       {(fullProfile?.bio || bio) && (
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <h3 className="font-semibold text-white text-base sm:text-lg">About</h3>
-                          <p className="text-white/90 text-sm sm:text-base leading-relaxed">
+                          <p className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
                             {fullProfile?.bio || bio}
                           </p>
                         </div>

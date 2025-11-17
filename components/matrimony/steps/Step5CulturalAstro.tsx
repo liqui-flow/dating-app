@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
-import { saveDraft, saveStep5 } from "@/lib/matrimonyService"
+import { saveStep5 } from "@/lib/matrimonyService"
 import { supabase } from "@/lib/supabaseClient"
 import { toast } from "sonner"
 
@@ -36,9 +36,8 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
   })
 
   useEffect(() => {
-    const sub = form.watch(async (values) => {
+    const sub = form.watch((values) => {
       setPartial("cultural", values)
-      await saveDraft({ profile: { cultural: values } as any })
     })
     return () => sub.unsubscribe()
   }, [form, setPartial])

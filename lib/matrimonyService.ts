@@ -202,13 +202,11 @@ export async function saveStep1(
       profileData.family = existing.family || {}
       profileData.cultural = existing.cultural || {}
       profileData.bio = existing.bio || null
-      profileData.partner_preferences = existing.partner_preferences || {}
       profileData.step2_completed = existing.step2_completed || false
       profileData.step3_completed = existing.step3_completed || false
       profileData.step4_completed = existing.step4_completed || false
       profileData.step5_completed = existing.step5_completed || false
       profileData.step6_completed = existing.step6_completed || false
-      profileData.step7_completed = existing.step7_completed || false
       profileData.profile_completed = existing.profile_completed || false
     } else {
       // Initialize JSONB fields for new profile
@@ -216,7 +214,6 @@ export async function saveStep1(
       profileData.career = {}
       profileData.family = {}
       profileData.cultural = {}
-      profileData.partner_preferences = {}
     }
 
     const { error } = await supabase
@@ -291,20 +288,17 @@ export async function saveStep2(
       profileData.family = existing.family || {}
       profileData.cultural = existing.cultural || {}
       profileData.bio = existing.bio || null
-      profileData.partner_preferences = existing.partner_preferences || {}
       profileData.step1_completed = existing.step1_completed || false
       profileData.step3_completed = existing.step3_completed || false
       profileData.step4_completed = existing.step4_completed || false
       profileData.step5_completed = existing.step5_completed || false
       profileData.step6_completed = existing.step6_completed || false
-      profileData.step7_completed = existing.step7_completed || false
       profileData.profile_completed = existing.profile_completed || false
     } else {
       profileData.photos = []
       profileData.career = {}
       profileData.family = {}
       profileData.cultural = {}
-      profileData.partner_preferences = {}
     }
 
     const { error } = await supabase
@@ -379,20 +373,17 @@ export async function saveStep3(
       profileData.family = existing.family || {}
       profileData.cultural = existing.cultural || {}
       profileData.bio = existing.bio || null
-      profileData.partner_preferences = existing.partner_preferences || {}
       profileData.step1_completed = existing.step1_completed || false
       profileData.step2_completed = existing.step2_completed || false
       profileData.step4_completed = existing.step4_completed || false
       profileData.step5_completed = existing.step5_completed || false
       profileData.step6_completed = existing.step6_completed || false
-      profileData.step7_completed = existing.step7_completed || false
       profileData.profile_completed = existing.profile_completed || false
     } else {
       profileData.photos = []
       profileData.personal = {}
       profileData.family = {}
       profileData.cultural = {}
-      profileData.partner_preferences = {}
     }
 
     const { error } = await supabase
@@ -471,20 +462,17 @@ export async function saveStep4(
       profileData.career = existing.career || {}
       profileData.cultural = existing.cultural || {}
       profileData.bio = existing.bio || null
-      profileData.partner_preferences = existing.partner_preferences || {}
       profileData.step1_completed = existing.step1_completed || false
       profileData.step2_completed = existing.step2_completed || false
       profileData.step3_completed = existing.step3_completed || false
       profileData.step5_completed = existing.step5_completed || false
       profileData.step6_completed = existing.step6_completed || false
-      profileData.step7_completed = existing.step7_completed || false
       profileData.profile_completed = existing.profile_completed || false
     } else {
       profileData.photos = []
       profileData.personal = {}
       profileData.career = {}
       profileData.cultural = {}
-      profileData.partner_preferences = {}
     }
 
     const { error } = await supabase
@@ -561,20 +549,17 @@ export async function saveStep5(
       profileData.career = existing.career || {}
       profileData.family = existing.family || {}
       profileData.bio = existing.bio || null
-      profileData.partner_preferences = existing.partner_preferences || {}
       profileData.step1_completed = existing.step1_completed || false
       profileData.step2_completed = existing.step2_completed || false
       profileData.step3_completed = existing.step3_completed || false
       profileData.step4_completed = existing.step4_completed || false
       profileData.step6_completed = existing.step6_completed || false
-      profileData.step7_completed = existing.step7_completed || false
       profileData.profile_completed = existing.profile_completed || false
     } else {
       profileData.photos = []
       profileData.personal = {}
       profileData.career = {}
       profileData.family = {}
-      profileData.partner_preferences = {}
     }
 
     const { error } = await supabase
@@ -617,6 +602,7 @@ export async function saveStep6(
       name: existing?.name || '',
       bio: bio,
       step6_completed: true,
+      profile_completed: true, // Step 6 is now the final step
     }
 
     // Preserve other fields
@@ -629,21 +615,17 @@ export async function saveStep6(
       profileData.career = existing.career || {}
       profileData.family = existing.family || {}
       profileData.cultural = existing.cultural || {}
-      profileData.partner_preferences = existing.partner_preferences || {}
       profileData.step1_completed = existing.step1_completed || false
       profileData.step2_completed = existing.step2_completed || false
       profileData.step3_completed = existing.step3_completed || false
       profileData.step4_completed = existing.step4_completed || false
       profileData.step5_completed = existing.step5_completed || false
-      profileData.step7_completed = existing.step7_completed || false
-      profileData.profile_completed = existing.profile_completed || false
     } else {
       profileData.photos = []
       profileData.personal = {}
       profileData.career = {}
       profileData.family = {}
       profileData.cultural = {}
-      profileData.partner_preferences = {}
     }
 
     const { error } = await supabase

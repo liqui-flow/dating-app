@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { ChevronLeft, ChevronRight, Save, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { Step1WelcomeIdentity } from "@/components/matrimony/steps/Step1WelcomeIdentity"
@@ -13,7 +13,6 @@ import { Step3CareerEducation } from "@/components/matrimony/steps/Step3CareerEd
 import { Step4Family } from "@/components/matrimony/steps/Step4Family"
 import { Step5CulturalAstro } from "@/components/matrimony/steps/Step5CulturalAstro"
 import { Step6Bio } from "@/components/matrimony/steps/Step6Bio"
-import { Step7PartnerPreferences } from "@/components/matrimony/steps/Step7PartnerPreferences"
 import { MatrimonySetupProvider } from "@/components/matrimony/store"
 import { supabase } from "@/lib/supabaseClient"
 import { completeOnboarding } from "@/lib/pathService"
@@ -34,7 +33,6 @@ const stepTitles = [
   "Family Information",
   "Your Cultural Details",
   "A Few Words About You",
-  "Your Partner Preferences",
 ]
 
 export function MatrimonySetup() {
@@ -42,10 +40,6 @@ export function MatrimonySetup() {
   const router = useRouter()
 
   const progress = useMemo(() => ((step + 1) / stepTitles.length) * 100, [step])
-
-  const onSaveDraft = () => {
-    toast.success("Draft saved")
-  }
 
   const onExit = () => {
     if (confirm("Exit setup? Your progress is saved as draft.")) {
@@ -58,8 +52,17 @@ export function MatrimonySetup() {
   const back = () => setStep((s) => Math.max(s - 1, 0))
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black/80 via-black/60 to-black/80">
-      <Card className="w-full max-w-4xl bg-white/10 border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.6)] backdrop-blur-2xl text-white rounded-[32px]">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 relative"
+      style={{
+        backgroundImage: 'url(/image 52.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <div className="absolute inset-0 bg-black/40"></div>
+      <Card className="w-full max-w-4xl bg-white/10 border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.6)] backdrop-blur-2xl text-white rounded-[32px] relative z-10">
         <CardHeader className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -67,14 +70,6 @@ export function MatrimonySetup() {
               <p className="text-sm text-white/70">Tell us about yourself so we can find the right matches.</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onSaveDraft}
-                className="rounded-full px-4 bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
-              >
-                <Save className="w-4 h-4 mr-2" /> Save draft
-              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -119,10 +114,7 @@ export function MatrimonySetup() {
               <Step5CulturalAstro onNext={() => setStep(5)} onBack={() => setStep(3)} />
             )}
             {step === 5 && (
-              <Step6Bio onNext={() => setStep(6)} onBack={() => setStep(4)} />
-            )}
-            {step === 6 && (
-              <Step7PartnerPreferences onNext={async () => {
+              <Step6Bio onNext={async () => {
                 try {
                   // Mark onboarding as completed
                   const { data: { user } } = await supabase.auth.getUser()
@@ -135,7 +127,7 @@ export function MatrimonySetup() {
                   console.error("Error completing matrimony onboarding:", error)
                   toast.error("Failed to complete setup")
                 }
-              }} onBack={() => setStep(5)} />
+              }} onBack={() => setStep(4)} />
             )}
 
           {false && (
