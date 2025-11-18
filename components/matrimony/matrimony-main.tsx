@@ -25,6 +25,8 @@ import { EditProfile } from "@/components/profile/edit-profile"
 import { type MatrimonyProfile } from "@/lib/mockMatrimonyProfiles"
 import { supabase } from "@/lib/supabaseClient"
 import { handleLogout } from "@/lib/logout"
+import { recordMatrimonyLike, getMatrimonyLikedProfiles } from "@/lib/matchmakingService"
+import { MatchNotification } from "@/components/chat/match-notification"
 
 // Helper function to calculate age from date of birth
 function calculateAge(dob: string | null, ageFromProfile: number | null): number {
@@ -79,6 +81,8 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
+  const [showMatchNotification, setShowMatchNotification] = useState(false)
+  const [matchedProfile, setMatchedProfile] = useState<MatrimonyProfile | null>(null)
 
   // Fetch profiles from Supabase
   useEffect(() => {
@@ -174,6 +178,10 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         const currentUserGender = currentUserProfile?.gender
         console.log("Current user gender:", currentUserGender)
 
+        // Get already liked/passed profiles to exclude from discovery
+        const likedProfileIds = await getMatrimonyLikedProfiles(user.id)
+        console.log(`Excluding ${likedProfileIds.length} already liked/passed matrimony profiles`)
+
         // Combine all data from consolidated table
         const combinedProfiles: MatrimonyProfile[] = matrimonyProfiles
           .map((matrimonyProfile) => {
@@ -192,6 +200,11 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
 
             // Exclude current user's profile
             if (user && matrimonyProfile.user_id === user.id) {
+              return null
+            }
+
+            // Exclude already liked/passed profiles
+            if (likedProfileIds.includes(matrimonyProfile.user_id)) {
               return null
             }
 
@@ -282,13 +295,75 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
   const currentProfile = profiles[currentCardIndex]
   const hasMoreProfiles = currentCardIndex < profiles.length
 
-  const handleLike = () => {
-    if (currentCardIndex < profiles.length - 1) setCurrentCardIndex((p) => p + 1)
-    else setCurrentCardIndex(profiles.length)
+  const handleLike = async () => {
+    try {
+      const currentProfile = profiles[currentCardIndex]
+      if (!currentProfile) {
+        console.error('[handleLike] No current profile')
+        return
+      }
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('[handleLike] No user found')
+        return
+      }
+
+      console.log('[handleLike] User liking profile:', { userId: user.id, profileId: currentProfile.id })
+
+      // Record the like in database
+      const result = await recordMatrimonyLike(user.id, currentProfile.id, 'like')
+      
+      console.log('[handleLike] Result:', result)
+
+      if (!result.success) {
+        console.error('[handleLike] Failed to record like:', result.error)
+      }
+      
+      if (result.success && result.isMatch) {
+        console.log('[handleLike] Match detected!', result.matchId)
+        // Show match notification
+        setMatchedProfile(currentProfile)
+        setShowMatchNotification(true)
+      }
+
+      if (currentCardIndex < profiles.length - 1) setCurrentCardIndex((p) => p + 1)
+      else setCurrentCardIndex(profiles.length)
+    } catch (error) {
+      console.error('[handleLike] Unexpected error:', error)
+    }
   }
-  const handlePass = () => {
-    if (currentCardIndex < profiles.length - 1) setCurrentCardIndex((p) => p + 1)
-    else setCurrentCardIndex(profiles.length)
+
+  const handlePass = async () => {
+    try {
+      const currentProfile = profiles[currentCardIndex]
+      if (!currentProfile) {
+        console.error('[handlePass] No current profile')
+        return
+      }
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('[handlePass] No user found')
+        return
+      }
+
+      console.log('[handlePass] User passing profile:', { userId: user.id, profileId: currentProfile.id })
+
+      // Record the pass in database
+      const result = await recordMatrimonyLike(user.id, currentProfile.id, 'pass')
+      
+      console.log('[handlePass] Result:', result)
+
+      if (!result.success) {
+        console.error('[handlePass] Failed to record pass:', result.error)
+      }
+
+      if (currentCardIndex < profiles.length - 1) setCurrentCardIndex((p) => p + 1)
+      else setCurrentCardIndex(profiles.length)
+    } catch (error) {
+      console.error('[handlePass] Unexpected error:', error)
+    }
   }
 
   return (
@@ -487,6 +562,32 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         <div className="p-0 pb-0 mt-0">
           <VerificationStatus onBack={() => setCurrentScreen("profile")} />
         </div>
+      )}
+
+      {/* Match Notification */}
+      {showMatchNotification && matchedProfile && (
+        <MatchNotification
+          match={{
+            id: matchedProfile.id,
+            name: matchedProfile.name,
+            avatar: matchedProfile.photos?.[0] || "/placeholder-user.jpg",
+            age: matchedProfile.age,
+            mutualInterests: matchedProfile.interests || []
+          }}
+          onStartChat={() => {
+            setShowMatchNotification(false)
+            // TODO: Navigate to chat screen with matched user
+            console.log("Start chat with:", matchedProfile.id)
+          }}
+          onKeepSwiping={() => {
+            setShowMatchNotification(false)
+            setMatchedProfile(null)
+          }}
+          onClose={() => {
+            setShowMatchNotification(false)
+            setMatchedProfile(null)
+          }}
+        />
       )}
 
       {currentScreen === "app-settings" && (

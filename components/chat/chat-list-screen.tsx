@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
+import { getDatingMatches, type Match } from "@/lib/matchmakingService"
+import { supabase } from "@/lib/supabaseClient"
 
 interface ChatPreview {
   id: string
@@ -22,94 +24,66 @@ interface ChatPreview {
   isPremium: boolean
 }
 
-const mockChats: ChatPreview[] = [
-  {
-    id: "1",
-    name: "Priya",
-    avatar: "/indian-woman-professional.png",
-    lastMessage: "Hey! Thanks for the like. How's your day going?",
-    timestamp: "2m ago",
-    unreadCount: 2,
-    isOnline: true,
-    isMatch: true,
-    isPremium: false,
-  },
-  {
-    id: "2",
-    name: "Ananya",
-    avatar: "/professional-woman-smiling.png",
-    lastMessage: "I love your travel photos! Where was that taken?",
-    timestamp: "1h ago",
-    unreadCount: 0,
-    isOnline: false,
-    isMatch: true,
-    isPremium: true,
-  },
-  {
-    id: "3",
-    name: "Kavya",
-    avatar: "/woman-hiking.png",
-    lastMessage: "Would love to chat more about hiking spots!",
-    timestamp: "3h ago",
-    unreadCount: 1,
-    isOnline: true,
-    isMatch: true,
-    isPremium: false,
-  },
-  {
-    id: "4",
-    name: "Riya",
-    avatar: "/woman-at-coffee-shop.png",
-    lastMessage: "Coffee sounds great! When are you free?",
-    timestamp: "1d ago",
-    unreadCount: 0,
-    isOnline: false,
-    isMatch: true,
-    isPremium: false,
-  },
-  {
-    id: "5",
-    name: "Sneha",
-    avatar: "/woman-with-family.jpg",
-    lastMessage: "Your profile caught my attention! Let's chat 😊",
-    timestamp: "2d ago",
-    unreadCount: 3,
-    isOnline: true,
-    isMatch: true,
-    isPremium: false,
-  },
-  {
-    id: "6",
-    name: "Meera",
-    avatar: "/casual-outdoor-photo.jpg",
-    lastMessage: "I love your sense of humor! Want to grab dinner?",
-    timestamp: "3d ago",
-    unreadCount: 0,
-    isOnline: false,
-    isMatch: true,
-    isPremium: true,
-  },
-  {
-    id: "7",
-    name: "Aisha",
-    avatar: "/professional-headshot.png",
-    lastMessage: "Your music taste is amazing! Any concert recommendations?",
-    timestamp: "4d ago",
-    unreadCount: 1,
-    isOnline: false,
-    isMatch: true,
-    isPremium: false,
-  },
-]
-
 interface ChatListScreenProps {
   onChatClick?: (chatId: string) => void
 }
 
 export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [chats, setChats] = useState<ChatPreview[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const filteredChats = mockChats.filter(
+  useEffect(() => {
+    async function loadMatches() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          setLoading(false)
+          return
+        }
+
+        const matches = await getDatingMatches(user.id)
+        
+        // Convert matches to chat previews
+        const chatPreviews: ChatPreview[] = matches.map((match) => ({
+          id: match.matchedUserId,
+          name: match.matchedUserName,
+          avatar: match.matchedUserPhoto || "/placeholder-user.jpg",
+          lastMessage: "You matched! Start the conversation.",
+          timestamp: formatRelativeTime(match.matchedAt),
+          unreadCount: 0, // TODO: Implement unread message count
+          isOnline: false, // TODO: Implement online status
+          isMatch: true,
+          isPremium: false, // TODO: Get premium status from profile
+        }))
+
+        setChats(chatPreviews)
+      } catch (error) {
+        console.error('Error loading matches:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadMatches()
+  }, [])
+
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return "Just now"
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString()
+  }
+
+  const filteredChats = chats.filter(
     (chat) =>
       chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -117,6 +91,20 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
 
   const formatTimestamp = (timestamp: string) => {
     return timestamp
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col h-full relative">
+        <StaticBackground />
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading matches...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

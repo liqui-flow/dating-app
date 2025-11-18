@@ -10,6 +10,8 @@ import { ProfileModal } from "@/components/discovery/profile-modal"
 import { DynamicBackground } from "@/components/discovery/dynamic-background"
 import { Heart, Filter } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
+import { recordDatingLike, getDatingLikedProfiles } from "@/lib/matchmakingService"
+import { MatchNotification } from "@/components/chat/match-notification"
 
 // Profile interface
 interface Profile {
@@ -58,6 +60,8 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 	const [profiles, setProfiles] = useState<Profile[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
+	const [showMatchNotification, setShowMatchNotification] = useState(false)
+	const [matchedProfile, setMatchedProfile] = useState<Profile | null>(null)
 
 	// Fetch profiles from Supabase
 	const fetchProfiles = async () => {
@@ -189,10 +193,15 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 				console.log("Sample profile genders:", sampleGenders)
 			}
 
+			// Get already liked/passed profiles to exclude from discovery
+			const likedProfileIds = await getDatingLikedProfiles(user.id)
+			console.log(`Excluding ${likedProfileIds.length} already liked/passed profiles`)
+
 			// Track filtering reasons for debugging
 			let filteredOutNoDob = 0
 			let filteredOutCurrentUser = 0
 			let filteredOutGender = 0
+			let filteredOutAlreadyLiked = 0
 
 			// Combine all data from consolidated table
 			const combinedProfiles: Profile[] = datingProfiles
@@ -211,6 +220,12 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 					// Exclude current user's profile
 					if (user && datingProfile.user_id === user.id) {
 						filteredOutCurrentUser++
+						return null
+					}
+
+					// Exclude already liked/passed profiles
+					if (likedProfileIds.includes(datingProfile.user_id)) {
+						filteredOutAlreadyLiked++
 						return null
 					}
 
@@ -258,7 +273,7 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 				.filter((profile): profile is Profile => profile !== null)
 
 			console.log(`Successfully processed ${combinedProfiles.length} profiles for display`)
-			console.log(`Filtering stats: ${filteredOutNoDob} no DOB, ${filteredOutCurrentUser} current user, ${filteredOutGender} gender mismatch`)
+			console.log(`Filtering stats: ${filteredOutNoDob} no DOB, ${filteredOutCurrentUser} current user, ${filteredOutGender} gender mismatch, ${filteredOutAlreadyLiked} already liked/passed`)
 			
 			setProfiles(combinedProfiles)
 			if (combinedProfiles.length === 0) {
@@ -306,17 +321,70 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 	const currentProfile = profiles[currentCardIndex]
 	const hasMoreProfiles = currentCardIndex < profiles.length
 
-	const handleLike = (profileId: string) => {
-		setLikedProfiles((prev) => [...prev, profileId])
-		if (currentCardIndex < profiles.length - 1) {
-			setCurrentCardIndex((prev) => prev + 1)
+	const handleLike = async (profileId: string) => {
+		try {
+			const { data: { user } } = await supabase.auth.getUser()
+			if (!user) {
+				console.error('[handleLike] No user found')
+				return
+			}
+
+			console.log('[handleLike] User liking profile:', { userId: user.id, profileId })
+
+			// Record the like in database
+			const result = await recordDatingLike(user.id, profileId, 'like')
+			
+			console.log('[handleLike] Result:', result)
+
+			if (!result.success) {
+				console.error('[handleLike] Failed to record like:', result.error)
+				// Still update UI to prevent blocking
+			}
+			
+			if (result.success && result.isMatch) {
+				console.log('[handleLike] Match detected!', result.matchId)
+				// Show match notification
+				const matchedProfileData = profiles.find(p => p.id === profileId)
+				if (matchedProfileData) {
+					setMatchedProfile(matchedProfileData)
+					setShowMatchNotification(true)
+				}
+			}
+
+			setLikedProfiles((prev) => [...prev, profileId])
+			if (currentCardIndex < profiles.length - 1) {
+				setCurrentCardIndex((prev) => prev + 1)
+			}
+		} catch (error) {
+			console.error('[handleLike] Unexpected error:', error)
 		}
 	}
 
-	const handlePass = (profileId: string) => {
-		setPassedProfiles((prev) => [...prev, profileId])
-		if (currentCardIndex < profiles.length - 1) {
-			setCurrentCardIndex((prev) => prev + 1)
+	const handlePass = async (profileId: string) => {
+		try {
+			const { data: { user } } = await supabase.auth.getUser()
+			if (!user) {
+				console.error('[handlePass] No user found')
+				return
+			}
+
+			console.log('[handlePass] User passing profile:', { userId: user.id, profileId })
+
+			// Record the pass in database
+			const result = await recordDatingLike(user.id, profileId, 'pass')
+			
+			console.log('[handlePass] Result:', result)
+
+			if (!result.success) {
+				console.error('[handlePass] Failed to record pass:', result.error)
+			}
+
+			setPassedProfiles((prev) => [...prev, profileId])
+			if (currentCardIndex < profiles.length - 1) {
+				setCurrentCardIndex((prev) => prev + 1)
+			}
+		} catch (error) {
+			console.error('[handlePass] Unexpected error:', error)
 		}
 	}
 
@@ -441,6 +509,32 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 					onPass={() => {
 						handlePass(selectedProfile.id)
 						setSelectedProfile(null)
+					}}
+				/>
+			)}
+
+			{/* Match Notification */}
+			{showMatchNotification && matchedProfile && (
+				<MatchNotification
+					match={{
+						id: matchedProfile.id,
+						name: matchedProfile.name,
+						avatar: matchedProfile.photos?.[0] || "/placeholder-user.jpg",
+						age: matchedProfile.age,
+						mutualInterests: matchedProfile.interests || []
+					}}
+					onStartChat={() => {
+						setShowMatchNotification(false)
+						// TODO: Navigate to chat screen with matched user
+						console.log("Start chat with:", matchedProfile.id)
+					}}
+					onKeepSwiping={() => {
+						setShowMatchNotification(false)
+						setMatchedProfile(null)
+					}}
+					onClose={() => {
+						setShowMatchNotification(false)
+						setMatchedProfile(null)
 					}}
 				/>
 			)}
