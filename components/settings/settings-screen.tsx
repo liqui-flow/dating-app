@@ -91,7 +91,7 @@ interface UserInfo {
   userPath: 'dating' | 'matrimony' | null
 }
 
-export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: SettingsNavigateHandler; onLogout?: () => void }) {
+export function SettingsScreen({ onNavigate, onLogout, mode }: { onNavigate?: SettingsNavigateHandler; onLogout?: () => void; mode?: 'dating' | 'matrimony' }) {
   const [userInfo, setUserInfo] = useState<UserInfo>({
     name: "Loading...",
     email: "Loading...",
@@ -156,60 +156,35 @@ export function SettingsScreen({ onNavigate, onLogout }: { onNavigate?: Settings
       let name = "User"
       let photo: string | null = null
 
-      // Try to fetch from dating profile first
-      if (!userProfileError && userProfile?.selected_path === 'dating') {
+      // Use mode prop to determine which profile table to query
+      // Mode is determined by the current context (which page/route we're on)
+      const currentMode = mode || 'dating' // Default to dating for backward compatibility
+
+      if (currentMode === 'dating') {
+        // ALWAYS fetch from dating_profile_full when in dating mode
         const { data: datingProfile, error: datingError } = await supabase
           .from('dating_profile_full')
           .select('name, photos')
           .eq('user_id', user.id)
-          .single()
+          .maybeSingle()
 
         if (!datingError && datingProfile) {
           name = datingProfile.name || name
           const photos = (datingProfile.photos as string[]) || []
           photo = photos.length > 0 ? photos[0] : null
         }
-      } 
-      // Try matrimony profile
-      else if (!userProfileError && userProfile?.selected_path === 'matrimony') {
+      } else if (currentMode === 'matrimony') {
+        // ALWAYS fetch from matrimony_profile_full when in matrimony mode
         const { data: matrimonyProfile, error: matrimonyError } = await supabase
           .from('matrimony_profile_full')
           .select('name, photos')
           .eq('user_id', user.id)
-          .single()
+          .maybeSingle()
 
         if (!matrimonyError && matrimonyProfile) {
           name = matrimonyProfile.name || name
           const photos = (matrimonyProfile.photos as string[]) || []
           photo = photos.length > 0 ? photos[0] : null
-        }
-      }
-      // If no path selected, try both
-      else {
-        // Try dating first
-        const { data: datingProfile } = await supabase
-          .from('dating_profile_full')
-          .select('name, photos')
-          .eq('user_id', user.id)
-          .maybeSingle()
-
-        if (datingProfile) {
-          name = datingProfile.name || name
-          const photos = (datingProfile.photos as string[]) || []
-          photo = photos.length > 0 ? photos[0] : null
-        } else {
-          // Try matrimony
-          const { data: matrimonyProfile } = await supabase
-            .from('matrimony_profile_full')
-            .select('name, photos')
-            .eq('user_id', user.id)
-            .maybeSingle()
-
-          if (matrimonyProfile) {
-            name = matrimonyProfile.name || name
-            const photos = (matrimonyProfile.photos as string[]) || []
-            photo = photos.length > 0 ? photos[0] : null
-          }
         }
       }
 

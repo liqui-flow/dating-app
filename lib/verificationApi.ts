@@ -360,13 +360,20 @@ export async function getUserProfile() {
       throw new Error('User not authenticated')
     }
 
+    // Explicitly select onboarding fields to ensure they are returned as booleans
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('*')
+      .select('*, onboarding_dating, onboarding_matrimony')
       .eq('user_id', user.id)
       .single()
 
     if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows returned
+
+    // Ensure boolean fields are explicitly boolean (not null/undefined)
+    if (data) {
+      data.onboarding_dating = data.onboarding_dating === true
+      data.onboarding_matrimony = data.onboarding_matrimony === true
+    }
 
     return { success: true, data }
   } catch (error: any) {

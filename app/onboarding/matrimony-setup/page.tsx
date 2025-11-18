@@ -9,7 +9,7 @@ export default function MatrimonySetupPage() {
   const router = useRouter()
   const [isCheckingProfile, setIsCheckingProfile] = useState(true)
 
-  // Check if user already completed onboarding
+  // Check if user already completed matrimony onboarding
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       try {
@@ -22,20 +22,19 @@ export default function MatrimonySetupPage() {
 
         const { data: profile, error } = await supabase
           .from('user_profiles')
-          .select('selected_path, onboarding_completed')
+          .select('onboarding_matrimony')
           .eq('user_id', user.id)
           .single()
 
-        if (!error && profile && profile.onboarding_completed) {
-          // User already completed onboarding, redirect to appropriate dashboard
-          if (profile.selected_path === 'dating') {
-            router.push('/dating/dashboard')
-          } else if (profile.selected_path === 'matrimony') {
-            router.push('/matrimony/discovery')
-          }
-        } else {
-          setIsCheckingProfile(false)
+        // Use onboarding_matrimony field, not selected_path or onboarding_completed
+        if (!error && profile && profile.onboarding_matrimony === true) {
+          // User already completed matrimony onboarding, redirect to discovery
+          router.push('/matrimony/discovery')
+          return
         }
+        
+        // Not completed or error, show setup page
+        setIsCheckingProfile(false)
       } catch (err) {
         console.error('Error checking onboarding status:', err)
         setIsCheckingProfile(false)

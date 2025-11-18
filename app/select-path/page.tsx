@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { PathSelect } from "@/components/onboarding/path-select"
 import { supabase } from "@/lib/supabaseClient"
 import { saveUserPath } from "@/lib/pathService"
+import { goToDating, goToMatrimony } from "@/lib/navigationUtils"
 
 export default function SelectPathPage() {
   const router = useRouter()
@@ -21,26 +22,7 @@ export default function SelectPathPage() {
           return
         }
 
-        // Check if user has completed onboarding
-        const { data: profile, error } = await supabase
-          .from('user_profiles')
-          .select('onboarding_completed')
-          .eq('user_id', user.id)
-          .single()
-
-        if (error || !profile) {
-          // No profile found, redirect to onboarding
-          router.push('/onboarding/verification')
-          return
-        }
-
-        if (profile.onboarding_completed !== true) {
-          // Onboarding not completed, redirect to onboarding
-          router.push('/onboarding/verification')
-          return
-        }
-
-        // User is authenticated and has completed onboarding, show path selection
+        // User is authenticated, show path selection
         setIsCheckingAuth(false)
       } catch (err) {
         console.error('Error checking auth:', err)
@@ -63,19 +45,19 @@ export default function SelectPathPage() {
       // Update the path in the database
       await saveUserPath(user.id, path)
 
-      // Redirect to the appropriate dashboard/discovery based on selected path
+      // Navigate based on onboarding status
       if (path === 'dating') {
-        router.push('/dating/dashboard')
+        await goToDating(router)
       } else {
-        router.push('/matrimony/discovery')
+        await goToMatrimony(router)
       }
     } catch (error) {
       console.error('Error selecting path:', error)
-      // Still redirect even if save fails
+      // On error, navigate based on path
       if (path === 'dating') {
-        router.push('/dating/dashboard')
+        await goToDating(router)
       } else {
-        router.push('/matrimony/discovery')
+        await goToMatrimony(router)
       }
     }
   }

@@ -17,6 +17,7 @@ interface ProfileViewProps {
   isOwnProfile?: boolean
   onEdit?: () => void
   userId?: string // Optional: if viewing another user's profile
+  mode?: 'dating' | 'matrimony' // Required: determines which profile table to use
 }
 
 function calculateAge(dob: string | null | undefined): number | null {
@@ -31,7 +32,7 @@ function calculateAge(dob: string | null | undefined): number | null {
   return age
 }
 
-export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileViewProps) {
+export function ProfileView({ isOwnProfile = false, onEdit, userId, mode }: ProfileViewProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [userPath, setUserPath] = useState<'dating' | 'matrimony' | null>(null)
@@ -65,15 +66,10 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileVie
 
       const targetUserId = userId || user.id
 
-      // Get user's path
-      const { data: userProfile } = await supabase
-        .from('user_profiles')
-        .select('selected_path')
-        .eq('user_id', targetUserId)
-        .single()
-
-      const path = userProfile?.selected_path as 'dating' | 'matrimony' | null
-      setUserPath(path)
+      // Use mode prop to determine which profile to load, NOT selected_path
+      // Mode is determined by the current context (which page/route we're on)
+      const currentMode = mode || 'dating' // Default to dating for backward compatibility
+      setUserPath(currentMode)
 
       // Check verification status
       const { data: verification } = await supabase
@@ -85,8 +81,8 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileVie
 
       setVerified(!!verification)
 
-      if (path === 'dating') {
-        // Fetch dating profile
+      if (currentMode === 'dating') {
+        // ALWAYS fetch from dating_profile_full when in dating mode
         const { data, error } = await supabase
           .from('dating_profile_full')
           .select('*')
@@ -96,8 +92,8 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileVie
         if (!error && data) {
           setDatingProfile(data as DatingProfileFull)
         }
-      } else if (path === 'matrimony') {
-        // Fetch matrimony profile
+      } else if (currentMode === 'matrimony') {
+        // ALWAYS fetch from matrimony_profile_full when in matrimony mode
         const { data, error } = await supabase
           .from('matrimony_profile_full')
           .select('*')
@@ -116,7 +112,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId }: ProfileVie
   }
 
   if (isEditing && isOwnProfile) {
-    return <EditProfile onBack={handleEditBack} onSave={handleEditSave} />
+    return <EditProfile mode={mode} onBack={handleEditBack} onSave={handleEditSave} />
   }
 
   if (loading) {

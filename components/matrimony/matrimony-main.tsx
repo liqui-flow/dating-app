@@ -425,6 +425,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
 
       {currentScreen === "profile" && (
         <SettingsScreen
+          mode="matrimony"
           onNavigate={(id) => {
             if (id === "profile") setCurrentScreen("edit-profile")
             else if (id === "premium") setCurrentScreen("premium")
@@ -437,6 +438,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       {currentScreen === "edit-profile" && (
         <div className="p-0 pb-0 mt-0">
           <EditProfile
+            mode="matrimony"
             onBack={() => setCurrentScreen("profile")}
             onSave={() => {
               // Profile will refresh automatically

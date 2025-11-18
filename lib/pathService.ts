@@ -119,17 +119,29 @@ export async function upsertUserPath(
 }
 
 /**
- * Mark user's onboarding as completed
+ * Mark user's onboarding as completed for the specified path
+ * Sets onboarding_dating or onboarding_matrimony based on path
  */
 export async function completeOnboarding(userId: string, path: PathType) {
   try {
+    const updateData: any = {
+      selected_path: path,
+      onboarding_completed_at: new Date().toISOString()
+    }
+
+    // Set the appropriate onboarding field based on path
+    if (path === 'dating') {
+      updateData.onboarding_dating = true
+    } else if (path === 'matrimony') {
+      updateData.onboarding_matrimony = true
+    }
+
+    // Also set onboarding_completed for backward compatibility
+    updateData.onboarding_completed = true
+
     const { data, error } = await supabase
       .from('user_profiles')
-      .update({
-        onboarding_completed: true,
-        onboarding_completed_at: new Date().toISOString(),
-        selected_path: path
-      })
+      .update(updateData)
       .eq('user_id', userId)
       .select()
       .single()

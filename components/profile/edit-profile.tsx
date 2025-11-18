@@ -22,6 +22,7 @@ import { uploadAsset } from "@/lib/matrimonyService"
 interface EditProfileProps {
   onBack: () => void
   onSave?: () => void
+  mode?: 'dating' | 'matrimony' // Required: determines which profile table to use
 }
 
 const photoPrompts = [
@@ -63,7 +64,7 @@ const intentions = [
   "New friends and connections",
 ]
 
-export function EditProfile({ onBack, onSave }: EditProfileProps) {
+export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [userPath, setUserPath] = useState<'dating' | 'matrimony' | null>(null)
@@ -104,17 +105,13 @@ export function EditProfile({ onBack, onSave }: EditProfileProps) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Get user's path
-      const { data: userProfile } = await supabase
-        .from('user_profiles')
-        .select('selected_path')
-        .eq('user_id', user.id)
-        .single()
+      // Use mode prop to determine which profile to load, NOT selected_path
+      // Mode is determined by the current context (which page/route we're on)
+      const currentMode = mode || 'dating' // Default to dating for backward compatibility
+      setUserPath(currentMode)
 
-      const path = userProfile?.selected_path as 'dating' | 'matrimony' | null
-      setUserPath(path)
-
-      if (path === 'dating') {
+      if (currentMode === 'dating') {
+        // ALWAYS fetch from dating_profile_full when in dating mode
         const { data, error } = await supabase
           .from('dating_profile_full')
           .select('*')
@@ -149,7 +146,8 @@ export function EditProfile({ onBack, onSave }: EditProfileProps) {
           setDatingAgeRange([prefs.min_age || 21, prefs.max_age || 35])
           setDatingDistance([prefs.max_distance || 25])
         }
-      } else if (path === 'matrimony') {
+      } else if (currentMode === 'matrimony') {
+        // ALWAYS fetch from matrimony_profile_full when in matrimony mode
         const { data, error } = await supabase
           .from('matrimony_profile_full')
           .select('*')

@@ -141,6 +141,7 @@ export function AppMain() {
       case "profile":
         return (
           <SettingsScreen
+            mode="dating"
             onNavigate={(id) => {
               if (id === "profile") handleNavigation("edit-profile")
               else if (id === "premium") handleNavigation("premium")
@@ -157,6 +158,7 @@ export function AppMain() {
       case "edit-profile":
         return (
           <EditProfile
+            mode="dating"
             onBack={() => handleNavigation("profile")}
             onSave={() => {
               // Profile will refresh automatically
@@ -191,7 +193,7 @@ export function AppMain() {
       case "premium-features":
         return <PremiumFeatures onBack={() => handleNavigation("profile")} />
       case "my-profile":
-        return <ProfileView isOwnProfile onEdit={() => handleNavigation("profile-setup")} />
+        return <ProfileView mode="dating" isOwnProfile onEdit={() => handleNavigation("profile-setup")} />
       case "app-settings":
         return (
           <AppSettings
