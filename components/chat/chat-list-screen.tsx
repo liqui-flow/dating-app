@@ -9,11 +9,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
-import { getDatingMatches, type Match } from "@/lib/matchmakingService"
+import { getDatingMatches, getMatrimonyMatches, type Match } from "@/lib/matchmakingService"
 import { supabase } from "@/lib/supabaseClient"
+import { getLastMessage, getUnreadCount } from "@/lib/chatService"
 
 interface ChatPreview {
-  id: string
+  matchId: string
+  matchType: 'dating' | 'matrimony'
   name: string
   avatar: string
   lastMessage: string
@@ -25,7 +27,7 @@ interface ChatPreview {
 }
 
 interface ChatListScreenProps {
-  onChatClick?: (chatId: string) => void
+  onChatClick?: (matchId: string) => void
 }
 
 export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
@@ -42,22 +44,62 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
           return
         }
 
-        const matches = await getDatingMatches(user.id)
-        
-        // Convert matches to chat previews
-        const chatPreviews: ChatPreview[] = matches.map((match) => ({
-          id: match.matchedUserId,
-          name: match.matchedUserName,
-          avatar: match.matchedUserPhoto || "/placeholder-user.jpg",
-          lastMessage: "You matched! Start the conversation.",
-          timestamp: formatRelativeTime(match.matchedAt),
-          unreadCount: 0, // TODO: Implement unread message count
-          isOnline: false, // TODO: Implement online status
-          isMatch: true,
-          isPremium: false, // TODO: Get premium status from profile
-        }))
+        // Load both dating and matrimony matches
+        const [datingMatches, matrimonyMatches] = await Promise.all([
+          getDatingMatches(user.id),
+          getMatrimonyMatches(user.id),
+        ])
 
-        setChats(chatPreviews)
+        // Process dating matches
+        const datingChats = await Promise.all(
+          datingMatches.map(async (match) => {
+            const lastMessage = await getLastMessage(match.id)
+            const unreadCount = await getUnreadCount(match.id, user.id)
+
+            return {
+              matchId: match.id,
+              matchType: 'dating' as const,
+              name: match.matchedUserName,
+              avatar: match.matchedUserPhoto || "/placeholder-user.jpg",
+              lastMessage: lastMessage?.content || "You matched! Start the conversation.",
+              timestamp: lastMessage?.created_at || match.matchedAt,
+              unreadCount,
+              isOnline: false, // TODO: Implement online status
+              isMatch: true,
+              isPremium: false, // TODO: Get premium status from profile
+            }
+          })
+        )
+
+        // Process matrimony matches
+        const matrimonyChats = await Promise.all(
+          matrimonyMatches.map(async (match) => {
+            const lastMessage = await getLastMessage(match.id)
+            const unreadCount = await getUnreadCount(match.id, user.id)
+
+            return {
+              matchId: match.id,
+              matchType: 'matrimony' as const,
+              name: match.matchedUserName,
+              avatar: match.matchedUserPhoto || "/placeholder-user.jpg",
+              lastMessage: lastMessage?.content || "You matched! Start the conversation.",
+              timestamp: lastMessage?.created_at || match.matchedAt,
+              unreadCount,
+              isOnline: false, // TODO: Implement online status
+              isMatch: true,
+              isPremium: false, // TODO: Get premium status from profile
+            }
+          })
+        )
+
+        // Combine and sort by timestamp (most recent first)
+        const allChats = [...datingChats, ...matrimonyChats].sort((a, b) => {
+          const timeA = new Date(a.timestamp).getTime()
+          const timeB = new Date(b.timestamp).getTime()
+          return timeB - timeA
+        })
+
+        setChats(allChats)
       } catch (error) {
         console.error('Error loading matches:', error)
       } finally {
@@ -88,10 +130,6 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
       chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()),
   )
-
-  const formatTimestamp = (timestamp: string) => {
-    return timestamp
-  }
 
   if (loading) {
     return (
@@ -146,9 +184,9 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
           <div className="space-y-3">
             {filteredChats.map((chat) => (
               <div
-                key={chat.id}
+                key={chat.matchId}
                 className="bg-white/15 border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/20 transition-all duration-200 cursor-pointer"
-                onClick={() => onChatClick?.(chat.id)}
+                onClick={() => onChatClick?.(chat.matchId)}
               >
                 <div className="flex items-center space-x-3">
                   {/* Avatar */}
@@ -175,7 +213,7 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
                         {chat.isMatch && <Heart className="w-3 h-3 text-pink-400 fill-current" />}
                       </div>
                       <div className="flex items-center space-x-2 flex-shrink-0">
-                        <span className="text-xs text-white/60">{formatTimestamp(chat.timestamp)}</span>
+                        <span className="text-xs text-white/60">{formatRelativeTime(chat.timestamp)}</span>
                         {chat.unreadCount > 0 && (
                           <Badge className="w-5 h-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white border border-white/30">
                             {chat.unreadCount}

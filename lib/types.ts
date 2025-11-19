@@ -68,4 +68,17 @@ export interface VerificationPayload {
   idDocUrl?: string
 }
 
+// Chat message types
+export interface Message {
+  id: string
+  match_id: string
+  sender_id: string
+  receiver_id: string
+  content: string
+  created_at: string
+  delivered_at: string | null
+  seen_at: string | null
+  match_type: 'dating' | 'matrimony'
+}
+
 

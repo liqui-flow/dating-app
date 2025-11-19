@@ -10,15 +10,16 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Phone, Video, MoreVertical, Send, ImageIcon, Smile, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
-
-interface Message {
-  id: string
-  text: string
-  timestamp: string
-  isOwn: boolean
-  isRead: boolean
-  type: "text" | "image" | "match"
-}
+import { supabase } from "@/lib/supabaseClient"
+import {
+  getMessages,
+  sendMessage as sendMessageService,
+  markDelivered,
+  markSeen,
+  subscribeToMessages,
+} from "@/lib/chatService"
+import type { Message } from "@/lib/types"
+import { RealtimeChannel } from "@supabase/supabase-js"
 
 interface ChatUser {
   id: string
@@ -29,126 +30,234 @@ interface ChatUser {
   isPremium: boolean
 }
 
-// Mock data for different chat users
-const mockChatUsers: Record<string, ChatUser> = {
-  "1": {
-    id: "1",
-    name: "Priya",
-    avatar: "/indian-woman-professional.png",
-    isOnline: true,
-    isPremium: false,
-  },
-  "2": {
-    id: "2",
-    name: "Ananya",
-    avatar: "/professional-woman-smiling.png",
-    isOnline: false,
-    lastSeen: "1h ago",
-    isPremium: true,
-  },
-  "3": {
-    id: "3",
-    name: "Kavya",
-    avatar: "/woman-hiking.png",
-    isOnline: true,
-    isPremium: false,
-  },
-  "4": {
-    id: "4",
-    name: "Riya",
-    avatar: "/woman-at-coffee-shop.png",
-    isOnline: false,
-    lastSeen: "1d ago",
-    isPremium: false,
-  },
-  "5": {
-    id: "5",
-    name: "Sneha",
-    avatar: "/woman-with-family.jpg",
-    isOnline: true,
-    isPremium: false,
-  },
-  "6": {
-    id: "6",
-    name: "Meera",
-    avatar: "/casual-outdoor-photo.jpg",
-    isOnline: false,
-    lastSeen: "3d ago",
-    isPremium: true,
-  },
-  "7": {
-    id: "7",
-    name: "Aisha",
-    avatar: "/professional-headshot.png",
-    isOnline: false,
-    lastSeen: "4d ago",
-    isPremium: false,
-  },
-}
-
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    text: "It's a match! 🎉",
-    timestamp: "2h ago",
-    isOwn: false,
-    isRead: true,
-    type: "match",
-  },
-  {
-    id: "2",
-    text: "Hey! Thanks for the like. How's your day going?",
-    timestamp: "2h ago",
-    isOwn: false,
-    isRead: true,
-    type: "text",
-  },
-  {
-    id: "3",
-    text: "Hi Priya! My day's been great, thanks for asking. I love your travel photos - where was that mountain shot taken?",
-    timestamp: "1h ago",
-    isOwn: true,
-    isRead: true,
-    type: "text",
-  },
-  {
-    id: "4",
-    text: "That was from my trip to Himachal Pradesh last month! The view was absolutely breathtaking 🏔️",
-    timestamp: "45m ago",
-    isOwn: false,
-    isRead: true,
-    type: "text",
-  },
-  {
-    id: "5",
-    text: "Wow, that sounds amazing! I've been wanting to plan a mountain trip. Any recommendations?",
-    timestamp: "30m ago",
-    isOwn: true,
-    isRead: true,
-    type: "text",
-  },
-  {
-    id: "6",
-    text: "Definitely! Manali and Kasol are must-visits. I can share some hidden gems if you're interested 😊",
-    timestamp: "2m ago",
-    isOwn: false,
-    isRead: false,
-    type: "text",
-  },
-]
-
 interface ChatScreenProps {
-  chatId?: string
+  matchId?: string
   onBack?: () => void
 }
 
-export function ChatScreen({ chatId = "1", onBack }: ChatScreenProps) {
-  const [messages, setMessages] = useState<Message[]>(mockMessages)
+export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
+  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [chatUser, setChatUser] = useState<ChatUser | null>(null)
+  const [matchType, setMatchType] = useState<'dating' | 'matrimony'>('dating')
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
-  const chatUser = mockChatUsers[chatId]
+  const channelRef = useRef<RealtimeChannel | null>(null)
+
+  // Format timestamp to relative time
+  const formatTimestamp = (timestamp: string): string => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return "Just now"
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString()
+  }
+
+  // Get delivery/read status indicator
+  const getStatusIndicator = (message: Message, isOwn: boolean) => {
+    if (!isOwn) return null
+
+    if (message.seen_at) {
+      return (
+        <div className="w-4 h-4 rounded-full flex items-center justify-center text-blue-400">
+          <div className="w-2 h-2 rounded-full bg-current" />
+        </div>
+      )
+    } else if (message.delivered_at) {
+      return (
+        <div className="w-4 h-4 rounded-full flex items-center justify-center text-white/70">
+          <div className="w-2 h-2 rounded-full bg-current" />
+        </div>
+      )
+    } else {
+      return (
+        <div className="w-4 h-4 rounded-full flex items-center justify-center text-white/50">
+          <div className="w-2 h-2 rounded-full bg-current" />
+        </div>
+      )
+    }
+  }
+
+  // Load match and user info
+  useEffect(() => {
+    async function loadMatchInfo() {
+      if (!matchId) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          setLoading(false)
+          return
+        }
+
+        setCurrentUserId(user.id)
+
+        // Get match info from dating_matches first
+        let { data: matchData, error: matchError } = await supabase
+          .from('dating_matches')
+          .select('user1_id, user2_id')
+          .eq('id', matchId)
+          .eq('is_active', true)
+          .single()
+
+        let otherUserId: string | null = null
+        let currentMatchType: 'dating' | 'matrimony' = 'dating'
+
+        if (matchError || !matchData) {
+          // Try matrimony_matches
+          const { data: matrimonyMatch, error: matrimonyError } = await supabase
+            .from('matrimony_matches')
+            .select('user1_id, user2_id')
+            .eq('id', matchId)
+            .eq('is_active', true)
+            .single()
+
+          if (matrimonyError || !matrimonyMatch) {
+            console.error('Match not found')
+            setLoading(false)
+            return
+          }
+
+          matchData = matrimonyMatch
+          currentMatchType = 'matrimony'
+        }
+
+        setMatchType(currentMatchType)
+
+        // Determine other user ID
+        if (matchData.user1_id === user.id) {
+          otherUserId = matchData.user2_id
+        } else if (matchData.user2_id === user.id) {
+          otherUserId = matchData.user1_id
+        } else {
+          console.error('User is not part of this match')
+          setLoading(false)
+          return
+        }
+
+        if (!otherUserId) {
+          setLoading(false)
+          return
+        }
+
+        // Get other user's profile
+        const profileTable = currentMatchType === 'dating' ? 'dating_profile_full' : 'matrimony_profile_full'
+        const { data: profile, error: profileError } = await supabase
+          .from(profileTable)
+          .select('name, photos')
+          .eq('user_id', otherUserId)
+          .single()
+
+        if (profileError) {
+          console.error('Error loading profile:', profileError)
+        }
+
+        setChatUser({
+          id: otherUserId,
+          name: profile?.name || 'Unknown',
+          avatar: (profile?.photos as string[])?.[0] || '/placeholder-user.jpg',
+          isOnline: false, // TODO: Implement online status
+          isPremium: false, // TODO: Get premium status
+        })
+
+        // Load messages
+        const loadedMessages = await getMessages(matchId, user.id)
+        setMessages(loadedMessages)
+
+        // Mark messages as seen
+        await markSeen(matchId, user.id)
+
+        // Mark received messages as delivered
+        for (const msg of loadedMessages) {
+          if (msg.receiver_id === user.id && !msg.delivered_at) {
+            await markDelivered(msg.id, user.id)
+          }
+        }
+
+        setLoading(false)
+      } catch (error) {
+        console.error('Error loading match info:', error)
+        setLoading(false)
+      }
+    }
+
+    loadMatchInfo()
+  }, [matchId])
+
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!matchId || !currentUserId) return
+
+    // Cleanup previous subscription
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
+    }
+
+    const channel = subscribeToMessages(
+      matchId,
+      {
+        onInsert: async (message: Message) => {
+          setMessages((prev) => {
+            // Avoid duplicates
+            if (prev.some((m) => m.id === message.id)) {
+              return prev
+            }
+            return [...prev, message]
+          })
+
+          // Mark as delivered if we're the receiver
+          if (message.receiver_id === currentUserId && !message.delivered_at) {
+            await markDelivered(message.id, currentUserId)
+          }
+        },
+        onUpdate: (message: Message) => {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === message.id ? message : m))
+          )
+        },
+        onError: (error) => {
+          console.error('Realtime subscription error:', error)
+        },
+      }
+    )
+
+    channelRef.current = channel
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+    }
+  }, [matchId, currentUserId])
+
+  // Mark messages as seen when component is visible
+  useEffect(() => {
+    if (!matchId || !currentUserId) return
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        markSeen(matchId, currentUserId)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [matchId, currentUserId])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -158,49 +267,47 @@ export function ChatScreen({ chatId = "1", onBack }: ChatScreenProps) {
     scrollToBottom()
   }, [messages])
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const message: Message = {
-        id: Date.now().toString(),
-        text: newMessage,
-        timestamp: "now",
-        isOwn: true,
-        isRead: false,
-        type: "text",
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !matchId || !currentUserId || !chatUser) return
+
+    const messageContent = newMessage.trim()
+    setNewMessage("")
+
+    try {
+      // Optimistic update
+      const tempMessage: Message = {
+        id: `temp-${Date.now()}`,
+        match_id: matchId,
+        sender_id: currentUserId,
+        receiver_id: chatUser.id,
+        content: messageContent,
+        created_at: new Date().toISOString(),
+        delivered_at: null,
+        seen_at: null,
+        match_type: matchType,
       }
-      setMessages([...messages, message])
-      setNewMessage("")
-      
-      // Show typing indicator
-      setIsTyping(true)
-      
-      // Auto-reply with various responses after 1-3 seconds
-      const autoReplies = [
-        "hi",
-        "hey there! 😊",
-        "that's interesting!",
-        "tell me more!",
-        "I love that!",
-        "sounds great!",
-        "really? that's awesome!",
-        "I totally agree!",
-        "that's so cool!",
-        "amazing! 🤩"
-      ]
-      
-      setTimeout(() => {
-        setIsTyping(false)
-        const randomReply = autoReplies[Math.floor(Math.random() * autoReplies.length)]
-        const autoReply: Message = {
-          id: (Date.now() + 1).toString(),
-          text: randomReply,
-          timestamp: "now",
-          isOwn: false,
-          isRead: false,
-          type: "text",
-        }
-        setMessages(prev => [...prev, autoReply])
-      }, Math.random() * 2000 + 1000) // Random delay between 1-3 seconds
+
+      setMessages((prev) => [...prev, tempMessage])
+
+      // Send message
+      const sentMessage = await sendMessageService(
+        matchId,
+        currentUserId,
+        chatUser.id,
+        messageContent,
+        matchType
+      )
+
+      // Replace temp message with real one
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempMessage.id ? sentMessage : m))
+      )
+    } catch (error) {
+      console.error('Error sending message:', error)
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter((m) => !m.id.startsWith('temp-')))
+      // Restore message text
+      setNewMessage(messageContent)
     }
   }
 
@@ -209,6 +316,38 @@ export function ChatScreen({ chatId = "1", onBack }: ChatScreenProps) {
       e.preventDefault()
       handleSendMessage()
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col h-screen relative">
+        <StaticBackground />
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading chat...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!matchId || !chatUser) {
+    return (
+      <div className="flex flex-col h-screen relative">
+        <StaticBackground />
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center space-y-4">
+            <p className="text-sm text-muted-foreground">Chat not found</p>
+            {onBack && (
+              <Button onClick={onBack} variant="outline">
+                Go Back
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -234,27 +373,27 @@ export function ChatScreen({ chatId = "1", onBack }: ChatScreenProps) {
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <Avatar className="w-12 h-12">
-                  <AvatarImage src={chatUser?.avatar || "/placeholder.svg"} alt={chatUser?.name || "User"} />
-                  <AvatarFallback className="text-lg">{chatUser?.name?.[0] || "U"}</AvatarFallback>
+                  <AvatarImage src={chatUser.avatar || "/placeholder.svg"} alt={chatUser.name} />
+                  <AvatarFallback className="text-lg">{chatUser.name[0] || "U"}</AvatarFallback>
                 </Avatar>
-                {chatUser?.isOnline && (
+                {chatUser.isOnline && (
                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-background rounded-full" />
                 )}
               </div>
 
               <div>
                 <div className="flex items-center space-x-2">
-                  <h2 className="font-bold text-lg text-foreground">{chatUser?.name || "User"}</h2>
-                  {chatUser?.isPremium && (
+                  <h2 className="font-bold text-lg text-foreground">{chatUser.name}</h2>
+                  {chatUser.isPremium && (
                     <Badge className="bg-[#4A0E0E] text-white text-xs px-2 py-0">
                       Premium
                     </Badge>
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${chatUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                  <div className={`w-2 h-2 rounded-full ${chatUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
                   <p className="text-sm text-muted-foreground">
-                    {isTyping ? "typing..." : chatUser?.isOnline ? "Online now" : `Last seen ${chatUser?.lastSeen || 'recently'}`}
+                    {isTyping ? "typing..." : chatUser.isOnline ? "Online now" : `Last seen ${chatUser.lastSeen || 'recently'}`}
                   </p>
                 </div>
               </div>
@@ -277,52 +416,47 @@ export function ChatScreen({ chatId = "1", onBack }: ChatScreenProps) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
-        <div className="space-y-3">
-          {messages.map((message, index) => (
-            <div key={message.id} className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
-              {message.type === "match" ? (
-                <div className="flex justify-center my-3">
-                  <div className="bg-gradient-to-r from-pink-500/20 to-red-500/20 text-primary px-4 py-3 rounded-full text-sm font-medium flex items-center space-x-2 shadow-lg animate-pulse">
-                    <Heart className="w-4 h-4 fill-current animate-bounce" />
-                    <span>{message.text}</span>
-                  </div>
-                </div>
-              ) : (
-                <div className={cn("flex mb-3", message.isOwn ? "justify-end" : "justify-start")}>
-                  <div
-                    className={cn(
-                      "max-w-[85%] sm:max-w-[80%] px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl",
-                      "backdrop-blur-sm border",
-                      message.isOwn
-                        ? "bg-white/20 border-white/30 text-white rounded-br-md"
-                        : "bg-white/15 border-white/20 text-white rounded-bl-md",
-                    )}
-                  >
-                    <p className="text-sm leading-relaxed">{message.text}</p>
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center p-8">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+              <Heart className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">It's a Match!</h3>
+            <p className="text-muted-foreground text-sm">Start the conversation with {chatUser.name}</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {messages.map((message, index) => {
+              const isOwn = message.sender_id === currentUserId
+              return (
+                <div key={message.id} className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                  <div className={cn("flex mb-3", isOwn ? "justify-end" : "justify-start")}>
                     <div
                       className={cn(
-                        "flex items-center justify-end space-x-1 mt-2",
-                        message.isOwn ? "text-white/70" : "text-white/60",
+                        "max-w-[85%] sm:max-w-[80%] px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl",
+                        "backdrop-blur-sm border",
+                        isOwn
+                          ? "bg-white/20 border-white/30 text-white rounded-br-md"
+                          : "bg-white/15 border-white/20 text-white rounded-bl-md",
                       )}
                     >
-                      <span className="text-xs">{message.timestamp}</span>
-                      {message.isOwn && (
-                        <div
-                          className={cn(
-                            "w-4 h-4 rounded-full flex items-center justify-center transition-colors",
-                            message.isRead ? "text-white/70" : "text-white/50",
-                          )}
-                        >
-                          <div className="w-2 h-2 rounded-full bg-current" />
-                        </div>
-                      )}
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                      <div
+                        className={cn(
+                          "flex items-center justify-end space-x-1 mt-2",
+                          isOwn ? "text-white/70" : "text-white/60",
+                        )}
+                      >
+                        <span className="text-xs">{formatTimestamp(message.created_at)}</span>
+                        {getStatusIndicator(message, isOwn)}
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+              )
+            })}
+          </div>
+        )}
         
         {/* Typing Indicator */}
         {isTyping && (

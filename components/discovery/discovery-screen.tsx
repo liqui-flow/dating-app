@@ -48,9 +48,10 @@ function calculateAge(dob: string): number {
 interface DiscoveryScreenProps {
 	openFiltersOnMount?: boolean
 	onBackToProfile?: () => void
+	onStartChat?: (matchId: string) => void
 }
 
-export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }: DiscoveryScreenProps = {}) {
+export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, onStartChat }: DiscoveryScreenProps = {}) {
 	const [viewMode, setViewMode] = useState<ViewMode>("cards")
 	const [currentCardIndex, setCurrentCardIndex] = useState(0)
 	const [showFilters, setShowFilters] = useState(openFiltersOnMount)
@@ -62,6 +63,7 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 	const [error, setError] = useState<string | null>(null)
 	const [showMatchNotification, setShowMatchNotification] = useState(false)
 	const [matchedProfile, setMatchedProfile] = useState<Profile | null>(null)
+	const [matchedMatchId, setMatchedMatchId] = useState<string | null>(null)
 
 	// Fetch profiles from Supabase
 	const fetchProfiles = async () => {
@@ -345,8 +347,9 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 				console.log('[handleLike] Match detected!', result.matchId)
 				// Show match notification
 				const matchedProfileData = profiles.find(p => p.id === profileId)
-				if (matchedProfileData) {
+				if (matchedProfileData && result.matchId) {
 					setMatchedProfile(matchedProfileData)
+					setMatchedMatchId(result.matchId)
 					setShowMatchNotification(true)
 				}
 			}
@@ -523,11 +526,14 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile }:
 						age: matchedProfile.age,
 						mutualInterests: matchedProfile.interests || []
 					}}
-					onStartChat={() => {
-						setShowMatchNotification(false)
-						// TODO: Navigate to chat screen with matched user
-						console.log("Start chat with:", matchedProfile.id)
-					}}
+				onStartChat={() => {
+					setShowMatchNotification(false)
+					if (matchedMatchId && onStartChat) {
+						onStartChat(matchedMatchId)
+					} else {
+						console.log("Start chat with matchId:", matchedMatchId)
+					}
+				}}
 					onKeepSwiping={() => {
 						setShowMatchNotification(false)
 						setMatchedProfile(null)

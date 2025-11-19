@@ -44,7 +44,7 @@ interface AppState {
   activeTab: string
   showMatch: boolean
   showSuperLike: boolean
-  chatUserId?: string
+  chatMatchId?: string
   selectedPlanId?: string
 }
 
@@ -82,11 +82,11 @@ export function AppMain() {
     }))
   }
 
-  const handleNavigation = (screen: Screen, options?: { chatUserId?: string }) => {
+  const handleNavigation = (screen: Screen, options?: { chatMatchId?: string }) => {
     setAppState((prev) => ({
       ...prev,
       currentScreen: screen,
-      chatUserId: options?.chatUserId,
+      chatMatchId: options?.chatMatchId,
     }))
   }
 
@@ -101,17 +101,29 @@ export function AppMain() {
   const renderScreen = () => {
     switch (appState.currentScreen) {
       case "discover":
-        return <DiscoveryScreen />
-      case "search":
-        return <SearchScreen />
-      case "explore":
-        return <DiscoveryScreen />
-      case "messages":
-        return <ChatListScreen onChatClick={(chatId) => {
+        return <DiscoveryScreen onStartChat={(matchId) => {
           setAppState(prev => ({
             ...prev,
             currentScreen: "chat",
-            chatUserId: chatId
+            chatMatchId: matchId
+          }))
+        }} />
+      case "search":
+        return <SearchScreen />
+      case "explore":
+        return <DiscoveryScreen onStartChat={(matchId) => {
+          setAppState(prev => ({
+            ...prev,
+            currentScreen: "chat",
+            chatMatchId: matchId
+          }))
+        }} />
+      case "messages":
+        return <ChatListScreen onChatClick={(matchId) => {
+          setAppState(prev => ({
+            ...prev,
+            currentScreen: "chat",
+            chatMatchId: matchId
           }))
         }} />
       case "activity":
@@ -120,8 +132,8 @@ export function AppMain() {
             onProfileClick={(userId) => {
               handleNavigation("my-profile")
             }}
-            onMatchClick={(userId) => {
-              handleNavigation("chat", { chatUserId: userId })
+            onMatchClick={(matchId) => {
+              handleNavigation("chat", { chatMatchId: matchId })
             }}
           />
         )
@@ -129,7 +141,7 @@ export function AppMain() {
         return (
           <div className="fixed inset-0 z-50">
             <ChatScreen 
-              chatId={appState.chatUserId} 
+              matchId={appState.chatMatchId} 
               onBack={() => setAppState(prev => ({
                 ...prev,
                 currentScreen: "messages",
@@ -260,11 +272,11 @@ export function AppMain() {
             mutualInterests: ["Travel", "Photography", "Yoga"],
           }}
           onStartChat={() => {
+            // TODO: Get matchId from match notification
+            // For now, this is handled by discovery screen
             setAppState((prev) => ({
               ...prev,
               showMatch: false,
-              currentScreen: "chat",
-              chatUserId: "1",
             }))
           }}
           onKeepSwiping={() => setAppState((prev) => ({ ...prev, showMatch: false }))}

@@ -19,7 +19,7 @@ import {
 
 interface ActivityScreenProps {
   onProfileClick?: (userId: string) => void
-  onMatchClick?: (userId: string) => void
+  onMatchClick?: (matchId: string) => void
   mode?: 'dating' | 'matrimony'
 }
 
@@ -95,7 +95,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating' }
           // Optionally navigate to chat
           if (result.matchId && onMatchClick) {
             setTimeout(() => {
-              onMatchClick(activity.userId)
+              onMatchClick(result.matchId)
             }, 500)
           }
         } else {
@@ -260,9 +260,17 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating' }
               <div
                 key={activity.id}
                 className="bg-white/15 border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/20 transition-all duration-200 cursor-pointer"
-                onClick={() => {
+                onClick={async () => {
                   if (activity.type === 'match') {
-                    onMatchClick?.(activity.userId)
+                    // Get matchId from database
+                    const { data: { user } } = await supabase.auth.getUser()
+                    if (user) {
+                      const { getMatchIdAuto } = await import('@/lib/chatService')
+                      const matchInfo = await getMatchIdAuto(user.id, activity.userId)
+                      if (matchInfo && onMatchClick) {
+                        onMatchClick(matchInfo.matchId)
+                      }
+                    }
                   } else {
                     onProfileClick?.(activity.userId)
                   }
