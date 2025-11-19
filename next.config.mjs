@@ -1,19 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone", // ✅ Needed for Render deployment
+  output: "standalone",
 
   eslint: {
     ignoreDuringBuilds: true,
   },
+
   typescript: {
     ignoreBuildErrors: true,
   },
+
   images: {
     unoptimized: true,
-  },
-
-  experimental: {
-    serverActions: true,
   },
 };
 
