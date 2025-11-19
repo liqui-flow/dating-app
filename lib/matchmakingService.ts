@@ -493,6 +493,91 @@ export async function getDatingLikesReceived(userId: string): Promise<ActivityIt
 }
 
 /**
+ * Get likes received by a user for matrimony (people who liked them)
+ */
+export async function getMatrimonyLikesReceived(userId: string): Promise<ActivityItem[]> {
+  try {
+    console.log('[getMatrimonyLikesReceived] Fetching likes received for user:', userId)
+    
+    // Get likes where user is the liked_id
+    const { data: likes, error } = await supabase
+      .from('matrimony_likes')
+      .select('id, liker_id, action, created_at')
+      .eq('liked_id', userId)
+      .in('action', ['like', 'connect'])
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('[getMatrimonyLikesReceived] Error:', error)
+      throw error
+    }
+
+    if (!likes || likes.length === 0) {
+      console.log('[getMatrimonyLikesReceived] No likes received')
+      return []
+    }
+
+    // Check which likes the user has already liked back
+    const { data: userLikes } = await supabase
+      .from('matrimony_likes')
+      .select('liked_id')
+      .eq('liker_id', userId)
+      .in('action', ['like', 'connect'])
+
+    const likedBackUserIds = new Set(userLikes?.map(l => l.liked_id) || [])
+
+    // Get profiles for all likers
+    const likerIds = likes.map(l => l.liker_id)
+    const { data: profiles, error: profilesError } = await supabase
+      .from('matrimony_profile_full')
+      .select('user_id, name, photos, age')
+      .in('user_id', likerIds)
+
+    if (profilesError) {
+      console.error('[getMatrimonyLikesReceived] Error fetching profiles:', profilesError)
+      return []
+    }
+
+    // Create a map of user_id to profile
+    const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || [])
+
+    // Format activities, excluding ones where user already liked back (those become matches)
+    const activities: ActivityItem[] = []
+    const now = new Date()
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+
+    for (const like of likes) {
+      // Skip if user already liked back (this would be a match, not a like)
+      if (likedBackUserIds.has(like.liker_id)) {
+        continue
+      }
+
+      const profile = profileMap.get(like.liker_id)
+      if (!profile) continue
+
+      const createdAt = new Date(like.created_at)
+      const isNew = createdAt > oneDayAgo
+
+      activities.push({
+        id: like.id,
+        type: 'like',
+        name: profile.name || 'Unknown',
+        avatar: (profile.photos as string[])?.[0] || '/placeholder-user.jpg',
+        age: profile.age || undefined,
+        timestamp: like.created_at,
+        isNew,
+        userId: like.liker_id
+      })
+    }
+
+    return activities
+  } catch (error: any) {
+    console.error('[getMatrimonyLikesReceived] Error:', error)
+    return []
+  }
+}
+
+/**
  * Format timestamp to relative time (e.g., "2m ago", "1h ago")
  */
 function formatTimestamp(timestamp: string): string {
@@ -581,6 +666,65 @@ export async function getDatingActivity(userId: string): Promise<ActivityItem[]>
     return activities.map(({ originalTimestamp, ...item }) => item)
   } catch (error: any) {
     console.error('[getDatingActivity] Error:', error)
+    return []
+  }
+}
+
+/**
+ * Get all activity for matrimony (matches + likes received)
+ */
+export async function getMatrimonyActivity(userId: string): Promise<ActivityItem[]> {
+  try {
+    console.log('[getMatrimonyActivity] Fetching activity for user:', userId)
+    
+    // Fetch matches and likes received in parallel
+    const [matches, likesReceived] = await Promise.all([
+      getMatrimonyMatches(userId),
+      getMatrimonyLikesReceived(userId)
+    ])
+
+    const activities: (ActivityItem & { originalTimestamp: string })[] = []
+    const now = new Date()
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+
+    // Convert matches to activity items
+    for (const match of matches) {
+      const matchedAt = new Date(match.matchedAt)
+      const isNew = matchedAt > oneDayAgo
+
+      activities.push({
+        id: match.id,
+        type: 'match',
+        name: match.matchedUserName,
+        avatar: match.matchedUserPhoto || '/placeholder-user.jpg',
+        age: undefined, // Matrimony matches don't have dob in Match interface, but age is in profile
+        timestamp: formatTimestamp(match.matchedAt),
+        isNew,
+        userId: match.matchedUserId,
+        originalTimestamp: match.matchedAt
+      })
+    }
+
+    // Add likes received (they already have formatted timestamps, but we need original for sorting)
+    for (const like of likesReceived) {
+      activities.push({
+        ...like,
+        timestamp: formatTimestamp(like.timestamp),
+        originalTimestamp: like.timestamp
+      })
+    }
+
+    // Sort by original timestamp (newest first)
+    activities.sort((a, b) => {
+      const timeA = new Date(a.originalTimestamp).getTime()
+      const timeB = new Date(b.originalTimestamp).getTime()
+      return timeB - timeA
+    })
+
+    // Remove originalTimestamp before returning
+    return activities.map(({ originalTimestamp, ...item }) => item)
+  } catch (error: any) {
+    console.error('[getMatrimonyActivity] Error:', error)
     return []
   }
 }

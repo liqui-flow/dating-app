@@ -477,6 +477,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       {currentScreen === "activity" && (
         <div className="p-4 pb-20 mt-2 w-full">
           <ActivityScreen
+            mode="matrimony"
             onProfileClick={(userId) => {
               // Navigate to profile view if needed
               console.log("Profile clicked:", userId)

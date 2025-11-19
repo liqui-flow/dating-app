@@ -9,14 +9,21 @@ import { Heart, Eye, Sparkles, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { supabase } from "@/lib/supabaseClient"
-import { getDatingActivity, recordDatingLike, type ActivityItem } from "@/lib/matchmakingService"
+import { 
+  getDatingActivity, 
+  getMatrimonyActivity,
+  recordDatingLike,
+  recordMatrimonyLike,
+  type ActivityItem 
+} from "@/lib/matchmakingService"
 
 interface ActivityScreenProps {
   onProfileClick?: (userId: string) => void
   onMatchClick?: (userId: string) => void
+  mode?: 'dating' | 'matrimony'
 }
 
-export function ActivityScreen({ onProfileClick, onMatchClick }: ActivityScreenProps) {
+export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating' }: ActivityScreenProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'matches' | 'likes' | 'views'>('all')
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,7 +45,10 @@ export function ActivityScreen({ onProfileClick, onMatchClick }: ActivityScreenP
           return
         }
 
-        const activityData = await getDatingActivity(user.id)
+        // Use mode to determine which function to call
+        const activityData = mode === 'matrimony' 
+          ? await getMatrimonyActivity(user.id)
+          : await getDatingActivity(user.id)
         setActivities(activityData)
       } catch (err: any) {
         console.error("Error fetching activity:", err)
@@ -49,7 +59,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick }: ActivityScreenP
     }
 
     fetchActivity()
-  }, [])
+  }, [mode])
 
   const handleLikeBack = async (activity: ActivityItem, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -65,8 +75,10 @@ export function ActivityScreen({ onProfileClick, onMatchClick }: ActivityScreenP
         return
       }
 
-      // Record the like
-      const result = await recordDatingLike(user.id, activity.userId, 'like')
+      // Use mode to determine which function to call
+      const result = mode === 'matrimony'
+        ? await recordMatrimonyLike(user.id, activity.userId, 'like')
+        : await recordDatingLike(user.id, activity.userId, 'like')
       
       if (result.success) {
         setLikedBack(prev => new Set(prev).add(activity.id))
@@ -90,7 +102,9 @@ export function ActivityScreen({ onProfileClick, onMatchClick }: ActivityScreenP
           // Refresh activity list to remove the like (since user liked back)
           const { data: { user: currentUser } } = await supabase.auth.getUser()
           if (currentUser) {
-            const updatedActivity = await getDatingActivity(currentUser.id)
+            const updatedActivity = mode === 'matrimony'
+              ? await getMatrimonyActivity(currentUser.id)
+              : await getDatingActivity(currentUser.id)
             setActivities(updatedActivity)
           }
         }
@@ -214,7 +228,9 @@ export function ActivityScreen({ onProfileClick, onMatchClick }: ActivityScreenP
                 try {
                   const { data: { user } } = await supabase.auth.getUser()
                   if (user) {
-                    const activityData = await getDatingActivity(user.id)
+                    const activityData = mode === 'matrimony'
+                      ? await getMatrimonyActivity(user.id)
+                      : await getDatingActivity(user.id)
                     setActivities(activityData)
                   }
                 } catch (err: any) {
