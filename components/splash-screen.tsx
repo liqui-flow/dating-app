@@ -44,6 +44,10 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     "splash"
   )
   const [mode, setMode] = useState<"dating" | "matrimony">("dating")
+  const [visibleLetters, setVisibleLetters] = useState(0)
+  
+  const text = "Lovesathi"
+  const letters = text.split("")
 
   useEffect(() => {
     try {
@@ -61,6 +65,24 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       }
     } catch {}
   }, [onComplete, showPathSelect, showComplete, completeMode])
+
+  // Letter-by-letter animation - smooth cursive flow
+  useEffect(() => {
+    if (isLoading && !showPathSelect && !showComplete) {
+      const letterInterval = setInterval(() => {
+        setVisibleLetters((prev) => {
+          if (prev < letters.length) {
+            return prev + 1
+          } else {
+            clearInterval(letterInterval)
+            return prev
+          }
+        })
+      }, 120) // Smooth cursive flow timing
+
+      return () => clearInterval(letterInterval)
+    }
+  }, [isLoading, showPathSelect, showComplete, letters.length])
 
   useEffect(() => {
     if (!showPathSelect && !showComplete) {
@@ -82,16 +104,48 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   if (isLoading) {
     return (
       <div 
-        className="overflow-hidden"
+        className="overflow-hidden flex items-center justify-center relative"
         style={{
           width: '100%',
           height: '100vh',
           backgroundImage: 'url(/assets/image52.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
         }}
-      />
+      >
+        <h1 
+          className="text-[#E0E0E0] relative z-10 flex"
+          style={{
+            fontFamily: 'var(--font-script)',
+            fontSize: 'clamp(3rem, 8vw, 6rem)',
+            fontWeight: 700,
+            letterSpacing: '0.02em',
+          }}
+        >
+          {letters.map((letter, index) => {
+            const isVisible = index < visibleLetters
+            const progress = isVisible ? 1 : 0
+            
+            return (
+              <span
+                key={index}
+                style={{
+                  opacity: progress,
+                  transform: `translateX(${(1 - progress) * -15}px) scale(${0.85 + progress * 0.15})`,
+                  transition: 'opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.8)',
+                  WebkitTextStroke: '0.5px rgba(0, 0, 0, 0.3)',
+                  display: 'inline-block',
+                  willChange: 'opacity, transform',
+                }}
+              >
+                {letter}
+              </span>
+            )
+          })}
+        </h1>
+      </div>
     )
   }
 
@@ -157,15 +211,40 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   return (
     <div 
-      className="overflow-hidden"
+      className="overflow-hidden flex items-center justify-center relative"
       style={{
         width: '100%',
         height: '100vh',
         backgroundImage: 'url(/assets/image52.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundRepeat: 'no-repeat',
       }}
-    />
+    >
+      <h1 
+        className="text-[#E0E0E0] relative z-10 flex"
+        style={{
+          fontFamily: 'var(--font-script)',
+          fontSize: 'clamp(3rem, 8vw, 6rem)',
+          fontWeight: 700,
+          letterSpacing: '0.02em',
+        }}
+      >
+        {letters.map((letter, index) => (
+          <span
+            key={index}
+            style={{
+              opacity: index < visibleLetters ? 1 : 0,
+              transform: index < visibleLetters ? 'translateY(0)' : 'translateY(20px)',
+              transition: 'opacity 0.3s ease, transform 0.3s ease',
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.8)',
+              WebkitTextStroke: '0.5px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            {letter}
+          </span>
+        ))}
+      </h1>
+    </div>
   )
 }

@@ -7,7 +7,8 @@ import { AnimatePresence, motion, useMotionValue, useTransform, animate } from "
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Info, MapPin, X, Heart } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Info, MapPin, X, Heart, Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "./swipe-animations"
 import { getDatingProfile, type DatingProfileFull } from "@/lib/datingProfileService"
@@ -396,22 +397,51 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                           </div>
                         )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        type="button"
-                        className={cn(
-                          "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
-                          "bg-white/20 backdrop-blur-md border border-white/30",
-                          "hover:bg-white/30 hover:scale-110",
-                          "transition-all duration-200",
-                          "shadow-lg"
-                        )}
-                        onClick={handleInfoClick}
-                        aria-label="Close profile"
-                      >
-                        <X className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
-                      </Button>
+                      <div className="flex items-center space-x-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              type="button"
+                              className={cn(
+                                "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
+                                "bg-white/20 backdrop-blur-md border border-white/30",
+                                "hover:bg-red-500 hover:border-red-500 hover:scale-110",
+                                "transition-all duration-200",
+                                "shadow-lg"
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                // Handle report functionality
+                                console.log("Report user:", profile.id)
+                              }}
+                              aria-label="Report profile"
+                            >
+                              <Flag className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="bg-red-500 text-white border-red-400">
+                            <p>Report</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          type="button"
+                          className={cn(
+                            "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
+                            "bg-white/20 backdrop-blur-md border border-white/30",
+                            "hover:bg-white/30 hover:scale-110",
+                            "transition-all duration-200",
+                            "shadow-lg"
+                          )}
+                          onClick={handleInfoClick}
+                          aria-label="Close profile"
+                        >
+                          <X className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
