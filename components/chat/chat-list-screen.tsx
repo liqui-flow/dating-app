@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
-import { getDatingMatches, getMatrimonyMatches, type Match } from "@/lib/matchmakingService"
+import { getDatingMatches, type Match } from "@/lib/matchmakingService"
 import { supabase } from "@/lib/supabaseClient"
 import { getLastMessage, getUnreadCount, subscribeToMessages } from "@/lib/chatService"
 import { useSocket } from "@/hooks/useSocket"
@@ -192,11 +192,8 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
 
         setCurrentUserId(user.id)
 
-        // Load both dating and matrimony matches
-        const [datingMatches, matrimonyMatches] = await Promise.all([
-          getDatingMatches(user.id),
-          getMatrimonyMatches(user.id),
-        ])
+        // Load dating matches only
+        const datingMatches = await getDatingMatches(user.id)
 
         // Process dating matches
         const datingChats = await Promise.all(
@@ -219,35 +216,14 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
           })
         )
 
-        // Process matrimony matches
-        const matrimonyChats = await Promise.all(
-          matrimonyMatches.map(async (match) => {
-            const lastMessage = await getLastMessage(match.id, 'matrimony')
-            const unreadCount = await getUnreadCount(match.id, user.id, 'matrimony')
-
-            return {
-              matchId: match.id,
-              matchType: 'matrimony' as const,
-              name: match.matchedUserName,
-              avatar: match.matchedUserPhoto || "/placeholder-user.jpg",
-              lastMessage: lastMessage?.content || "You matched! Start the conversation.",
-              timestamp: lastMessage?.created_at || match.matchedAt,
-              unreadCount,
-              isOnline: false, // TODO: Implement online status
-              isMatch: true,
-              isPremium: false, // TODO: Get premium status from profile
-            }
-          })
-        )
-
-        // Combine and sort by timestamp (most recent first)
-        const allChats = [...datingChats, ...matrimonyChats].sort((a, b) => {
+        // Sort by timestamp (most recent first)
+        const sortedChats = datingChats.sort((a, b) => {
           const timeA = new Date(a.timestamp).getTime()
           const timeB = new Date(b.timestamp).getTime()
           return timeB - timeA
         })
 
-        setChats(allChats)
+        setChats(sortedChats)
       } catch (error) {
         console.error('Error loading matches:', error)
       } finally {
