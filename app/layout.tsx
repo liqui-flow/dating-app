@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
 import { Toaster as ShadcnToaster } from "@/components/ui/toaster"
+import { SocketProvider } from "@/contexts/SocketContext"
 
 const inter = Inter({
   variable: "--font-sans",
@@ -36,9 +37,11 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${robotoMono.variable} ${dancingScript.variable} antialiased dark`}>
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
-          <Toaster /> {/* ✅ Sonner toaster here */}
-          <ShadcnToaster /> {/* ✅ Shadcn toaster for form validations */}
+          <SocketProvider>
+            {children}
+            <Toaster /> {/* ✅ Sonner toaster here */}
+            <ShadcnToaster /> {/* ✅ Shadcn toaster for form validations */}
+          </SocketProvider>
         </ThemeProvider>
       </body>
     </html>

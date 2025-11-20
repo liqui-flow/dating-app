@@ -20,6 +20,8 @@ import {
 } from "@/lib/chatService"
 import type { Message } from "@/lib/types"
 import { RealtimeChannel } from "@supabase/supabase-js"
+import { useSocket } from "@/hooks/useSocket"
+import { useMessageNotifications } from "@/hooks/useMessageNotifications"
 
 interface ChatUser {
   id: string
@@ -45,6 +47,50 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
   const [matchType, setMatchType] = useState<'dating' | 'matrimony'>('dating')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<RealtimeChannel | null>(null)
+  const [inPageNotification, setInPageNotification] = useState<{ message: string; senderName: string } | null>(null)
+
+  // Socket.io integration
+  const { joinConversation, leaveConversation, sendMessageSocket, isConnected } = useSocket({
+    onMessage: (message: Message) => {
+      // Only add message if it's for this conversation and not already present
+      if (message.match_id === matchId) {
+        setMessages((prev) => {
+          // Prevent duplicates
+          if (prev.some((m) => m.id === message.id)) {
+            return prev
+          }
+          return [...prev, message]
+        })
+
+        // Mark as delivered if we're the receiver
+        if (message.receiver_id === currentUserId && !message.delivered_at) {
+          markDelivered(message.id, currentUserId)
+        }
+      }
+    },
+    onError: (error) => {
+      console.error('Socket error in chat:', error)
+    },
+  })
+
+  // In-page notification handler
+  const handleInPageNotification = (message: Message, senderName: string) => {
+    setInPageNotification({
+      message: message.content,
+      senderName,
+    })
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      setInPageNotification(null)
+    }, 3000)
+  }
+
+  // Set up message notifications
+  useMessageNotifications({
+    currentMatchId: matchId,
+    currentPage: 'chat',
+    onInPageNotification: handleInPageNotification,
+  })
 
   // Format timestamp to relative time
   const formatTimestamp = (timestamp: string): string => {
@@ -196,7 +242,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     loadMatchInfo()
   }, [matchId])
 
-  // Set up real-time subscription
+  // Set up real-time subscription (Supabase Realtime as fallback)
   useEffect(() => {
     if (!matchId || !currentUserId) return
 
@@ -242,6 +288,17 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
       }
     }
   }, [matchId, currentUserId])
+
+  // Join Socket.io conversation room
+  useEffect(() => {
+    if (!matchId || !isConnected) return
+
+    joinConversation(matchId)
+
+    return () => {
+      leaveConversation(matchId)
+    }
+  }, [matchId, isConnected, joinConversation, leaveConversation])
 
   // Mark messages as seen when component is visible
   useEffect(() => {
@@ -289,7 +346,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
       setMessages((prev) => [...prev, tempMessage])
 
-      // Send message
+      // Send message to database
       const sentMessage = await sendMessageService(
         matchId,
         currentUserId,
@@ -302,6 +359,11 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
       setMessages((prev) =>
         prev.map((m) => (m.id === tempMessage.id ? sentMessage : m))
       )
+
+      // Also send via Socket.io for real-time delivery
+      if (sentMessage && isConnected) {
+        sendMessageSocket(matchId, chatUser.id, sentMessage)
+      }
     } catch (error) {
       console.error('Error sending message:', error)
       // Remove optimistic message on error
@@ -413,6 +475,18 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
           </div>
         </div>
       </div>
+
+      {/* In-page Notification */}
+      {inPageNotification && (
+        <div className="flex-shrink-0 px-4 py-2 animate-in slide-in-from-top duration-300">
+          <div className="bg-primary/90 backdrop-blur-sm border border-primary/50 rounded-lg px-4 py-2 shadow-lg">
+            <p className="text-sm text-white">
+              <span className="font-semibold">New message from {inPageNotification.senderName}:</span>
+              <span className="ml-2">{inPageNotification.message}</span>
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 min-h-0">

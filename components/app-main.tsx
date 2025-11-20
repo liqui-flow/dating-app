@@ -21,6 +21,7 @@ import { ProfileView } from "@/components/profile/profile-view"
 import { EditProfile } from "@/components/profile/edit-profile"
 import { ActivityScreen } from "@/components/activity/activity-screen"
 import { handleLogout } from "@/lib/logout"
+import { GlobalMessageListener } from "@/components/chat/global-message-listener"
 
 type Screen =
   | "discover"
@@ -226,6 +227,7 @@ export function AppMain() {
 
   return (
     <>
+      <GlobalMessageListener />
       <AppLayout 
         activeTab={appState.activeTab} 
         onTabChange={handleTabChange} 

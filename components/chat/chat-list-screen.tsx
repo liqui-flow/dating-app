@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -11,7 +11,10 @@ import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { getDatingMatches, getMatrimonyMatches, type Match } from "@/lib/matchmakingService"
 import { supabase } from "@/lib/supabaseClient"
-import { getLastMessage, getUnreadCount } from "@/lib/chatService"
+import { getLastMessage, getUnreadCount, subscribeToMessages } from "@/lib/chatService"
+import { useSocket } from "@/hooks/useSocket"
+import type { Message } from "@/lib/types"
+import { RealtimeChannel } from "@supabase/supabase-js"
 
 interface ChatPreview {
   matchId: string
@@ -34,6 +37,149 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [chats, setChats] = useState<ChatPreview[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const channelsRef = useRef<Map<string, RealtimeChannel>>(new Map())
+
+  // Socket.io integration for real-time updates
+  const { isConnected, joinConversation } = useSocket({
+    onMessage: async (message: Message) => {
+      if (!currentUserId) return
+
+      console.log('Chat list received message:', message)
+
+      // Update the chat list when a new message arrives
+      setChats((prevChats) => {
+        const chatIndex = prevChats.findIndex((chat) => chat.matchId === message.match_id)
+        
+        if (chatIndex === -1) {
+          // This is a new conversation, reload the entire list
+          // This will be handled by the loadMatches function
+          return prevChats
+        }
+
+        const updatedChats = [...prevChats]
+        const chat = updatedChats[chatIndex]
+
+        // Update last message and timestamp
+        chat.lastMessage = message.content
+        chat.timestamp = message.created_at
+
+        // Update unread count if we're the receiver
+        if (message.receiver_id === currentUserId) {
+          // Fetch the actual unread count from database
+          getUnreadCount(message.match_id, currentUserId).then((count) => {
+            setChats((currentChats) => {
+              const index = currentChats.findIndex((c) => c.matchId === message.match_id)
+              if (index !== -1) {
+                const updated = [...currentChats]
+                updated[index].unreadCount = count
+                // Re-sort to ensure most recent is first
+                updated.sort((a, b) => {
+                  const timeA = new Date(a.timestamp).getTime()
+                  const timeB = new Date(b.timestamp).getTime()
+                  return timeB - timeA
+                })
+                return updated
+              }
+              return currentChats
+            })
+          })
+        }
+
+        // Move this chat to the top (most recent first)
+        updatedChats.splice(chatIndex, 1)
+        updatedChats.unshift(chat)
+
+        return updatedChats
+      })
+    },
+    onError: (error) => {
+      console.error('Socket error in chat list:', error)
+    },
+  })
+
+  // Join all conversation rooms when chats are loaded and socket is connected
+  useEffect(() => {
+    if (isConnected && chats.length > 0 && joinConversation) {
+      chats.forEach((chat) => {
+        joinConversation(chat.matchId)
+      })
+    }
+  }, [isConnected, chats, joinConversation])
+
+  // Set up Supabase Realtime subscriptions for all chats (as fallback)
+  useEffect(() => {
+    if (!currentUserId || chats.length === 0) return
+
+    // Subscribe to all conversation channels
+    chats.forEach((chat) => {
+      if (channelsRef.current.has(chat.matchId)) {
+        return // Already subscribed
+      }
+
+      const channel = subscribeToMessages(chat.matchId, {
+        onInsert: async (message: Message) => {
+          console.log('Chat list received message via Supabase Realtime:', message)
+          
+          // Update the chat list
+          setChats((prevChats) => {
+            const chatIndex = prevChats.findIndex((c) => c.matchId === message.match_id)
+            
+            if (chatIndex === -1) {
+              return prevChats
+            }
+
+            const updatedChats = [...prevChats]
+            const updatedChat = updatedChats[chatIndex]
+
+            // Update last message and timestamp
+            updatedChat.lastMessage = message.content
+            updatedChat.timestamp = message.created_at
+
+            // Update unread count if we're the receiver
+            if (message.receiver_id === currentUserId) {
+              getUnreadCount(message.match_id, currentUserId).then((count) => {
+                setChats((currentChats) => {
+                  const index = currentChats.findIndex((c) => c.matchId === message.match_id)
+                  if (index !== -1) {
+                    const updated = [...currentChats]
+                    updated[index].unreadCount = count
+                    // Re-sort to ensure most recent is first
+                    updated.sort((a, b) => {
+                      const timeA = new Date(a.timestamp).getTime()
+                      const timeB = new Date(b.timestamp).getTime()
+                      return timeB - timeA
+                    })
+                    return updated
+                  }
+                  return currentChats
+                })
+              })
+            }
+
+            // Move this chat to the top (most recent first)
+            updatedChats.splice(chatIndex, 1)
+            updatedChats.unshift(updatedChat)
+
+            return updatedChats
+          })
+        },
+        onError: (error) => {
+          console.error('Supabase Realtime error in chat list:', error)
+        },
+      })
+
+      channelsRef.current.set(chat.matchId, channel)
+    })
+
+    // Cleanup function
+    return () => {
+      channelsRef.current.forEach((channel, matchId) => {
+        supabase.removeChannel(channel)
+        channelsRef.current.delete(matchId)
+      })
+    }
+  }, [chats, currentUserId])
 
   useEffect(() => {
     async function loadMatches() {
@@ -43,6 +189,8 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
           setLoading(false)
           return
         }
+
+        setCurrentUserId(user.id)
 
         // Load both dating and matrimony matches
         const [datingMatches, matrimonyMatches] = await Promise.all([
