@@ -58,37 +58,37 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
         }
 
         const updatedChats = [...prevChats]
-        const chat = updatedChats[chatIndex]
+        const currentChat = updatedChats[chatIndex]
 
         // Update last message and timestamp
-        chat.lastMessage = message.content
-        chat.timestamp = message.created_at
+        currentChat.lastMessage = message.content
+        currentChat.timestamp = message.created_at
 
         // Update unread count if we're the receiver
         if (message.receiver_id === currentUserId) {
           // Fetch the actual unread count from database
-          getUnreadCount(message.match_id, currentUserId).then((count) => {
+          getUnreadCount(message.match_id, currentUserId, currentChat.matchType).then((count) => {
             setChats((currentChats) => {
-              const index = currentChats.findIndex((c) => c.matchId === message.match_id)
-              if (index !== -1) {
-                const updated = [...currentChats]
-                updated[index].unreadCount = count
-                // Re-sort to ensure most recent is first
-                updated.sort((a, b) => {
-                  const timeA = new Date(a.timestamp).getTime()
-                  const timeB = new Date(b.timestamp).getTime()
-                  return timeB - timeA
+                    const index = currentChats.findIndex((c) => c.matchId === message.match_id)
+                    if (index !== -1) {
+                      const updated = [...currentChats]
+                      updated[index].unreadCount = count
+                      // Re-sort to ensure most recent is first
+                      updated.sort((a, b) => {
+                        const timeA = new Date(a.timestamp).getTime()
+                        const timeB = new Date(b.timestamp).getTime()
+                        return timeB - timeA
+                      })
+                      return updated
+                    }
+                    return currentChats
+                  })
                 })
-                return updated
-              }
-              return currentChats
-            })
-          })
         }
 
         // Move this chat to the top (most recent first)
         updatedChats.splice(chatIndex, 1)
-        updatedChats.unshift(chat)
+        updatedChats.unshift(currentChat)
 
         return updatedChats
       })
@@ -117,7 +117,7 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
         return // Already subscribed
       }
 
-      const channel = subscribeToMessages(chat.matchId, {
+      const channel = subscribeToMessages(chat.matchId, chat.matchType, {
         onInsert: async (message: Message) => {
           console.log('Chat list received message via Supabase Realtime:', message)
           
@@ -138,7 +138,7 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
 
             // Update unread count if we're the receiver
             if (message.receiver_id === currentUserId) {
-              getUnreadCount(message.match_id, currentUserId).then((count) => {
+              getUnreadCount(message.match_id, currentUserId, chat.matchType).then((count) => {
                 setChats((currentChats) => {
                   const index = currentChats.findIndex((c) => c.matchId === message.match_id)
                   if (index !== -1) {
@@ -159,7 +159,7 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
 
             // Move this chat to the top (most recent first)
             updatedChats.splice(chatIndex, 1)
-            updatedChats.unshift(updatedChat)
+            updatedChats.unshift(currentChat)
 
             return updatedChats
           })
@@ -201,8 +201,8 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
         // Process dating matches
         const datingChats = await Promise.all(
           datingMatches.map(async (match) => {
-            const lastMessage = await getLastMessage(match.id)
-            const unreadCount = await getUnreadCount(match.id, user.id)
+            const lastMessage = await getLastMessage(match.id, 'dating')
+            const unreadCount = await getUnreadCount(match.id, user.id, 'dating')
 
             return {
               matchId: match.id,
@@ -222,8 +222,8 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
         // Process matrimony matches
         const matrimonyChats = await Promise.all(
           matrimonyMatches.map(async (match) => {
-            const lastMessage = await getLastMessage(match.id)
-            const unreadCount = await getUnreadCount(match.id, user.id)
+            const lastMessage = await getLastMessage(match.id, 'matrimony')
+            const unreadCount = await getUnreadCount(match.id, user.id, 'matrimony')
 
             return {
               matchId: match.id,

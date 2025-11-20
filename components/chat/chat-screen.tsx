@@ -63,8 +63,8 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         })
 
         // Mark as delivered if we're the receiver
-        if (message.receiver_id === currentUserId && !message.delivered_at) {
-          markDelivered(message.id, currentUserId)
+        if (message.receiver_id === currentUserId && !message.delivered_at && matchType) {
+          markDelivered(message.id, currentUserId, matchType)
         }
       }
     },
@@ -219,16 +219,16 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         })
 
         // Load messages
-        const loadedMessages = await getMessages(matchId, user.id)
+        const loadedMessages = await getMessages(matchId, user.id, currentMatchType)
         setMessages(loadedMessages)
 
         // Mark messages as seen
-        await markSeen(matchId, user.id)
+        await markSeen(matchId, user.id, currentMatchType)
 
         // Mark received messages as delivered
         for (const msg of loadedMessages) {
           if (msg.receiver_id === user.id && !msg.delivered_at) {
-            await markDelivered(msg.id, user.id)
+            await markDelivered(msg.id, user.id, currentMatchType)
           }
         }
 
@@ -244,7 +244,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
   // Set up real-time subscription (Supabase Realtime as fallback)
   useEffect(() => {
-    if (!matchId || !currentUserId) return
+    if (!matchId || !currentUserId || !matchType) return
 
     // Cleanup previous subscription
     if (channelRef.current) {
@@ -253,6 +253,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
     const channel = subscribeToMessages(
       matchId,
+      matchType,
       {
         onInsert: async (message: Message) => {
           setMessages((prev) => {
@@ -265,7 +266,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
           // Mark as delivered if we're the receiver
           if (message.receiver_id === currentUserId && !message.delivered_at) {
-            await markDelivered(message.id, currentUserId)
+            await markDelivered(message.id, currentUserId, matchType)
           }
         },
         onUpdate: (message: Message) => {
@@ -287,7 +288,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         channelRef.current = null
       }
     }
-  }, [matchId, currentUserId])
+  }, [matchId, currentUserId, matchType])
 
   // Join Socket.io conversation room
   useEffect(() => {
@@ -302,11 +303,11 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
   // Mark messages as seen when component is visible
   useEffect(() => {
-    if (!matchId || !currentUserId) return
+    if (!matchId || !currentUserId || !matchType) return
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        markSeen(matchId, currentUserId)
+        markSeen(matchId, currentUserId, matchType)
       }
     }
 
@@ -314,7 +315,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [matchId, currentUserId])
+  }, [matchId, currentUserId, matchType])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })

@@ -79,13 +79,15 @@ export async function getMatchIdAuto(
  */
 export async function getMessages(
   matchId: string,
-  userId: string
+  userId: string,
+  matchType: 'dating' | 'matrimony'
 ): Promise<Message[]> {
   try {
     const { data, error } = await supabase
       .from('messages')
       .select('*')
       .eq('match_id', matchId)
+      .eq('match_type', matchType)
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order('created_at', { ascending: true })
 
@@ -143,13 +145,14 @@ export async function sendMessage(
 /**
  * Mark a message as delivered
  */
-export async function markDelivered(messageId: string, userId: string): Promise<boolean> {
+export async function markDelivered(messageId: string, userId: string, matchType: 'dating' | 'matrimony'): Promise<boolean> {
   try {
-    // First verify the user is the receiver
+    // First verify the user is the receiver and message type matches
     const { data: message, error: fetchError } = await supabase
       .from('messages')
-      .select('receiver_id, delivered_at')
+      .select('receiver_id, delivered_at, match_type')
       .eq('id', messageId)
+      .eq('match_type', matchType)
       .single()
 
     if (fetchError || !message) {
@@ -172,6 +175,7 @@ export async function markDelivered(messageId: string, userId: string): Promise<
       .update({ delivered_at: new Date().toISOString() })
       .eq('id', messageId)
       .eq('receiver_id', userId)
+      .eq('match_type', matchType)
 
     if (error) {
       console.error('[markDelivered] Error:', error)
@@ -188,12 +192,13 @@ export async function markDelivered(messageId: string, userId: string): Promise<
 /**
  * Mark all messages in a match as seen
  */
-export async function markSeen(matchId: string, userId: string): Promise<boolean> {
+export async function markSeen(matchId: string, userId: string, matchType: 'dating' | 'matrimony'): Promise<boolean> {
   try {
     const { error } = await supabase
       .from('messages')
       .update({ seen_at: new Date().toISOString() })
       .eq('match_id', matchId)
+      .eq('match_type', matchType)
       .eq('receiver_id', userId)
       .is('seen_at', null)
 
@@ -214,6 +219,7 @@ export async function markSeen(matchId: string, userId: string): Promise<boolean
  */
 export function subscribeToMessages(
   matchId: string,
+  matchType: 'dating' | 'matrimony',
   callbacks: {
     onInsert?: (message: Message) => void
     onUpdate?: (message: Message) => void
@@ -221,14 +227,14 @@ export function subscribeToMessages(
   }
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`messages:${matchId}`)
+    .channel(`messages:${matchId}:${matchType}`)
     .on(
       'postgres_changes',
       {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `match_id=eq.${matchId}`,
+        filter: `match_id=eq.${matchId}&match_type=eq.${matchType}`,
       },
       (payload) => {
         if (callbacks.onInsert) {
@@ -242,7 +248,7 @@ export function subscribeToMessages(
         event: 'UPDATE',
         schema: 'public',
         table: 'messages',
-        filter: `match_id=eq.${matchId}`,
+        filter: `match_id=eq.${matchId}&match_type=eq.${matchType}`,
       },
       (payload) => {
         if (callbacks.onUpdate) {
@@ -252,9 +258,9 @@ export function subscribeToMessages(
     )
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        console.log('[subscribeToMessages] Subscribed to match:', matchId)
+        console.log('[subscribeToMessages] Subscribed to match:', matchId, 'type:', matchType)
       } else if (status === 'CHANNEL_ERROR') {
-        console.error('[subscribeToMessages] Channel error for match:', matchId)
+        console.error('[subscribeToMessages] Channel error for match:', matchId, 'type:', matchType)
         if (callbacks.onError) {
           callbacks.onError(new Error('Channel subscription error'))
         }
@@ -267,12 +273,13 @@ export function subscribeToMessages(
 /**
  * Get the last message for a match
  */
-export async function getLastMessage(matchId: string): Promise<Message | null> {
+export async function getLastMessage(matchId: string, matchType: 'dating' | 'matrimony'): Promise<Message | null> {
   try {
     const { data, error } = await supabase
       .from('messages')
       .select('*')
       .eq('match_id', matchId)
+      .eq('match_type', matchType)
       .order('created_at', { ascending: false })
       .limit(1)
       .single()
@@ -296,12 +303,13 @@ export async function getLastMessage(matchId: string): Promise<Message | null> {
 /**
  * Get unread message count for a match
  */
-export async function getUnreadCount(matchId: string, userId: string): Promise<number> {
+export async function getUnreadCount(matchId: string, userId: string, matchType: 'dating' | 'matrimony'): Promise<number> {
   try {
     const { count, error } = await supabase
       .from('messages')
       .select('*', { count: 'exact', head: true })
       .eq('match_id', matchId)
+      .eq('match_type', matchType)
       .eq('receiver_id', userId)
       .is('seen_at', null)
 

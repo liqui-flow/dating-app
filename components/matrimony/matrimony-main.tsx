@@ -9,7 +9,7 @@ import { QuickActions } from "@/components/navigation/quick-actions"
 import { Filter, Check, X } from "lucide-react"
 import { MatrimonySwipeCard } from "@/components/matrimony/matrimony-swipe-card"
 import { MatrimonyChatList } from "@/components/matrimony/matrimony-chat-list"
-import { MatrimonyChatScreen } from "@/components/matrimony/matrimony-chat-screen"
+import { ChatScreen } from "@/components/chat/chat-screen"
 import { MatrimonyFilterSheet } from "@/components/matrimony/matrimony-filter-sheet"
 import { DynamicBackground } from "@/components/discovery/dynamic-background"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
@@ -83,6 +83,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
   const [showMatchNotification, setShowMatchNotification] = useState(false)
   const [matchedProfile, setMatchedProfile] = useState<MatrimonyProfile | null>(null)
+  const [matchedMatchId, setMatchedMatchId] = useState<string | null>(null)
 
   // Fetch profiles from Supabase
   useEffect(() => {
@@ -324,6 +325,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         console.log('[handleLike] Match detected!', result.matchId)
         // Show match notification
         setMatchedProfile(currentProfile)
+        setMatchedMatchId(result.matchId || null)
         setShowMatchNotification(true)
       }
 
@@ -482,9 +484,19 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
               // Navigate to profile view if needed
               console.log("Profile clicked:", userId)
             }}
-            onMatchClick={(userId) => {
-              setSelectedChatId(userId)
-              setCurrentScreen("chat")
+            onMatchClick={async (userId) => {
+              // Get matchId from userId - always use matrimony match type in matrimony mode
+              const { data: { user } } = await supabase.auth.getUser()
+              if (user) {
+                const { getMatchId } = await import('@/lib/chatService')
+                const matchId = await getMatchId(user.id, userId, 'matrimony')
+                if (matchId) {
+                  setSelectedChatId(matchId)
+                  setCurrentScreen("chat")
+                } else {
+                  console.error("Could not find matrimony matchId for users:", user.id, userId)
+                }
+              }
             }}
           />
         </div>
@@ -492,8 +504,8 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
 
       {currentScreen === "chat" && selectedChatId && (
         <div className="fixed inset-0 z-50 bg-background">
-          <MatrimonyChatScreen 
-            chatId={selectedChatId} 
+          <ChatScreen 
+            matchId={selectedChatId} 
             onBack={() => setCurrentScreen("messages")} 
           />
         </div>
@@ -577,16 +589,22 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
           }}
           onStartChat={() => {
             setShowMatchNotification(false)
-            // TODO: Navigate to chat screen with matched user
-            console.log("Start chat with:", matchedProfile.id)
+            if (matchedMatchId) {
+              setSelectedChatId(matchedMatchId)
+              setCurrentScreen("chat")
+            } else {
+              console.error("No matchId available for chat")
+            }
           }}
           onKeepSwiping={() => {
             setShowMatchNotification(false)
             setMatchedProfile(null)
+            setMatchedMatchId(null)
           }}
           onClose={() => {
             setShowMatchNotification(false)
             setMatchedProfile(null)
+            setMatchedMatchId(null)
           }}
         />
       )}

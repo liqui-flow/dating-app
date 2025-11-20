@@ -265,10 +265,15 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating' }
                     // Get matchId from database
                     const { data: { user } } = await supabase.auth.getUser()
                     if (user) {
-                      const { getMatchIdAuto } = await import('@/lib/chatService')
-                      const matchInfo = await getMatchIdAuto(user.id, activity.userId)
-                      if (matchInfo && onMatchClick) {
-                        onMatchClick(matchInfo.matchId)
+                      const { getMatchId, getMatchIdAuto } = await import('@/lib/chatService')
+                      // In matrimony mode, always use matrimony match type
+                      // In dating mode, try both (dating first)
+                      const matchId = mode === 'matrimony'
+                        ? await getMatchId(user.id, activity.userId, 'matrimony')
+                        : (await getMatchIdAuto(user.id, activity.userId))?.matchId
+                      
+                      if (matchId && onMatchClick) {
+                        onMatchClick(matchId)
                       }
                     }
                   } else {
