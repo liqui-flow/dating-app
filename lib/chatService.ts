@@ -317,3 +317,26 @@ export async function getUnreadCount(matchId: string, userId: string): Promise<n
   }
 }
 
+/**
+ * Get total unread message count across all conversations for a user
+ */
+export async function getTotalUnreadCount(userId: string): Promise<number> {
+  try {
+    const { count, error } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('receiver_id', userId)
+      .is('seen_at', null)
+
+    if (error) {
+      console.error('[getTotalUnreadCount] Error:', error)
+      return 0
+    }
+
+    return count || 0
+  } catch (error: any) {
+    console.error('[getTotalUnreadCount] Exception:', error)
+    return 0
+  }
+}
+
