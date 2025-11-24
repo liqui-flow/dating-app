@@ -81,4 +81,21 @@ export interface Message {
   match_type: 'dating' | 'matrimony'
 }
 
+// Message media types
+export interface MessageMedia {
+  id: string
+  message_id: string
+  media_url: string
+  media_type: 'image' | 'video'
+  file_name: string
+  file_size: number
+  display_order: number
+  created_at: string
+}
+
+// Extended message with media
+export interface MessageWithMedia extends Message {
+  media?: MessageMedia[]
+}
+
 

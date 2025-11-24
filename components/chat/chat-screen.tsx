@@ -7,18 +7,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Phone, Video, MoreVertical, Send, ImageIcon, Smile, Heart } from "lucide-react"
+import { ArrowLeft, MoreVertical, Send, ImageIcon, Heart, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { supabase } from "@/lib/supabaseClient"
 import {
   getMessages,
   sendMessage as sendMessageService,
+  sendMessageWithMedia,
+  getMessageMedia,
+  getMessagesMedia,
   markDelivered,
   markSeen,
   subscribeToMessages,
 } from "@/lib/chatService"
-import type { Message } from "@/lib/types"
+import type { Message, MessageMedia, MessageWithMedia } from "@/lib/types"
+import { useToast } from "@/hooks/use-toast"
 import { RealtimeChannel } from "@supabase/supabase-js"
 import { useSocket } from "@/hooks/useSocket"
 import { useMessageNotifications } from "@/hooks/useMessageNotifications"
@@ -39,19 +43,25 @@ interface ChatScreenProps {
 
 export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
   const [messages, setMessages] = useState<Message[]>([])
+  const [messagesMedia, setMessagesMedia] = useState<Record<string, MessageMedia[]>>({})
   const [newMessage, setNewMessage] = useState("")
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [filePreviews, setFilePreviews] = useState<{ url: string; type: 'image' | 'video'; file: File }[]>([])
   const [isTyping, setIsTyping] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [chatUser, setChatUser] = useState<ChatUser | null>(null)
   const [matchType, setMatchType] = useState<'dating' | 'matrimony'>('dating')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<RealtimeChannel | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [inPageNotification, setInPageNotification] = useState<{ message: string; senderName: string } | null>(null)
+  const { toast } = useToast()
 
   // Socket.io integration
   const { joinConversation, leaveConversation, sendMessageSocket, isConnected } = useSocket({
-    onMessage: (message: Message) => {
+    onMessage: async (message: Message) => {
       // Only add message if it's for this conversation and not already present
       if (message.match_id === matchId) {
         setMessages((prev) => {
@@ -61,6 +71,15 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
           }
           return [...prev, message]
         })
+
+        // Fetch media for the new message
+        const media = await getMessageMedia(message.id)
+        if (media.length > 0) {
+          setMessagesMedia(prev => ({
+            ...prev,
+            [message.id]: media,
+          }))
+        }
 
         // Mark as delivered if we're the receiver
         if (message.receiver_id === currentUserId && !message.delivered_at && matchType) {
@@ -106,6 +125,16 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     if (diffHours < 24) return `${diffHours}h ago`
     if (diffDays < 7) return `${diffDays}d ago`
     return date.toLocaleDateString()
+  }
+
+  // Check if content is just a filename (to hide it when media is present)
+  const isFilenameOnly = (content: string, media: MessageMedia[] | undefined): boolean => {
+    if (!media || media.length === 0) return false
+    if (!content.trim()) return false
+    
+    // Check if content matches any of the media filenames
+    const contentLower = content.trim().toLowerCase()
+    return media.some(m => m.file_name.toLowerCase() === contentLower)
   }
 
   // Get delivery/read status indicator
@@ -222,6 +251,13 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         const loadedMessages = await getMessages(matchId, user.id, currentMatchType)
         setMessages(loadedMessages)
 
+        // Load media for all messages
+        const messageIds = loadedMessages.map(m => m.id)
+        if (messageIds.length > 0) {
+          const media = await getMessagesMedia(messageIds)
+          setMessagesMedia(media)
+        }
+
         // Mark messages as seen
         await markSeen(matchId, user.id, currentMatchType)
 
@@ -263,6 +299,15 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
             }
             return [...prev, message]
           })
+
+          // Fetch media for the new message
+          const media = await getMessageMedia(message.id)
+          if (media.length > 0) {
+            setMessagesMedia(prev => ({
+              ...prev,
+              [message.id]: media,
+            }))
+          }
 
           // Mark as delivered if we're the receiver
           if (message.receiver_id === currentUserId && !message.delivered_at) {
@@ -325,20 +370,119 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     scrollToBottom()
   }, [messages])
 
+  // Load media for messages that might have media but it's not loaded yet
+  useEffect(() => {
+    async function loadMissingMedia() {
+      if (!currentUserId || !matchId) return
+
+      // Find messages that look like they have media (filename in content) but no media loaded
+      const messagesNeedingMedia = messages.filter(msg => {
+        const hasFilenamePattern = /\.(jpg|jpeg|png|gif|webp|mp4|mov|avi)$/i.test(msg.content.trim())
+        const hasNoMedia = !messagesMedia[msg.id] || messagesMedia[msg.id].length === 0
+        return hasFilenamePattern && hasNoMedia
+      })
+
+      if (messagesNeedingMedia.length > 0) {
+        console.log('Loading media for messages:', messagesNeedingMedia.map(m => ({ id: m.id, content: m.content })))
+        const messageIds = messagesNeedingMedia.map(m => m.id)
+        const media = await getMessagesMedia(messageIds)
+        
+        if (Object.keys(media).length > 0) {
+          setMessagesMedia(prev => ({
+            ...prev,
+            ...media,
+          }))
+        }
+      }
+    }
+
+    loadMissingMedia()
+  }, [messages, messagesMedia, currentUserId, matchId])
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files)
+      const maxFiles = 10
+      const maxImageSize = 10 * 1024 * 1024 // 10MB
+      const maxVideoSize = 50 * 1024 * 1024 // 50MB
+
+      const validFiles: File[] = []
+      const previews: { url: string; type: 'image' | 'video'; file: File }[] = []
+
+      for (let i = 0; i < Math.min(fileArray.length, maxFiles - selectedFiles.length); i++) {
+        const file = fileArray[i]
+        const isImage = file.type.startsWith('image/')
+        const isVideo = file.type.startsWith('video/')
+
+        if (!isImage && !isVideo) {
+          toast({
+            title: "Invalid File",
+            description: "Please select images or videos only",
+            variant: "destructive",
+          })
+          continue
+        }
+
+        const maxSize = isImage ? maxImageSize : maxVideoSize
+        if (file.size > maxSize) {
+          toast({
+            title: "File Too Large",
+            description: `Maximum file size is ${maxSize / (1024 * 1024)}MB for ${isImage ? 'images' : 'videos'}`,
+            variant: "destructive",
+          })
+          continue
+        }
+
+        validFiles.push(file)
+        previews.push({
+          url: URL.createObjectURL(file),
+          type: isImage ? 'image' : 'video',
+          file,
+        })
+      }
+
+      setSelectedFiles(prev => [...prev, ...validFiles])
+      setFilePreviews(prev => [...prev, ...previews])
+    }
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+    const preview = filePreviews[index]
+    if (preview) {
+      URL.revokeObjectURL(preview.url)
+    }
+    setFilePreviews(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !matchId || !currentUserId || !chatUser) return
+    if ((!newMessage.trim() && selectedFiles.length === 0) || !matchId || !currentUserId || !chatUser) return
 
     const messageContent = newMessage.trim()
+    const filesToSend = [...selectedFiles]
+    
+    // Clear inputs
     setNewMessage("")
+    setSelectedFiles([])
+    filePreviews.forEach(preview => URL.revokeObjectURL(preview.url))
+    setFilePreviews([])
 
     try {
+      setUploading(true)
+
       // Optimistic update
       const tempMessage: Message = {
         id: `temp-${Date.now()}`,
         match_id: matchId,
         sender_id: currentUserId,
         receiver_id: chatUser.id,
-        content: messageContent,
+        content: messageContent || ' ',
         created_at: new Date().toISOString(),
         delivered_at: null,
         seen_at: null,
@@ -347,30 +491,82 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
       setMessages((prev) => [...prev, tempMessage])
 
-      // Send message to database
-      const sentMessage = await sendMessageService(
-        matchId,
-        currentUserId,
-        chatUser.id,
-        messageContent,
-        matchType
-      )
+      // Send message with or without media
+      let sentMessage: Message
+      let media: MessageMedia[] = []
+
+      if (filesToSend.length > 0) {
+        const result = await sendMessageWithMedia(
+          matchId,
+          currentUserId,
+          chatUser.id,
+          messageContent,
+          matchType,
+          filesToSend
+        )
+        if (!result) throw new Error('Failed to send message')
+        sentMessage = result
+        media = result.media || []
+      } else {
+        sentMessage = await sendMessageService(
+          matchId,
+          currentUserId,
+          chatUser.id,
+          messageContent,
+          matchType
+        )
+        if (!sentMessage) throw new Error('Failed to send message')
+      }
 
       // Replace temp message with real one
       setMessages((prev) =>
         prev.map((m) => (m.id === tempMessage.id ? sentMessage : m))
       )
 
+      // Update media state
+      if (media.length > 0) {
+        setMessagesMedia(prev => ({
+          ...prev,
+          [sentMessage.id]: media,
+        }))
+      }
+
       // Also send via Socket.io for real-time delivery
       if (sentMessage && isConnected) {
         sendMessageSocket(matchId, chatUser.id, sentMessage)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error)
+      
+      // Show more specific error message
+      let errorMessage = "Failed to send message. Please try again."
+      if (error?.message) {
+        errorMessage = error.message
+      } else if (error?.error?.message) {
+        errorMessage = error.error.message
+      }
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
+      
       // Remove optimistic message on error
       setMessages((prev) => prev.filter((m) => !m.id.startsWith('temp-')))
-      // Restore message text
+      // Restore message text and files
       setNewMessage(messageContent)
+      setSelectedFiles(filesToSend)
+      
+      // Restore file previews
+      const restoredPreviews = filesToSend.map(file => ({
+        url: URL.createObjectURL(file),
+        type: (file.type.startsWith('image/') ? 'image' : 'video') as 'image' | 'video',
+        file,
+      }))
+      setFilePreviews(restoredPreviews)
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -465,12 +661,6 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full">
-              <Phone className="w-5 h-5" />
-            </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full">
-              <Video className="w-5 h-5" />
-            </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full">
               <MoreVertical className="w-5 h-5" />
             </Button>
           </div>
@@ -506,26 +696,66 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
               return (
                 <div key={message.id} className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
                   <div className={cn("flex mb-3", isOwn ? "justify-end" : "justify-start")}>
+                  <div
+                    className={cn(
+                      "max-w-[85%] sm:max-w-[80%] px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl",
+                      "backdrop-blur-sm border",
+                      isOwn
+                        ? "bg-white/20 border-white/30 text-white rounded-br-md"
+                        : "bg-white/15 border-white/20 text-white rounded-bl-md",
+                    )}
+                  >
+                    {/* Media display */}
+                    {messagesMedia[message.id] && messagesMedia[message.id].length > 0 && (
+                      <div className="mb-2 space-y-2">
+                        {messagesMedia[message.id].map((media) => (
+                          <div key={media.id} className="rounded-lg overflow-hidden">
+                            {media.media_type === 'image' ? (
+                              <img
+                                src={media.media_url}
+                                alt={media.file_name}
+                                className="max-w-full h-auto rounded-lg object-contain"
+                                style={{ maxHeight: '400px', maxWidth: '100%' }}
+                                onError={(e) => {
+                                  console.error('Failed to load image:', media.media_url, media)
+                                  // Hide broken image
+                                  e.currentTarget.style.display = 'none'
+                                }}
+                                onLoad={() => {
+                                  console.log('Image loaded successfully:', media.media_url)
+                                }}
+                              />
+                            ) : (
+                              <video
+                                src={media.media_url}
+                                controls
+                                className="max-w-full h-auto rounded-lg"
+                                style={{ maxHeight: '400px', maxWidth: '100%' }}
+                                onError={(e) => {
+                                  console.error('Failed to load video:', media.media_url, media)
+                                }}
+                              >
+                                Your browser does not support the video tag.
+                              </video>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* Message content - hide if it's just a filename when media is present */}
+                    {message.content.trim() && !isFilenameOnly(message.content, messagesMedia[message.id]) && (
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                    )}
                     <div
                       className={cn(
-                        "max-w-[85%] sm:max-w-[80%] px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl",
-                        "backdrop-blur-sm border",
-                        isOwn
-                          ? "bg-white/20 border-white/30 text-white rounded-br-md"
-                          : "bg-white/15 border-white/20 text-white rounded-bl-md",
+                        "flex items-center justify-end space-x-1 mt-2",
+                        isOwn ? "text-white/70" : "text-white/60",
                       )}
                     >
-                      <p className="text-sm leading-relaxed">{message.content}</p>
-                      <div
-                        className={cn(
-                          "flex items-center justify-end space-x-1 mt-2",
-                          isOwn ? "text-white/70" : "text-white/60",
-                        )}
-                      >
-                        <span className="text-xs">{formatTimestamp(message.created_at)}</span>
-                        {getStatusIndicator(message, isOwn)}
-                      </div>
+                      <span className="text-xs">{formatTimestamp(message.created_at)}</span>
+                      {getStatusIndicator(message, isOwn)}
                     </div>
+                  </div>
                   </div>
                 </div>
               )
@@ -551,16 +781,59 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* File Previews */}
+      {filePreviews.length > 0 && (
+        <div className="flex-shrink-0 px-4 py-2 border-t border-border bg-background/50">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {filePreviews.map((preview, index) => (
+              <div key={index} className="relative flex-shrink-0">
+                {preview.type === 'image' ? (
+                  <img
+                    src={preview.url}
+                    alt={`Preview ${index + 1}`}
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
+                ) : (
+                  <video
+                    src={preview.url}
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0 bg-destructive hover:bg-destructive/90"
+                  onClick={() => removeFile(index)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Message Input */}
       <div className="flex-shrink-0 p-4 border-t border-border glass-apple bg-background">
         <div className="flex items-end space-x-3">
           <div className="flex space-x-2">
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full transition-colors">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2 hover:bg-muted/50 rounded-full transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
               <ImageIcon className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full transition-colors">
-              <Smile className="w-5 h-5" />
-            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+              style={{ display: 'none' }}
+            />
           </div>
 
           <div className="flex-1 relative">
@@ -570,12 +843,13 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               className="pr-12 rounded-full text-sm border-2 focus:border-primary/50 transition-colors"
+              disabled={uploading}
             />
             <Button
               size="sm"
               className="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full p-0 bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
               onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
+              disabled={(!newMessage.trim() && selectedFiles.length === 0) || uploading}
             >
               <Send className="w-4 h-4" />
             </Button>

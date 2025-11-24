@@ -6,9 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Phone, Video, MoreVertical, Send, ImageIcon, Smile, Heart } from "lucide-react"
+import { ArrowLeft, MoreVertical, Send, ImageIcon, Heart, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
+import { supabase } from "@/lib/supabaseClient"
+import {
+  sendMessageWithMedia,
+  getMessageMedia,
+  getMessagesMedia,
+} from "@/lib/chatService"
+import type { MessageMedia } from "@/lib/types"
+import { useToast } from "@/hooks/use-toast"
 
 interface Message {
   id: string
@@ -211,9 +219,15 @@ interface MatrimonyChatScreenProps {
 
 export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps) {
   const [messages, setMessages] = useState<Message[]>(mockChatMessages[chatId] || [])
+  const [messagesMedia, setMessagesMedia] = useState<Record<string, MessageMedia[]>>({})
   const [newMessage, setNewMessage] = useState("")
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [filePreviews, setFilePreviews] = useState<{ url: string; type: 'image' | 'video'; file: File }[]>([])
   const [isTyping, setIsTyping] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
   
   const chatUser = mockChatUsers[chatId]
 
@@ -225,50 +239,130 @@ export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps
     scrollToBottom()
   }, [messages])
 
+  // Check if content is just a filename (to hide it when media is present)
+  const isFilenameOnly = (content: string, media: MessageMedia[] | undefined): boolean => {
+    if (!media || media.length === 0) return false
+    if (!content.trim()) return false
+    
+    // Check if content matches any of the media filenames
+    const contentLower = content.trim().toLowerCase()
+    return media.some(m => m.file_name.toLowerCase() === contentLower)
+  }
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files)
+      const maxFiles = 10
+      const maxImageSize = 10 * 1024 * 1024 // 10MB
+      const maxVideoSize = 50 * 1024 * 1024 // 50MB
+
+      const validFiles: File[] = []
+      const previews: { url: string; type: 'image' | 'video'; file: File }[] = []
+
+      for (let i = 0; i < Math.min(fileArray.length, maxFiles - selectedFiles.length); i++) {
+        const file = fileArray[i]
+        const isImage = file.type.startsWith('image/')
+        const isVideo = file.type.startsWith('video/')
+
+        if (!isImage && !isVideo) {
+          toast({
+            title: "Invalid File",
+            description: "Please select images or videos only",
+            variant: "destructive",
+          })
+          continue
+        }
+
+        const maxSize = isImage ? maxImageSize : maxVideoSize
+        if (file.size > maxSize) {
+          toast({
+            title: "File Too Large",
+            description: `Maximum file size is ${maxSize / (1024 * 1024)}MB for ${isImage ? 'images' : 'videos'}`,
+            variant: "destructive",
+          })
+          continue
+        }
+
+        validFiles.push(file)
+        previews.push({
+          url: URL.createObjectURL(file),
+          type: isImage ? 'image' : 'video',
+          file,
+        })
+      }
+
+      setSelectedFiles(prev => [...prev, ...validFiles])
+      setFilePreviews(prev => [...prev, ...previews])
+    }
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+    const preview = filePreviews[index]
+    if (preview) {
+      URL.revokeObjectURL(preview.url)
+    }
+    setFilePreviews(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const message: Message = {
-        id: Date.now().toString(),
-        text: newMessage,
+    if ((!newMessage.trim() && selectedFiles.length === 0)) return
+
+    const messageContent = newMessage.trim()
+    const filesToSend = [...selectedFiles]
+    
+    // Clear inputs
+    setNewMessage("")
+    setSelectedFiles([])
+    filePreviews.forEach(preview => URL.revokeObjectURL(preview.url))
+    setFilePreviews([])
+
+    const message: Message = {
+      id: Date.now().toString(),
+      text: messageContent || ' ',
+      timestamp: "now",
+      isOwn: true,
+      isRead: false,
+      type: selectedFiles.length > 0 ? "image" : "text",
+    }
+    setMessages([...messages, message])
+    
+    // Show typing indicator
+    setIsTyping(true)
+    
+    // Auto-reply with various matrimony-appropriate responses after 1-3 seconds
+    const autoReplies = [
+      "hi",
+      "Namaste! 🙏",
+      "That's wonderful to hear!",
+      "I completely agree with you",
+      "Our families would be pleased",
+      "That sounds perfect!",
+      "I'm so happy to know this",
+      "This is exactly what I was hoping for",
+      "Your values align with ours",
+      "I'm excited to learn more! 😊"
+    ]
+    
+    setTimeout(() => {
+      setIsTyping(false)
+      const randomReply = autoReplies[Math.floor(Math.random() * autoReplies.length)]
+      const autoReply: Message = {
+        id: (Date.now() + 1).toString(),
+        text: randomReply,
         timestamp: "now",
-        isOwn: true,
+        isOwn: false,
         isRead: false,
         type: "text",
       }
-      setMessages([...messages, message])
-      setNewMessage("")
-      
-      // Show typing indicator
-      setIsTyping(true)
-      
-      // Auto-reply with various matrimony-appropriate responses after 1-3 seconds
-      const autoReplies = [
-        "hi",
-        "Namaste! 🙏",
-        "That's wonderful to hear!",
-        "I completely agree with you",
-        "Our families would be pleased",
-        "That sounds perfect!",
-        "I'm so happy to know this",
-        "This is exactly what I was hoping for",
-        "Your values align with ours",
-        "I'm excited to learn more! 😊"
-      ]
-      
-      setTimeout(() => {
-        setIsTyping(false)
-        const randomReply = autoReplies[Math.floor(Math.random() * autoReplies.length)]
-        const autoReply: Message = {
-          id: (Date.now() + 1).toString(),
-          text: randomReply,
-          timestamp: "now",
-          isOwn: false,
-          isRead: false,
-          type: "text",
-        }
-        setMessages(prev => [...prev, autoReply])
-      }, Math.random() * 2000 + 1000) // Random delay between 1-3 seconds
-    }
+      setMessages(prev => [...prev, autoReply])
+    }, Math.random() * 2000 + 1000) // Random delay between 1-3 seconds
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -336,12 +430,6 @@ export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps
 
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full">
-              <Phone className="w-5 h-5" />
-            </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full">
-              <Video className="w-5 h-5" />
-            </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full">
               <MoreVertical className="w-5 h-5" />
             </Button>
           </div>
@@ -371,7 +459,36 @@ export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps
                         : "bg-white/15 border-white/20 text-white rounded-bl-md",
                     )}
                   >
-                    <p className="text-sm leading-relaxed">{message.text}</p>
+                    {/* Media display - for mock data, we'll show placeholder */}
+                    {message.type === "image" && messagesMedia[message.id] && messagesMedia[message.id].length > 0 && (
+                      <div className="mb-2 space-y-2">
+                        {messagesMedia[message.id].map((media) => (
+                          <div key={media.id} className="rounded-lg overflow-hidden">
+                            {media.media_type === 'image' ? (
+                              <img
+                                src={media.media_url}
+                                alt={media.file_name}
+                                className="max-w-full h-auto rounded-lg object-contain"
+                                style={{ maxHeight: '400px', maxWidth: '100%' }}
+                              />
+                            ) : (
+                              <video
+                                src={media.media_url}
+                                controls
+                                className="max-w-full h-auto rounded-lg"
+                                style={{ maxHeight: '400px', maxWidth: '100%' }}
+                              >
+                                Your browser does not support the video tag.
+                              </video>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* Message content - hide if it's just a filename when media is present */}
+                    {message.text.trim() && !isFilenameOnly(message.text, messagesMedia[message.id]) && (
+                      <p className="text-sm leading-relaxed">{message.text}</p>
+                    )}
                     <div
                       className={cn(
                         "flex items-center justify-end space-x-1 mt-2",
@@ -415,16 +532,59 @@ export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps
         <div ref={messagesEndRef} />
       </div>
 
+      {/* File Previews */}
+      {filePreviews.length > 0 && (
+        <div className="flex-shrink-0 px-4 py-2 border-t border-border bg-background/50">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {filePreviews.map((preview, index) => (
+              <div key={index} className="relative flex-shrink-0">
+                {preview.type === 'image' ? (
+                  <img
+                    src={preview.url}
+                    alt={`Preview ${index + 1}`}
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
+                ) : (
+                  <video
+                    src={preview.url}
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0 bg-destructive hover:bg-destructive/90"
+                  onClick={() => removeFile(index)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Message Input */}
       <div className="flex-shrink-0 p-4 border-t border-border glass-apple bg-background">
         <div className="flex items-end space-x-3">
           <div className="flex space-x-2">
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full transition-colors">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2 hover:bg-muted/50 rounded-full transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
               <ImageIcon className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full transition-colors">
-              <Smile className="w-5 h-5" />
-            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+              style={{ display: 'none' }}
+            />
           </div>
 
           <div className="flex-1 relative">
@@ -434,12 +594,13 @@ export function MatrimonyChatScreen({ chatId, onBack }: MatrimonyChatScreenProps
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               className="pr-12 rounded-full text-sm border-2 focus:border-primary/50 transition-colors"
+              disabled={uploading}
             />
             <Button
               size="sm"
               className="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full p-0 bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
               onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
+              disabled={(!newMessage.trim() && selectedFiles.length === 0) || uploading}
             >
               <Send className="w-4 h-4" />
             </Button>
