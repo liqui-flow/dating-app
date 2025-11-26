@@ -16,13 +16,15 @@ interface LocationPermissionProps {
 export function LocationPermission({ className, initiallyEnabled = false, onEnabled }: LocationPermissionProps) {
   const [enabled, setEnabled] = useState(initiallyEnabled)
   const { toast } = useToast()
-  const { requestLocation, loading } = useUserLocation({
+  const { requestLocation, loading, startRealtime } = useUserLocation({
+    syncIntervalMs: 60000, // sync to DB every 60s while app is open
     onSuccess: () => {
       setEnabled(true)
       toast({
         title: "Location Enabled",
         description: "We will now show matches near you.",
       })
+      startRealtime() // Start real-time tracking
       onEnabled?.()
     },
     onError: (message) => {

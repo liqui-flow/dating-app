@@ -208,6 +208,10 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 			setLocationEnabled(hasUserLocation)
 			console.log("User location available:", hasUserLocation ? { userLat, userLon } : "No location yet")
 			
+			// When location is not enabled, be more lenient with filters
+			// Don't require photos if location is not available
+			const effectiveOnlyWithPhotos = hasUserLocation ? onlyWithPhotos : false
+			
 			// Log sample of profile genders for debugging
 			if (datingProfiles.length > 0) {
 				const sampleGenders = datingProfiles.slice(0, 5).map(p => ({
@@ -294,8 +298,8 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 						return null
 					}
 
-					// Filter by photos requirement
-					if (onlyWithPhotos && profilePhotos.length === 0) {
+					// Filter by photos requirement (only if location is enabled)
+					if (effectiveOnlyWithPhotos && profilePhotos.length === 0) {
 						filteredOutNoPhotos++
 						return null
 					}
@@ -347,7 +351,9 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 					const profileLon = typeof (datingProfile as any).longitude === "number" ? (datingProfile as any).longitude : null
 					let distanceLabel = ""
 
-					if (userLat !== null && userLon !== null && profileLat !== null && profileLon !== null) {
+					// Only filter by distance if BOTH user and profile have location
+					// If location is not enabled, show all profiles regardless of distance
+					if (hasUserLocation && userLat !== null && userLon !== null && profileLat !== null && profileLon !== null) {
 						const distanceKm = calculateDistance(userLat, userLon, profileLat, profileLon)
 						distanceLabel = formatDistance(distanceKm)
 
