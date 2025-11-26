@@ -27,6 +27,7 @@ import { supabase } from "@/lib/supabaseClient"
 import { handleLogout } from "@/lib/logout"
 import { recordMatrimonyLike, getMatrimonyLikedProfiles } from "@/lib/matchmakingService"
 import { MatchNotification } from "@/components/chat/match-notification"
+import type { FilterState } from "@/components/matrimony/matrimony-filter-sheet"
 
 // Helper function to calculate age from date of birth
 function calculateAge(dob: string | null, ageFromProfile: number | null): number {
@@ -84,6 +85,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
   const [showMatchNotification, setShowMatchNotification] = useState(false)
   const [matchedProfile, setMatchedProfile] = useState<MatrimonyProfile | null>(null)
   const [matchedMatchId, setMatchedMatchId] = useState<string | null>(null)
+  const [appliedFilters, setAppliedFilters] = useState<FilterState | null>(null)
 
   // Fetch profiles from Supabase
   useEffect(() => {
@@ -124,7 +126,9 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
 
         // Fetch matrimony profiles from consolidated table (only completed ones)
         console.log("Fetching matrimony profiles from matrimony_profile_full...")
-        const { data: matrimonyProfiles, error: profilesError } = await supabase
+        
+        // Build query with age filter if applied
+        let query = supabase
           .from("matrimony_profile_full")
           .select(`
             user_id,
@@ -135,9 +139,19 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
             personal,
             career,
             cultural,
+            family,
             bio
           `)
           .eq("profile_completed", true)
+
+        // Apply age filter at database level if available
+        if (appliedFilters?.ageRange) {
+          query = query
+            .gte("age", appliedFilters.ageRange[0])
+            .lte("age", appliedFilters.ageRange[1])
+        }
+
+        const { data: matrimonyProfiles, error: profilesError } = await query
 
         if (profilesError) {
           console.error("Error fetching matrimony profiles:", profilesError)
@@ -247,6 +261,144 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
             // Format height
             const height = personalData?.height_cm ? `${personalData.height_cm} cm` : undefined
 
+            // Apply filters (if any are set)
+            if (appliedFilters) {
+              // Apply height filter
+              if (appliedFilters.heightRange) {
+                const heightCm = personalData?.height_cm
+                if (heightCm) {
+                  if (heightCm < appliedFilters.heightRange[0] || 
+                      heightCm > appliedFilters.heightRange[1]) {
+                    return null
+                  }
+                }
+              }
+
+              // Apply location filter (match only by city)
+              if (appliedFilters.locations && appliedFilters.locations.length > 0) {
+                // If "Any" is selected, skip location filtering
+                if (!appliedFilters.locations.includes("Any")) {
+                  const profileCity = workLocation.city?.toLowerCase() || ""
+                  const matchesLocation = appliedFilters.locations.some(selectedCity => {
+                    const selectedCityLower = selectedCity.toLowerCase()
+                    // Match only by city name (case-insensitive)
+                    return profileCity === selectedCityLower
+                  })
+                  
+                  if (!matchesLocation) {
+                    return null
+                  }
+                }
+              }
+
+              // Apply education filter
+              if (appliedFilters.educationPrefs && appliedFilters.educationPrefs.length > 0) {
+                if (!appliedFilters.educationPrefs.includes("Any")) {
+                  const education = (careerData?.highest_education || "").toLowerCase()
+                  const matchesEducation = appliedFilters.educationPrefs.some(pref => {
+                    return education.includes(pref.toLowerCase()) ||
+                           pref.toLowerCase().includes(education)
+                  })
+                  if (!matchesEducation) {
+                    return null
+                  }
+                }
+              }
+
+              // Apply profession filter
+              if (appliedFilters.professionPrefs && appliedFilters.professionPrefs.length > 0) {
+                if (!appliedFilters.professionPrefs.includes("Any")) {
+                  const profession = (careerData?.job_title || "").toLowerCase()
+                  const matchesProfession = appliedFilters.professionPrefs.some(pref => {
+                    return profession.includes(pref.toLowerCase()) ||
+                           pref.toLowerCase().includes(profession)
+                  })
+                  if (!matchesProfession) {
+                    return null
+                  }
+                }
+              }
+
+              // Apply community filter
+              if (appliedFilters.communities && appliedFilters.communities.length > 0) {
+                if (!appliedFilters.communities.includes("Any")) {
+                  const community = (culturalData?.community || "").toLowerCase()
+                  const matchesCommunity = appliedFilters.communities.some(pref => {
+                    return community.includes(pref.toLowerCase()) ||
+                           pref.toLowerCase().includes(community)
+                  })
+                  if (!matchesCommunity) {
+                    return null
+                  }
+                }
+              }
+
+              // Apply family type filter
+              if (appliedFilters.familyTypePrefs && appliedFilters.familyTypePrefs.length > 0) {
+                if (!appliedFilters.familyTypePrefs.includes("Any")) {
+                  const familyType = ((matrimonyProfile.family as any)?.family_type || "").toLowerCase()
+                  const matchesFamilyType = appliedFilters.familyTypePrefs.some(pref => {
+                    return familyType.includes(pref.toLowerCase())
+                  })
+                  if (!matchesFamilyType) {
+                    return null
+                  }
+                }
+              }
+
+              // Apply diet filter
+              if (appliedFilters.dietPrefs && appliedFilters.dietPrefs.length > 0) {
+                if (!appliedFilters.dietPrefs.includes("Any")) {
+                  const diet = (personalData?.diet || "").toLowerCase()
+                  const matchesDiet = appliedFilters.dietPrefs.some(pref => {
+                    const prefLower = pref.toLowerCase()
+                    // Handle special cases
+                    if (prefLower === "strictly vegetarian" && diet.includes("vegetarian")) return true
+                    if (prefLower === "jain vegetarian" && diet.includes("jain")) return true
+                    if (prefLower === "non-vegetarian" && diet.includes("non")) return true
+                    if (prefLower === "open to both") return true
+                    return diet.includes(prefLower) || prefLower.includes(diet)
+                  })
+                  if (!matchesDiet) {
+                    return null
+                  }
+                }
+              }
+
+              // Apply lifestyle filter (smoker/drinker)
+              if (appliedFilters.lifestylePrefs && appliedFilters.lifestylePrefs.length > 0) {
+                if (!appliedFilters.lifestylePrefs.includes("Any")) {
+                  const isSmoker = personalData?.smoker || false
+                  const isDrinker = personalData?.drinker || false
+                  
+                  const matchesLifestyle = appliedFilters.lifestylePrefs.some(pref => {
+                    const prefLower = pref.toLowerCase()
+                    if (prefLower === "non-smoker" && isSmoker) return false
+                    if (prefLower === "non-drinker" && isDrinker) return false
+                    if (prefLower === "occasional drinker" && !isDrinker) return false
+                    if (prefLower === "social drinker" && !isDrinker) return false
+                    return true
+                  })
+                  
+                  if (!matchesLifestyle) {
+                    return null
+                  }
+                }
+              }
+
+              // Apply verified only filter
+              if (appliedFilters.verifiedOnly) {
+                if (verification?.verification_status !== "approved") {
+                  return null
+                }
+              }
+
+              // Apply premium only filter (skip for now - not implemented in schema)
+              // if (appliedFilters.premiumOnly) {
+              //   // TODO: Add premium check when premium feature is implemented
+              // }
+            }
+
             return {
               id: matrimonyProfile.user_id,
               name: matrimonyProfile.name,
@@ -276,7 +428,7 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
     }
 
     fetchProfiles()
-  }, [])
+  }, [appliedFilters])
 
   // Prevent body scroll when on discover screen
   useEffect(() => {
@@ -639,7 +791,14 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
       )}
 
       {/* Matrimony Filter Sheet */}
-      <MatrimonyFilterSheet open={showFilters} onOpenChange={setShowFilters} />
+      <MatrimonyFilterSheet 
+        open={showFilters} 
+        onOpenChange={setShowFilters}
+        onApplyFilters={(filters) => {
+          setAppliedFilters(filters)
+          setCurrentCardIndex(0) // Reset to first card when filters change
+        }}
+      />
     </AppLayout>
   )
 }

@@ -794,4 +794,36 @@ export async function getProfileCompletion(userId: string): Promise<ServiceRespo
   }
 }
 
+/**
+ * Get all unique cities from matrimony profiles
+ * Extracts only city from career.work_location
+ */
+export async function getMatrimonyLocations(): Promise<string[]> {
+  try {
+    const { data: profiles, error } = await supabase
+      .from('matrimony_profile_full')
+      .select('career')
+      .eq('profile_completed', true)
+
+    if (error) throw error
+
+    const cities = new Set<string>()
+    
+    profiles?.forEach((profile) => {
+      const career = profile.career as any
+      const workLocation = career?.work_location || {}
+      
+      // Add only city if present
+      if (workLocation.city) {
+        cities.add(workLocation.city)
+      }
+    })
+
+    return Array.from(cities).sort()
+  } catch (error: any) {
+    console.error('Error fetching matrimony locations:', error)
+    return []
+  }
+}
+
 

@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 interface FilterSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onFiltersSaved?: () => void
 }
 
 const educationOptions = ["High School", "Bachelor's Degree", "Master's Degree", "PhD", "Trade School", "Some College"]
@@ -32,7 +33,7 @@ const lifestyleOptions = [
   "Pet lover",
 ]
 
-export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
+export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetProps) {
   const [filters, setFilters] = useState({
     ageRange: [22, 35] as [number, number],
     distance: [50] as [number],
@@ -75,10 +76,10 @@ export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
           ageRange: [prefs.min_age || 22, prefs.max_age || 35],
           distance: [prefs.max_distance || 50],
           showMe: prefs.looking_for || "everyone",
-          interests: [],
-          relationshipGoal: "any",
-          verifiedOnly: false,
-          premiumOnly: false,
+          interests: prefs.interests || [],
+          relationshipGoal: prefs.relationship_goal || "any",
+          verifiedOnly: prefs.verified_only || false,
+          premiumOnly: prefs.premium_only || false,
           onlyWithPhotos: prefs.only_with_photos !== undefined ? prefs.only_with_photos : true,
           recentlyActive: prefs.recently_active || false,
           education: prefs.education || [],
@@ -113,9 +114,13 @@ export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
         looking_for: filters.showMe,
         only_with_photos: filters.onlyWithPhotos,
         recently_active: filters.recentlyActive,
+        verified_only: filters.verifiedOnly,
+        premium_only: filters.premiumOnly,
         education: filters.education,
         religion: filters.religion,
         lifestyle: filters.lifestyle,
+        interests: filters.interests,
+        relationship_goal: filters.relationshipGoal,
       }
 
       const { error } = await supabase
@@ -131,6 +136,11 @@ export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
       })
 
       onOpenChange(false)
+      
+      // Trigger refresh callback
+      if (onFiltersSaved) {
+        onFiltersSaved()
+      }
     } catch (error: any) {
       console.error("Error saving preferences:", error)
       toast({
@@ -235,6 +245,9 @@ export function FilterSheet({ open, onOpenChange }: FilterSheetProps) {
               step={1}
               className="w-full"
             />
+            <p className="text-xs text-muted-foreground">
+              Distance filtering requires location access. Enable location in the discovery screen to apply this setting.
+            </p>
           </div>
 
           <Separator />

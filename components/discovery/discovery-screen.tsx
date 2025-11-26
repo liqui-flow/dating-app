@@ -12,6 +12,8 @@ import { Heart, Filter } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { recordDatingLike, getDatingLikedProfiles } from "@/lib/matchmakingService"
 import { MatchNotification } from "@/components/chat/match-notification"
+import { LocationPermission } from "@/components/location/LocationPermission"
+import { calculateDistance, formatDistance } from "@/lib/geolocationUtils"
 
 // Profile interface
 interface Profile {
@@ -64,6 +66,7 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 	const [showMatchNotification, setShowMatchNotification] = useState(false)
 	const [matchedProfile, setMatchedProfile] = useState<Profile | null>(null)
 	const [matchedMatchId, setMatchedMatchId] = useState<string | null>(null)
+	const [locationEnabled, setLocationEnabled] = useState(false)
 
 	// Fetch profiles from Supabase
 	const fetchProfiles = async () => {
@@ -104,7 +107,7 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 			// Fetch user's dating preferences from new consolidated table
 			const { data: userProfileFull, error: userProfileError } = await supabase
 				.from("dating_profile_full")
-				.select("preferences")
+				.select("preferences, latitude, longitude")
 				.eq("user_id", user.id)
 				.single()
 
@@ -122,6 +125,8 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 					name,
 					dob,
 					gender,
+					latitude,
+					longitude,
 					bio,
 					photos,
 					interests,
@@ -182,8 +187,26 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 			// Get user's preference for filtering
 			const userPrefs = (userProfileFull?.preferences as any) || {}
 			const lookingFor = userPrefs.looking_for || 'everyone'
+			const minAge = userPrefs.min_age || 18
+			const maxAge = userPrefs.max_age || 60
+			const maxDistance = userPrefs.max_distance || 100
+			const onlyWithPhotos = userPrefs.only_with_photos !== undefined ? userPrefs.only_with_photos : true
+			const recentlyActive = userPrefs.recently_active || false
+			const verifiedOnly = userPrefs.verified_only || false
+			const premiumOnly = userPrefs.premium_only || false
+			const educationPrefs = userPrefs.education || []
+			const religionPrefs = userPrefs.religion || []
+			const lifestylePrefs = userPrefs.lifestyle || []
+			const interestsPrefs = userPrefs.interests || []
+			const relationshipGoal = userPrefs.relationship_goal || null
 			console.log("User looking for:", lookingFor)
 			console.log("User preferences object:", userPrefs)
+
+			const userLat = typeof userProfileFull?.latitude === "number" ? userProfileFull.latitude : null
+			const userLon = typeof userProfileFull?.longitude === "number" ? userProfileFull.longitude : null
+			const hasUserLocation = userLat !== null && userLon !== null
+			setLocationEnabled(hasUserLocation)
+			console.log("User location available:", hasUserLocation ? { userLat, userLon } : "No location yet")
 			
 			// Log sample of profile genders for debugging
 			if (datingProfiles.length > 0) {
@@ -204,6 +227,13 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 			let filteredOutCurrentUser = 0
 			let filteredOutGender = 0
 			let filteredOutAlreadyLiked = 0
+			let filteredOutAge = 0
+			let filteredOutNoPhotos = 0
+			let filteredOutNotVerified = 0
+			let filteredOutNotRecent = 0
+			let filteredOutRelationshipGoal = 0
+			let filteredOutInterests = 0
+			let filteredOutDistance = 0
 
 			// Combine all data from consolidated table
 			const combinedProfiles: Profile[] = datingProfiles
@@ -255,6 +285,82 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 					}
 					// If lookingFor is 'everyone', show all profiles
 
+					// Calculate age for filtering
+					const profileAge = calculateAge(dob)
+
+					// Filter by age range
+					if (profileAge < minAge || profileAge > maxAge) {
+						filteredOutAge++
+						return null
+					}
+
+					// Filter by photos requirement
+					if (onlyWithPhotos && profilePhotos.length === 0) {
+						filteredOutNoPhotos++
+						return null
+					}
+
+					// Filter by verified status
+					if (verifiedOnly && verification?.verification_status !== "approved") {
+						filteredOutNotVerified++
+						return null
+					}
+
+					// Filter by recently active (if last_active field exists)
+					// Note: Using updated_at as proxy for last active
+					if (recentlyActive) {
+						const lastActive = (datingProfile as any).updated_at
+						if (lastActive) {
+							const daysSinceActive = (Date.now() - new Date(lastActive).getTime()) / (1000 * 60 * 60 * 24)
+							if (daysSinceActive > 7) {
+								filteredOutNotRecent++
+								return null
+							}
+						} else {
+							// If no updated_at, filter out if recently active is required
+							filteredOutNotRecent++
+							return null
+						}
+					}
+
+					// Filter by relationship goal
+					if (relationshipGoal && relationshipGoal !== "any") {
+						const profileGoal = datingProfile.relationship_goals
+						if (profileGoal !== relationshipGoal) {
+							filteredOutRelationshipGoal++
+							return null
+						}
+					}
+
+					// Filter by interests (at least one match required)
+					if (interestsPrefs.length > 0) {
+						const hasMatchingInterest = interestsPrefs.some(interest => 
+							profileInterests.includes(interest)
+						)
+						if (!hasMatchingInterest) {
+							filteredOutInterests++
+							return null
+						}
+					}
+
+					const profileLat = typeof (datingProfile as any).latitude === "number" ? (datingProfile as any).latitude : null
+					const profileLon = typeof (datingProfile as any).longitude === "number" ? (datingProfile as any).longitude : null
+					let distanceLabel = ""
+
+					if (userLat !== null && userLon !== null && profileLat !== null && profileLon !== null) {
+						const distanceKm = calculateDistance(userLat, userLon, profileLat, profileLon)
+						distanceLabel = formatDistance(distanceKm)
+
+						if (distanceKm > maxDistance) {
+							filteredOutDistance++
+							return null
+						}
+					}
+
+					// Note: Education, religion, lifestyle, and premium filters cannot be applied
+					// because these fields don't exist in the dating_profile_full table schema
+					// These filters will be saved but won't affect results until schema is updated
+
 					return {
 						id: datingProfile.user_id,
 						name: datingProfile.name,
@@ -269,13 +375,13 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 						religion: "", // Not available in current schema
 						verified: verification?.verification_status === "approved",
 						premium: false, // Not available in current schema
-						distance: "", // Not available in current schema
+						distance: distanceLabel,
 					}
 				})
 				.filter((profile): profile is Profile => profile !== null)
 
 			console.log(`Successfully processed ${combinedProfiles.length} profiles for display`)
-			console.log(`Filtering stats: ${filteredOutNoDob} no DOB, ${filteredOutCurrentUser} current user, ${filteredOutGender} gender mismatch, ${filteredOutAlreadyLiked} already liked/passed`)
+			console.log(`Filtering stats: ${filteredOutNoDob} no DOB, ${filteredOutCurrentUser} current user, ${filteredOutGender} gender mismatch, ${filteredOutAlreadyLiked} already liked/passed, ${filteredOutAge} age mismatch, ${filteredOutNoPhotos} no photos, ${filteredOutNotVerified} not verified, ${filteredOutNotRecent} not recent, ${filteredOutRelationshipGoal} relationship goal mismatch, ${filteredOutInterests} interests mismatch, ${filteredOutDistance} beyond max distance`)
 			
 			setProfiles(combinedProfiles)
 			if (combinedProfiles.length === 0) {
@@ -288,7 +394,28 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 					if (filteredOutGender > 0) {
 						errorMsg += `${filteredOutGender} don't match your gender preference. `
 					}
-					errorMsg += "Make sure there are completed profiles in the database."
+					if (filteredOutAge > 0) {
+						errorMsg += `${filteredOutAge} don't match your age range. `
+					}
+					if (filteredOutNoPhotos > 0) {
+						errorMsg += `${filteredOutNoPhotos} don't have photos. `
+					}
+					if (filteredOutNotVerified > 0) {
+						errorMsg += `${filteredOutNotVerified} are not verified. `
+					}
+					if (filteredOutNotRecent > 0) {
+						errorMsg += `${filteredOutNotRecent} haven't been active recently. `
+					}
+					if (filteredOutRelationshipGoal > 0) {
+						errorMsg += `${filteredOutRelationshipGoal} don't match your relationship goal. `
+					}
+					if (filteredOutInterests > 0) {
+						errorMsg += `${filteredOutInterests} don't match your interests. `
+					}
+					if (filteredOutDistance > 0) {
+						errorMsg += `${filteredOutDistance} are beyond your distance range. `
+					}
+					errorMsg += "Try adjusting your filters to see more profiles."
 				} else {
 					errorMsg += "Make sure there are completed profiles in the database."
 				}
@@ -408,6 +535,19 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 		<div className="fixed inset-0 h-screen w-screen overflow-hidden flex flex-col relative">
 			{/* Dynamic Background */}
 			<DynamicBackground imageUrl={currentProfileImage} />
+
+			{!locationEnabled && (
+				<div className="fixed top-14 left-0 right-0 z-40 px-4 sm:px-6">
+					<LocationPermission
+						initiallyEnabled={locationEnabled}
+						onEnabled={() => {
+							setLocationEnabled(true)
+							fetchProfiles()
+						}}
+						className="mx-auto max-w-md shadow-lg"
+					/>
+				</div>
+			)}
 			
 			{/* Floating header elements */}
 			<div className="fixed top-3 left-4 z-40 text-lg sm:text-xl font-semibold">For you</div>
@@ -496,7 +636,8 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 					if (!open && openFiltersOnMount && onBackToProfile) {
 						onBackToProfile()
 					}
-				}} 
+				}}
+				onFiltersSaved={fetchProfiles}
 			/>
 
 			{/* Profile Modal */}

@@ -13,6 +13,8 @@ export interface DatingProfileFull {
   name: string
   dob?: string | null
   gender?: string | null
+  latitude?: number | null
+  longitude?: number | null
   bio?: string | null
   interests?: string[] // Array of interest strings (e.g., ["Music", "Travel", "Food"])
   prompts?: Array<{ prompt: string; answer: string }> // Array of prompt/answer objects
@@ -1056,6 +1058,58 @@ export async function getDatingPreferences(userId: string): Promise<ServiceRespo
     return { success: true, data: legacyData }
   } catch (error: any) {
     console.error('Error getting dating preferences:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// ============================================
+// LOCATION HELPERS
+// ============================================
+
+/**
+ * Update the authenticated user's coordinates
+ */
+export async function updateUserLocation(latitude: number, longitude: number): Promise<ServiceResponse> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { success: false, error: 'User not authenticated' }
+    }
+
+    const { error } = await supabase
+      .from('dating_profile_full')
+      .update({
+        latitude,
+        longitude,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', user.id)
+
+    if (error) throw error
+
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error updating user location:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Fetch latitude/longitude for a user id
+ */
+export async function getUserLocation(userId: string): Promise<ServiceResponse<{ latitude: number | null; longitude: number | null }>> {
+  try {
+    const { data, error } = await supabase
+      .from('dating_profile_full')
+      .select('latitude, longitude')
+      .eq('user_id', userId)
+      .single()
+
+    if (error) throw error
+
+    return { success: true, data: { latitude: data.latitude ?? null, longitude: data.longitude ?? null } }
+  } catch (error: any) {
+    console.error('Error fetching user location:', error)
     return { success: false, error: error.message }
   }
 }

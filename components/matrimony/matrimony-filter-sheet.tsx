@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
@@ -10,14 +10,30 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { X } from "lucide-react"
+import { getMatrimonyLocations } from "@/lib/matrimonyService"
+
+export interface FilterState {
+  ageRange: [number, number]
+  heightRange: [number, number]
+  locations: string[]
+  educationPrefs: string[]
+  professionPrefs: string[]
+  communities: string[]
+  familyTypePrefs: string[]
+  dietPrefs: string[]
+  lifestylePrefs: string[]
+  verifiedOnly: boolean
+  premiumOnly: boolean
+}
 
 interface MatrimonyFilterSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onApplyFilters?: (filters: FilterState) => void
 }
 
-export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterSheetProps) {
-  const [filters, setFilters] = useState({
+export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: MatrimonyFilterSheetProps) {
+  const [filters, setFilters] = useState<FilterState>({
     ageRange: [21, 35],
     heightRange: [150, 190], // in cm
     locations: [] as string[],
@@ -31,11 +47,28 @@ export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterShee
     premiumOnly: false,
   })
 
-  const locationOptions = [
+  const defaultLocationOptions = [
     "Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata", "Hyderabad", 
     "Pune", "Ahmedabad", "Jaipur", "Surat", "USA", "Canada", "UK", 
     "Australia", "Singapore", "Dubai", "Any"
   ]
+
+  const [locationOptions, setLocationOptions] = useState<string[]>(defaultLocationOptions)
+
+  // Fetch locations from database when sheet opens
+  useEffect(() => {
+    if (open) {
+      async function fetchLocations() {
+        const locations = await getMatrimonyLocations()
+        if (locations.length > 0) {
+          // Combine with default options and remove duplicates
+          const allLocations = [...new Set([...defaultLocationOptions, ...locations])].sort()
+          setLocationOptions(allLocations)
+        }
+      }
+      fetchLocations()
+    }
+  }, [open])
 
   const educationOptions = [
     "Any professional degree", "MBA", "B.Tech", "MBBS", "CA", "CS", 
@@ -89,7 +122,10 @@ export function MatrimonyFilterSheet({ open, onOpenChange }: MatrimonyFilterShee
   }
 
   const handleApply = () => {
-    // Apply filters logic here
+    // Call the callback to apply filters
+    if (onApplyFilters) {
+      onApplyFilters(filters)
+    }
     onOpenChange(false)
   }
 
