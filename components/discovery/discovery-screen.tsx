@@ -66,7 +66,19 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 	const [showMatchNotification, setShowMatchNotification] = useState(false)
 	const [matchedProfile, setMatchedProfile] = useState<Profile | null>(null)
 	const [matchedMatchId, setMatchedMatchId] = useState<string | null>(null)
-	const [locationEnabled, setLocationEnabled] = useState(false)
+	const [locationEnabled, setLocationEnabled] = useState(() => {
+		if (typeof window === "undefined") {
+			return false
+		}
+		return window.localStorage.getItem("location-enabled") === "true"
+	})
+
+	const updateLocationEnabled = (value: boolean) => {
+		setLocationEnabled(value)
+		if (typeof window !== "undefined") {
+			window.localStorage.setItem("location-enabled", value ? "true" : "false")
+		}
+	}
 
 	// Fetch profiles from Supabase
 	const fetchProfiles = async () => {
@@ -205,7 +217,7 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 			const userLat = typeof userProfileFull?.latitude === "number" ? userProfileFull.latitude : null
 			const userLon = typeof userProfileFull?.longitude === "number" ? userProfileFull.longitude : null
 			const hasUserLocation = userLat !== null && userLon !== null
-			setLocationEnabled(hasUserLocation)
+			updateLocationEnabled(hasUserLocation)
 			console.log("User location available:", hasUserLocation ? { userLat, userLon } : "No location yet")
 			
 			// When location is not enabled, be more lenient with filters
@@ -547,7 +559,7 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 					<LocationPermission
 						initiallyEnabled={locationEnabled}
 						onEnabled={() => {
-							setLocationEnabled(true)
+							updateLocationEnabled(true)
 							fetchProfiles()
 						}}
 						className="mx-auto max-w-md shadow-lg"

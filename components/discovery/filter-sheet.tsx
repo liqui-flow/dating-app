@@ -33,21 +33,54 @@ const lifestyleOptions = [
   "Pet lover",
 ]
 
+type FilterState = {
+  ageRange: [number, number]
+  distance: [number]
+  showMe: "women" | "men" | "everyone"
+  interests: string[]
+  relationshipGoal: string
+  verifiedOnly: boolean
+  premiumOnly: boolean
+  onlyWithPhotos: boolean
+  recentlyActive: boolean
+  education: string[]
+  religion: string[]
+  lifestyle: string[]
+}
+
+const getDefaultFilters = (): FilterState => ({
+  ageRange: [22, 35],
+  distance: [50],
+  showMe: "everyone",
+  interests: [],
+  relationshipGoal: "any",
+  verifiedOnly: false,
+  premiumOnly: false,
+  onlyWithPhotos: true,
+  recentlyActive: false,
+  education: [],
+  religion: [],
+  lifestyle: [],
+})
+
+const mapFiltersToPreferences = (state: FilterState) => ({
+  min_age: state.ageRange[0],
+  max_age: state.ageRange[1],
+  max_distance: state.distance[0],
+  looking_for: state.showMe,
+  only_with_photos: state.onlyWithPhotos,
+  recently_active: state.recentlyActive,
+  verified_only: state.verifiedOnly,
+  premium_only: state.premiumOnly,
+  education: state.education,
+  religion: state.religion,
+  lifestyle: state.lifestyle,
+  interests: state.interests,
+  relationship_goal: state.relationshipGoal,
+})
+
 export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetProps) {
-  const [filters, setFilters] = useState({
-    ageRange: [22, 35] as [number, number],
-    distance: [50] as [number],
-    showMe: "everyone" as "women" | "men" | "everyone",
-    interests: [] as string[],
-    relationshipGoal: "any",
-    verifiedOnly: false,
-    premiumOnly: false,
-    onlyWithPhotos: true,
-    recentlyActive: false,
-    education: [] as string[],
-    religion: [] as string[],
-    lifestyle: [] as string[],
-  })
+  const [filters, setFilters] = useState<FilterState>(getDefaultFilters)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const { toast } = useToast()
@@ -94,41 +127,26 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
     }
   }
 
+  const persistPreferences = async (state: FilterState) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      throw new Error("Please log in to update preferences")
+    }
+
+    const preferences = mapFiltersToPreferences(state)
+
+    const { error } = await supabase
+      .from('dating_profile_full')
+      .update({ preferences })
+      .eq('user_id', user.id)
+
+    if (error) throw error
+  }
+
   const handleSave = async () => {
     try {
       setSaving(true)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "Please log in to save preferences",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const preferences = {
-        min_age: filters.ageRange[0],
-        max_age: filters.ageRange[1],
-        max_distance: filters.distance[0],
-        looking_for: filters.showMe,
-        only_with_photos: filters.onlyWithPhotos,
-        recently_active: filters.recentlyActive,
-        verified_only: filters.verifiedOnly,
-        premium_only: filters.premiumOnly,
-        education: filters.education,
-        religion: filters.religion,
-        lifestyle: filters.lifestyle,
-        interests: filters.interests,
-        relationship_goal: filters.relationshipGoal,
-      }
-
-      const { error } = await supabase
-        .from('dating_profile_full')
-        .update({ preferences })
-        .eq('user_id', user.id)
-
-      if (error) throw error
+      await persistPreferences(filters)
 
       toast({
         title: "Preferences Saved",
@@ -176,21 +194,27 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
     }))
   }
 
-  const handleReset = () => {
-    setFilters({
-      ageRange: [22, 35],
-      distance: [50],
-      showMe: "everyone",
-      interests: [],
-      relationshipGoal: "any",
-      verifiedOnly: false,
-      premiumOnly: false,
-      onlyWithPhotos: true,
-      recentlyActive: false,
-      education: [],
-      religion: [],
-      lifestyle: [],
-    })
+  const handleReset = async () => {
+    try {
+      setSaving(true)
+      const defaults = getDefaultFilters()
+      setFilters(defaults)
+      await persistPreferences(defaults)
+      toast({
+        title: "Filters reset",
+        description: "Default discovery preferences applied.",
+      })
+      onFiltersSaved?.()
+    } catch (error: any) {
+      console.error("Error resetting preferences:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset preferences. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleArrayToggle = (key: "education" | "religion" | "lifestyle", value: string) => {
