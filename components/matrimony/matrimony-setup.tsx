@@ -61,7 +61,7 @@ export function MatrimonySetup() {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="absolute inset-0 bg-black/40"></div>
+      <div className="absolute inset-0 bg-black/70" />
       <Card className="w-full max-w-4xl bg-white/10 border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.6)] backdrop-blur-2xl text-white rounded-[32px] relative z-10">
         <CardHeader className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

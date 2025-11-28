@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { MessageCircle, User, Search, Bell } from "lucide-react"
+import { MessageCircle, User, Search, Bell, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUnreadMessageCount } from "@/hooks/useUnreadMessageCount"
 
@@ -10,11 +10,22 @@ interface QuickActionsProps {
   onOpenProfile: () => void
   onDiscover?: () => void
   onOpenActivity?: () => void
+  onOpenShortlist?: () => void
+  showShortlist?: boolean
   activeTab?: string
   className?: string
 }
 
-export function QuickActions({ onOpenChat, onOpenProfile, onDiscover, onOpenActivity, activeTab, className }: QuickActionsProps) {
+export function QuickActions({
+  onOpenChat,
+  onOpenProfile,
+  onDiscover,
+  onOpenActivity,
+  onOpenShortlist,
+  showShortlist = false,
+  activeTab,
+  className,
+}: QuickActionsProps) {
   const unreadCount = useUnreadMessageCount()
   
   // Debug log
@@ -24,6 +35,7 @@ export function QuickActions({ onOpenChat, onOpenProfile, onDiscover, onOpenActi
   
   const tabs = [
     { id: "discover", icon: Search, onClick: onDiscover, show: !!onDiscover },
+    { id: "shortlist", icon: Heart, onClick: onOpenShortlist, show: showShortlist && !!onOpenShortlist },
     { id: "messages", icon: MessageCircle, onClick: onOpenChat, show: true },
     { id: "activity", icon: Bell, onClick: onOpenActivity, show: !!onOpenActivity },
     { id: "profile", icon: User, onClick: onOpenProfile, show: true },

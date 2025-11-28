@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AppLayout } from "@/components/layout/app-layout"
@@ -28,6 +29,10 @@ import { handleLogout } from "@/lib/logout"
 import { recordMatrimonyLike, getMatrimonyLikedProfiles } from "@/lib/matchmakingService"
 import { MatchNotification } from "@/components/chat/match-notification"
 import type { FilterState } from "@/components/matrimony/matrimony-filter-sheet"
+import { useToast } from "@/hooks/use-toast"
+import { useMatrimonyShortlist } from "@/hooks/useMatrimonyShortlist"
+import { MatrimonyShortlistView } from "@/components/matrimony/matrimony-shortlist"
+import { MatrimonyProfileModal } from "@/components/matrimony/matrimony-profile-modal"
 
 // Helper function to calculate age from date of birth
 function calculateAge(dob: string | null, ageFromProfile: number | null): number {
@@ -58,10 +63,25 @@ function formatHeight(heightCm: number | null): string | undefined {
 
 interface MatrimonyMainProps {
   onExit?: () => void
+  initialScreen?:
+    | "discover"
+    | "messages"
+    | "activity"
+    | "chat"
+    | "profile"
+    | "profile-setup"
+    | "edit-profile"
+    | "premium"
+    | "payment"
+    | "premium-features"
+    | "verification-status"
+    | "app-settings"
+    | "shortlist"
 }
 
 
-export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
+export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyMainProps) {
+  const router = useRouter()
   const [profiles, setProfiles] = useState<MatrimonyProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [currentScreen, setCurrentScreen] = useState<
@@ -77,7 +97,8 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
     | "premium-features"
     | "verification-status"
     | "app-settings"
-  >("discover")
+    | "shortlist"
+  >(initialScreen)
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
@@ -86,6 +107,107 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
   const [matchedProfile, setMatchedProfile] = useState<MatrimonyProfile | null>(null)
   const [matchedMatchId, setMatchedMatchId] = useState<string | null>(null)
   const [appliedFilters, setAppliedFilters] = useState<FilterState | null>(null)
+  const [shortlistModalProfile, setShortlistModalProfile] = useState<MatrimonyProfile | null>(null)
+  const { toast } = useToast()
+  const {
+    shortlistedProfiles,
+    shortlistedIds,
+    loading: shortlistLoading,
+    removeProfile: removeFromShortlist,
+    toggleShortlist,
+  } = useMatrimonyShortlist()
+
+  useEffect(() => {
+    setCurrentScreen(initialScreen)
+  }, [initialScreen])
+
+  const handleOpenShortlist = useCallback(() => {
+    setCurrentScreen("shortlist")
+    router.push("/matrimony/shortlist")
+  }, [router])
+
+  const handleOpenDiscover = useCallback(() => {
+    setCurrentScreen("discover")
+    router.push("/matrimony/discovery")
+  }, [router])
+
+  const handleShortlistToggle = useCallback(
+    async (profile: MatrimonyProfile) => {
+      const wasShortlisted = shortlistedIds.has(profile.id)
+      const result = await toggleShortlist(profile)
+
+      if (result.success) {
+        toast({
+          title: wasShortlisted ? "Removed from shortlist" : "Added to shortlist",
+          description: wasShortlisted
+            ? `${profile.name} was removed from your saved profiles.`
+            : `${profile.name} has been saved for later.`,
+        })
+      } else {
+        toast({
+          title: "Unable to update shortlist",
+          description: result.error || "Please try again.",
+          variant: "destructive",
+        })
+      }
+
+      return result
+    },
+    [shortlistedIds, toggleShortlist, toast],
+  )
+
+  const handleShortlistRemove = useCallback(
+    async (profileId: string, profileName?: string) => {
+      const result = await removeFromShortlist(profileId)
+
+      if (result.success) {
+        toast({
+          title: "Removed from shortlist",
+          description: profileName ? `${profileName} was removed.` : "Profile removed.",
+        })
+      } else {
+        toast({
+          title: "Unable to update shortlist",
+          description: result.error || "Please try again.",
+          variant: "destructive",
+        })
+      }
+
+      return result
+    },
+    [removeFromShortlist, toast],
+  )
+
+  const handleShortlistConnect = useCallback(
+    async (profile: MatrimonyProfile) => {
+      try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser()
+        if (authError || !user) {
+          throw new Error("Please sign in to continue.")
+        }
+
+        const result = await recordMatrimonyLike(user.id, profile.id, "like")
+        if (!result.success) {
+          throw new Error(result.error || "Unable to connect.")
+        }
+
+        toast({
+          title: `You liked ${profile.name}`,
+          description: "We'll notify you if it's a match.",
+        })
+      } catch (error: any) {
+        toast({
+          title: "Could not connect",
+          description: error.message || "Please try again.",
+          variant: "destructive",
+        })
+      }
+    },
+    [toast],
+  )
 
   // Fetch profiles from Supabase
   useEffect(() => {
@@ -585,6 +707,8 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
                               education={profile.education}
                               onConnect={index === 0 ? () => handleLike() : () => {}}
                               onNotNow={index === 0 ? () => handlePass() : () => {}}
+                              isShortlisted={shortlistedIds.has(profile.id)}
+                              onToggleShortlist={() => handleShortlistToggle(profile)}
                               onProfileClick={() => {
                                 // TODO: Implement profile modal for matrimony
                                 console.log("Profile clicked:", profile.name)
@@ -651,6 +775,32 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
               }
             }}
           />
+        </div>
+      )}
+
+      {currentScreen === "shortlist" && (
+        <div
+          className="relative p-4 pb-24 mt-2 w-full min-h-screen bg-cover bg-center"
+          style={{ backgroundImage: "url('/image%2052.png')" }}
+        >
+          <div className="absolute inset-0 bg-black/70" />
+          <div className="relative z-10 max-w-2xl mx-auto space-y-4 text-white">
+            <div>
+              <h2 className="text-2xl font-semibold">Your Shortlist</h2>
+              <p className="text-sm text-white/80">
+                Saved profiles stay here until you decide to connect or remove them.
+              </p>
+            </div>
+            <MatrimonyShortlistView
+              profiles={shortlistedProfiles}
+              loading={shortlistLoading}
+              onRemove={async (profileId) => {
+                const profile = shortlistedProfiles.find((p) => p.id === profileId)
+                return handleShortlistRemove(profileId, profile?.name)
+              }}
+              onOpenProfile={(profile) => setShortlistModalProfile(profile)}
+            />
+          </div>
         </div>
       )}
 
@@ -761,6 +911,24 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         />
       )}
 
+      {shortlistModalProfile && (
+        <MatrimonyProfileModal
+          profile={shortlistModalProfile}
+          open={!!shortlistModalProfile}
+          onOpenChange={(open) => {
+            if (!open) setShortlistModalProfile(null)
+          }}
+          onConnect={() => {
+            void handleShortlistConnect(shortlistModalProfile)
+            setShortlistModalProfile(null)
+          }}
+          onNotNow={() => {
+            void handleShortlistRemove(shortlistModalProfile.id, shortlistModalProfile.name)
+            setShortlistModalProfile(null)
+          }}
+        />
+      )}
+
       {currentScreen === "app-settings" && (
         <div className="p-0 pb-0 mt-0">
           <AppSettings
@@ -776,8 +944,19 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
         </div>
       )}
 
-      {(currentScreen === "messages" || currentScreen === "activity" || currentScreen === "profile") && (
-        <BackFloatingButton onClick={() => setCurrentScreen("discover")} />
+      {(currentScreen === "messages" ||
+        currentScreen === "activity" ||
+        currentScreen === "profile" ||
+        currentScreen === "shortlist") && (
+        <BackFloatingButton
+          onClick={() => {
+            if (currentScreen === "shortlist") {
+              handleOpenDiscover()
+            } else {
+              setCurrentScreen("discover")
+            }
+          }}
+        />
       )}
 
       {currentScreen !== "chat" && (
@@ -786,7 +965,9 @@ export function MatrimonyMain({ onExit }: MatrimonyMainProps) {
           onOpenChat={() => setCurrentScreen("messages")}
           onOpenActivity={() => setCurrentScreen("activity")}
           onOpenProfile={() => setCurrentScreen("profile")}
-          onDiscover={() => setCurrentScreen("discover")}
+          onDiscover={handleOpenDiscover}
+          onOpenShortlist={handleOpenShortlist}
+          showShortlist
         />
       )}
 

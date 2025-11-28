@@ -5,7 +5,7 @@ import { motion, useMotionValue, useTransform, animate } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { Check, X, Info, MoreHorizontal, MapPin, Briefcase, GraduationCap, Users, ChevronLeft, ChevronRight, Flag } from "lucide-react"
+import { Check, X, Info, MoreHorizontal, MapPin, Briefcase, GraduationCap, Users, ChevronLeft, ChevronRight, Flag, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "../discovery/swipe-animations"
 import { MatrimonyProfileModal } from "./matrimony-profile-modal"
@@ -29,6 +29,8 @@ interface MatrimonySwipeCardProps {
   onNotNow: () => void
   onProfileClick?: () => void
   stackIndex?: number // 0 is top, then 1,2 for depth visuals
+  isShortlisted?: boolean
+  onToggleShortlist?: () => Promise<any> | void
 }
 
 export function MatrimonySwipeCard({
@@ -49,6 +51,8 @@ export function MatrimonySwipeCard({
   onNotNow,
   onProfileClick,
   stackIndex = 0,
+  isShortlisted = false,
+  onToggleShortlist,
 }: MatrimonySwipeCardProps) {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
@@ -57,6 +61,18 @@ export function MatrimonySwipeCard({
   const [isFlipped, setIsFlipped] = useState(false)
   const [fullProfile, setFullProfile] = useState<MatrimonyProfileFull | null>(null)
   const [loadingProfile, setLoadingProfile] = useState(false)
+  const [shortlistBusy, setShortlistBusy] = useState(false)
+  const handleShortlistClick = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!onToggleShortlist || shortlistBusy) return
+    setShortlistBusy(true)
+    try {
+      await onToggleShortlist()
+    } finally {
+      setShortlistBusy(false)
+    }
+  }
+
   const { animation, showHeartBurst, showXBurst, hideAnimation } = useSwipeAnimation()
   
   // Motion value for 3D rotation
@@ -333,9 +349,25 @@ export function MatrimonySwipeCard({
         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] via-transparent to-transparent backdrop-blur-[0.5px]" />
       )}
 
-      {/* Top-right menu dots */}
+      {/* Top-right controls */}
       {stackIndex === 0 && (
-        <div className="absolute top-4 right-4 z-20">
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          {onToggleShortlist && (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              type="button"
+              aria-label={isShortlisted ? "Remove from shortlist" : "Add to shortlist"}
+              aria-pressed={isShortlisted}
+              onClick={handleShortlistClick}
+              className={cn(
+                "w-9 h-9 rounded-full border border-white/40 backdrop-blur bg-black/40 flex items-center justify-center shadow-lg transition-colors",
+                isShortlisted ? "text-red-400 border-red-400 bg-black/60" : "text-white/80 hover:text-white",
+                shortlistBusy && "opacity-60 pointer-events-none",
+              )}
+            >
+              <Heart className="w-4 h-4" fill={isShortlisted ? "currentColor" : "none"} strokeWidth={1.8} />
+            </motion.button>
+          )}
           <Button
             variant="ghost"
             size="sm"
