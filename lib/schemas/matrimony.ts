@@ -54,7 +54,10 @@ export const culturalAstroSchema = z.object({
 })
 
 export const bioSchema = z.object({
-  bio: z.string().min(50).max(1000),
+  bio: z
+    .string()
+    .min(20, "Bio must be at least 20 characters")
+    .max(300, "Bio can be at most 300 characters"),
 })
 
 export const partnerPreferencesSchema = z.object({

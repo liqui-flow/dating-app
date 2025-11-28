@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS matrimony_bio (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   
   -- Bio text
-  bio TEXT CHECK (LENGTH(bio) >= 50 AND LENGTH(bio) <= 1000),
+  bio TEXT CHECK (LENGTH(bio) >= 20 AND LENGTH(bio) <= 300),
   
   -- Timestamps
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),

@@ -72,11 +72,11 @@ export function Step6Bio({ onNext, onBack }: { onNext: () => void; onBack: () =>
           
           <FormField control={form.control} name="bio" render={({ field }) => (
             <FormItem>
-              <FormLabel>Bio (500–1000 characters)</FormLabel>
+              <FormLabel>Bio (20–300 characters)</FormLabel>
               <FormControl>
-                <Textarea rows={8} maxLength={1000} placeholder="Describe your personality, passions, and what you're looking for in a life partner." {...field} />
+                <Textarea rows={8} maxLength={300} placeholder="Describe your personality, passions, and what you're looking for in a life partner." {...field} />
               </FormControl>
-              <div className="text-xs text-muted-foreground">{(field.value?.length || 0)}/1000</div>
+              <div className="text-xs text-muted-foreground">{(field.value?.length || 0)}/300</div>
               <FormMessage />
             </FormItem>
           )} />

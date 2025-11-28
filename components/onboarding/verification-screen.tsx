@@ -52,8 +52,8 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
       return
     }
     const age = calculateAge(dob)
-    if (age < 17) {
-      setUnderageMessage("You are not eligible to use Lovesathi according to age criteria (17+).")
+    if (age < 18) {
+      setUnderageMessage("You are not eligible to use Lovesathi according to age criteria (18+).")
     } else {
       setUnderageMessage(null)
     }
@@ -216,12 +216,12 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
     const age = calculateAge(dob)
     console.log('📅 Calculated age:', age)
     
-    if (age < 17) {
+    if (age < 18) {
       setUnderageMessage("You're underage to use a dating app.")
       setProfileValid(false)
       toast({
         title: "Age Restriction",
-        description: "You must be at least 17 years old to use this app.",
+        description: "You must be at least 18 years old to use this app.",
         variant: "destructive",
       })
       return
@@ -348,7 +348,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
             <div className="space-y-4">
               <div className="text-center">
                 <h3 className="text-lg font-semibold mb-2 text-primary">When were you born?</h3>
-                <p className="text-sm text-primary">Select your date of birth. Minimum age is 17.</p>
+                <p className="text-sm text-primary">Select your date of birth. Minimum age is 18.</p>
               </div>
 
               <div className="space-y-4">
@@ -366,7 +366,7 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
                         value={dob}
                         onChange={(e) => setDob(e.target.value)}
                         min="1950-01-01"
-                        max={`${today.getFullYear() - 17}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`}
+                        max={`${today.getFullYear() - 18}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`}
                         className="glass-input w-full border-white/20 bg-white/10 pl-12 pr-4 py-3 text-base font-semibold text-primary focus:border-white/70 focus:ring-2 focus:ring-white/30 transition-all duration-200"
                       />
                     </div>

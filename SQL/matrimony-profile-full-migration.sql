@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS matrimony_profile_full (
   cultural JSONB DEFAULT '{}'::jsonb, -- { religion, mother_tongue, community, sub_caste, date_of_birth, time_of_birth, place_of_birth, star_raashi, gotra }
   
   -- Step 6: Bio
-  bio TEXT CHECK (bio IS NULL OR (LENGTH(bio) >= 50 AND LENGTH(bio) <= 1000)),
+  bio TEXT CHECK (bio IS NULL OR (LENGTH(bio) >= 20 AND LENGTH(bio) <= 300)),
   
   -- Step 7: Partner Preferences (JSONB)
   partner_preferences JSONB DEFAULT '{}'::jsonb, -- { min_age, max_age, min_height_cm, max_height_cm, diet_prefs: [], lifestyle_prefs: [], education_prefs: [], profession_prefs: [], locations: [], communities: [], family_type_prefs: [] }

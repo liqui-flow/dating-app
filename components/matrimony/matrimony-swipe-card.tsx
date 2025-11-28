@@ -253,6 +253,13 @@ export function MatrimonySwipeCard({
     { label: "Community", value: community, icon: Users },
   ].filter((item) => item.value && item.value.trim().length > 0)
 
+  const getInitial = (value?: string) => {
+    const trimmed = value?.trim()
+    return trimmed && trimmed.length > 0 ? trimmed[0]!.toUpperCase() : "?"
+  }
+
+  const cardInitial = getInitial(name)
+
   return (
     <>
       {/* Swipe Animations */}
@@ -388,7 +395,7 @@ export function MatrimonySwipeCard({
           {/* Profile information - positioned above the buttons */}
           <div className="absolute bottom-20 left-4 right-4 z-10">
             <h2 className="text-white text-xl sm:text-2xl font-bold drop-shadow-lg mb-1">
-              {name}, {age}
+              {cardInitial}, {age}
             </h2>
             {location && (
               <div className="flex items-center space-x-1 text-white/90">
@@ -597,6 +604,31 @@ export function MatrimonySwipeCard({
 
                     {/* Profile Information Sections */}
                     <div className="px-4 sm:px-6 py-6 space-y-6">
+                      {/* Height and Religion Section */}
+                      {((fullProfile?.personal?.height_cm) || (fullProfile?.cultural?.religion)) && (
+                        <div className="flex flex-wrap gap-4">
+                          {fullProfile?.personal?.height_cm && (
+                            <div className="text-white/90 text-sm sm:text-base">
+                              <span className="text-white/60">Height: </span>
+                              {fullProfile.personal.height_unit === 'ft' 
+                                ? (() => {
+                                    const totalInches = Math.round(fullProfile.personal.height_cm! / 2.54)
+                                    const feet = Math.floor(totalInches / 12)
+                                    const inches = totalInches % 12
+                                    return `${feet}'${inches}"`
+                                  })()
+                                : `${fullProfile.personal.height_cm} cm`}
+                            </div>
+                          )}
+                          {fullProfile?.cultural?.religion && (
+                            <div className="text-white/90 text-sm sm:text-base">
+                              <span className="text-white/60">Religion: </span>
+                              {fullProfile.cultural.religion}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Bio Section */}
                       {(fullProfile?.bio || bio) && (
                         <div className="space-y-3">
@@ -612,19 +644,6 @@ export function MatrimonySwipeCard({
                         <div className="space-y-3">
                           <h3 className="font-semibold text-white text-base sm:text-lg">Personal Details</h3>
                           <div className="space-y-2">
-                            {fullProfile.personal.height_cm && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Height: </span>
-                                {fullProfile.personal.height_unit === 'ft' 
-                                  ? (() => {
-                                      const totalInches = Math.round(fullProfile.personal.height_cm! / 2.54)
-                                      const feet = Math.floor(totalInches / 12)
-                                      const inches = totalInches % 12
-                                      return `${feet}'${inches}"`
-                                    })()
-                                  : `${fullProfile.personal.height_cm} cm`}
-                              </div>
-                            )}
                             {fullProfile.personal.complexion && (
                               <div className="text-white/90 text-sm sm:text-base">
                                 <span className="text-white/60">Complexion: </span>
@@ -751,12 +770,6 @@ export function MatrimonySwipeCard({
                         <div className="space-y-3">
                           <h3 className="font-semibold text-white text-base sm:text-lg">Cultural & Religious</h3>
                           <div className="space-y-2">
-                            {fullProfile.cultural.religion && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Religion: </span>
-                                {fullProfile.cultural.religion}
-                              </div>
-                            )}
                             {fullProfile.cultural.mother_tongue && (
                               <div className="text-white/90 text-sm sm:text-base">
                                 <span className="text-white/60">Mother Tongue: </span>

@@ -15,7 +15,7 @@ interface AboutMyselfProps {
   onBack: () => void
 }
 
-const MIN_CHARACTERS = 50
+const MIN_CHARACTERS = 20
 const MAX_CHARACTERS = 300
 
 export function AboutMyself({ onComplete, onBack }: AboutMyselfProps) {
@@ -118,7 +118,7 @@ export function AboutMyself({ onComplete, onBack }: AboutMyselfProps) {
           {/* Main Question */}
           <div className="text-center">
             <h2 className="text-xl font-semibold text-primary mb-4">
-              Write a short bio (50-300 characters)
+              Write a short bio (20-300 characters)
             </h2>
             <p className="text-sm text-primary/70">
               Share a brief introduction about yourself

@@ -212,6 +212,13 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
     (doVal) => doVal * depthStyles.opacity
   )
 
+  const getInitial = (value?: string) => {
+    const trimmed = value?.trim()
+    return trimmed && trimmed.length > 0 ? trimmed[0]!.toUpperCase() : "?"
+  }
+
+  const cardInitial = getInitial(profile.name)
+
   return (
     <>
       {/* Swipe Animations - overlay disabled */}
@@ -317,7 +324,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
           {/* Profile information */}
           <div className="absolute bottom-4 left-4 right-16 z-10">
             <h2 className="text-white text-xl sm:text-2xl font-bold drop-shadow-lg mb-1">
-              {profile.name}, {profile.age}
+              {cardInitial}, {profile.age}
             </h2>
             {profile.location && (
               <div className="flex items-center space-x-1 text-white/90">
@@ -388,7 +395,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                     <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
                       <div>
                         <h1 className="text-xl sm:text-2xl font-bold text-white">
-                          {fullProfile?.name || profile.name}, {profile.age}
+                          {(fullProfile?.name || profile.name)}, {profile.age}
                         </h1>
                         {profile.location && (
                           <div className="flex items-center space-x-1 text-white/80 text-sm mt-1">
