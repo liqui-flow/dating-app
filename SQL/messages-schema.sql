@@ -15,9 +15,14 @@ CREATE TABLE IF NOT EXISTS messages (
   sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   receiver_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   content TEXT NOT NULL DEFAULT '',
+  reply_to_message_id UUID REFERENCES messages(id) ON DELETE SET NULL,
+  deleted_by TEXT[] NOT NULL DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
   delivered_at TIMESTAMP WITH TIME ZONE,
   seen_at TIMESTAMP WITH TIME ZONE,
+  status TEXT NOT NULL DEFAULT 'sent' CHECK (status IN ('sent', 'delivered', 'seen')),
+  delivered_to UUID[] NOT NULL DEFAULT '{}'::uuid[],
+  seen_by UUID[] NOT NULL DEFAULT '{}'::uuid[],
   match_type VARCHAR(20) NOT NULL CHECK (match_type IN ('dating', 'matrimony')),
   
   -- Constraints
@@ -31,6 +36,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_receiver_id ON messages(receiver_id);
 CREATE INDEX IF NOT EXISTS idx_messages_match_type ON messages(match_type);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
 CREATE INDEX IF NOT EXISTS idx_messages_match_type_match_id ON messages(match_type, match_id);
+CREATE INDEX IF NOT EXISTS idx_messages_reply_to ON messages(reply_to_message_id);
 
 -- ============================================
 -- 2. ROW LEVEL SECURITY (RLS) POLICIES
@@ -78,6 +84,61 @@ CREATE POLICY "Users can update own sent messages"
   WITH CHECK (
     auth.uid() = receiver_id OR auth.uid() = sender_id
   );
+
+-- ============================================
+-- 3. RPC HELPERS FOR DELIVERY / READ STATUS
+-- ============================================
+
+CREATE OR REPLACE FUNCTION mark_message_delivered(p_message_id UUID, p_user_id UUID)
+RETURNS messages AS $$
+DECLARE
+  v_message messages;
+BEGIN
+  UPDATE messages
+    SET delivered_at = COALESCE(delivered_at, TIMEZONE('utc', NOW())),
+        delivered_to = (
+          SELECT ARRAY(
+            SELECT DISTINCT uid FROM unnest(delivered_to || ARRAY[p_user_id]) AS uid
+          )
+        ),
+        status = CASE WHEN status = 'sent' THEN 'delivered' ELSE status END
+  WHERE id = p_message_id
+    AND receiver_id = p_user_id
+  RETURNING * INTO v_message;
+
+  RETURN v_message;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE OR REPLACE FUNCTION mark_message_seen(p_message_id UUID, p_user_id UUID)
+RETURNS messages AS $$
+DECLARE
+  v_message messages;
+BEGIN
+  UPDATE messages
+    SET seen_at = COALESCE(seen_at, TIMEZONE('utc', NOW())),
+        seen_by = (
+          SELECT ARRAY(
+            SELECT DISTINCT uid FROM unnest(seen_by || ARRAY[p_user_id]) AS uid
+          )
+        ),
+        delivered_at = COALESCE(delivered_at, TIMEZONE('utc', NOW())),
+        delivered_to = (
+          SELECT ARRAY(
+            SELECT DISTINCT uid FROM unnest(delivered_to || ARRAY[p_user_id]) AS uid
+          )
+        ),
+        status = 'seen'
+  WHERE id = p_message_id
+    AND receiver_id = p_user_id
+  RETURNING * INTO v_message;
+
+  RETURN v_message;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION mark_message_delivered(UUID, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION mark_message_seen(UUID, UUID) TO authenticated;
 
 -- ============================================
 -- DONE! ✅

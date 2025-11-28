@@ -75,9 +75,14 @@ export interface Message {
   sender_id: string
   receiver_id: string
   content: string
+  reply_to_message_id: string | null
+  deleted_by: string[]
   created_at: string
   delivered_at: string | null
   seen_at: string | null
+  status: 'sent' | 'delivered' | 'seen'
+  delivered_to: string[]
+  seen_by: string[]
   match_type: 'dating' | 'matrimony'
 }
 

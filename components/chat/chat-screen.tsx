@@ -7,22 +7,26 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, MoreVertical, Send, Heart } from "lucide-react"
+import { ArrowLeft, MoreVertical, Send, Heart, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { supabase } from "@/lib/supabaseClient"
 import {
   getMessages,
   sendMessage as sendMessageService,
-  markDelivered,
-  markSeen,
+  markMessageDelivered,
+  markMessageSeen,
   subscribeToMessages,
+  deleteMessageForMe,
+  deleteMessageForEveryone,
 } from "@/lib/chatService"
 import type { Message } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { RealtimeChannel } from "@supabase/supabase-js"
 import { useSocket } from "@/hooks/useSocket"
 import { useMessageNotifications } from "@/hooks/useMessageNotifications"
+import { MessageActionMenu } from "@/components/chat/message-action-menu"
+import { getPreferredVerticalPlacement, type VerticalPlacement } from "@/components/chat/menu-position"
 
 interface ChatUser {
   id: string
@@ -41,6 +45,18 @@ interface ChatScreenProps {
 export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
+  const [replyPreview, setReplyPreview] = useState<{
+    messageId: string
+    text: string
+    senderLabel: string
+  } | null>(null)
+  const [activeMenu, setActiveMenu] = useState<{
+    messageId: string
+    messageText: string
+    isOwn: boolean
+    anchorElement: HTMLDivElement | null
+    preferredPlacement: VerticalPlacement
+  } | null>(null)
   const [isTyping, setIsTyping] = useState(false)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -49,8 +65,31 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
   const [matchType, setMatchType] = useState<'dating' | 'matrimony'>('dating')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<RealtimeChannel | null>(null)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const messageElementMapRef = useRef<Map<string, HTMLDivElement>>(new Map())
+  const seenInFlightRef = useRef<Set<string>>(new Set())
+  const messagesSnapshotRef = useRef<Message[]>([])
+  const currentUserIdRef = useRef<string | null>(null)
   const [inPageNotification, setInPageNotification] = useState<{ message: string; senderName: string } | null>(null)
   const { toast } = useToast()
+  const showMenuForMessage = (
+    bubbleElement: HTMLDivElement,
+    options: { messageId: string; messageText: string; isOwn: boolean },
+  ) => {
+    if (typeof window === "undefined") return
+
+    const bubbleRect = bubbleElement.getBoundingClientRect()
+    const preferredPlacement = getPreferredVerticalPlacement({
+      bubbleRect,
+      viewportHeight: window.innerHeight,
+    })
+
+    setActiveMenu({
+      ...options,
+      anchorElement: bubbleElement,
+      preferredPlacement,
+    })
+  }
 
   // Socket.io integration
   const { joinConversation, leaveConversation, sendMessageSocket, isConnected } = useSocket({
@@ -66,8 +105,10 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         })
 
         // Mark as delivered if we're the receiver
-        if (message.receiver_id === currentUserId && !message.delivered_at && matchType) {
-          markDelivered(message.id, currentUserId, matchType)
+        if (message.receiver_id === currentUserId && !message.delivered_at) {
+          markMessageDelivered(message.id, currentUserId).then((updated) => {
+            applyLocalMessageUpdate(updated)
+          })
         }
       }
     },
@@ -95,20 +136,35 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     onInPageNotification: handleInPageNotification,
   })
 
-  // Format timestamp to relative time
-  const formatTimestamp = (timestamp: string): string => {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
+  const formatClockTime = (timestamp?: string | null): string => {
+    if (!timestamp) return ""
+    try {
+      return new Date(timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    } catch {
+      return ""
+    }
+  }
 
-    if (diffMins < 1) return "Just now"
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
-    return date.toLocaleDateString()
+  const getMessageStatusText = (message: Message): string => {
+    const normalizedStatus = message.status ?? (message.seen_at ? 'seen' : message.delivered_at ? 'delivered' : 'sent')
+
+    if (normalizedStatus === 'seen') {
+      if (message.seen_at) {
+        const seenDate = new Date(message.seen_at)
+        const diffMs = Date.now() - seenDate.getTime()
+        if (diffMs <= 2 * 60 * 1000) {
+          return "Seen just now"
+        }
+        return `Seen ${formatClockTime(message.seen_at)}`
+      }
+      return "Seen"
+    }
+
+    if (normalizedStatus === 'delivered') {
+      return `Delivered ${formatClockTime(message.delivered_at || message.created_at)}`
+    }
+
+    return `Sent ${formatClockTime(message.created_at)}`
   }
 
   // Detect placeholder content that only represented an uploaded file
@@ -131,30 +187,95 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     return false
   }
 
-  // Get delivery/read status indicator
-  const getStatusIndicator = (message: Message, isOwn: boolean) => {
-    if (!isOwn) return null
+  const applyLocalMessageUpdate = (updatedMessage: Message | null) => {
+    if (!updatedMessage) return
+    setMessages((prev) => prev.map((m) => (m.id === updatedMessage.id ? updatedMessage : m)))
+  }
 
-    if (message.seen_at) {
-      return (
-        <div className="w-4 h-4 rounded-full flex items-center justify-center text-blue-400">
-          <div className="w-2 h-2 rounded-full bg-current" />
-        </div>
-      )
-    } else if (message.delivered_at) {
-      return (
-        <div className="w-4 h-4 rounded-full flex items-center justify-center text-white/70">
-          <div className="w-2 h-2 rounded-full bg-current" />
-        </div>
-      )
-    } else {
-      return (
-        <div className="w-4 h-4 rounded-full flex items-center justify-center text-white/50">
-          <div className="w-2 h-2 rounded-full bg-current" />
-        </div>
-      )
+  const stopTrackingMessage = (messageId: string) => {
+    const trackedNode = messageElementMapRef.current.get(messageId)
+    if (trackedNode && observerRef.current) {
+      observerRef.current.unobserve(trackedNode)
+    }
+    messageElementMapRef.current.delete(messageId)
+  }
+
+  const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return
+      const node = entry.target as HTMLElement
+      const messageId = node.dataset.messageId
+      const userId = currentUserIdRef.current
+      if (!messageId || !userId) return
+      if (seenInFlightRef.current.has(messageId)) return
+
+      const message = messagesSnapshotRef.current.find((m) => m.id === messageId)
+      if (!message) {
+        return
+      }
+      if (message.receiver_id !== userId || message.seen_at) {
+        stopTrackingMessage(messageId)
+        return
+      }
+
+      seenInFlightRef.current.add(messageId)
+      markMessageSeen(messageId, userId)
+        .then((updated) => {
+          applyLocalMessageUpdate(updated)
+        })
+        .finally(() => {
+          seenInFlightRef.current.delete(messageId)
+          stopTrackingMessage(messageId)
+        })
+    })
+  }
+
+  const getObserver = () => {
+    if (typeof window === "undefined") return null
+    if (!observerRef.current) {
+      observerRef.current = new IntersectionObserver(handleIntersection, {
+        threshold: 0.75,
+      })
+    }
+    return observerRef.current
+  }
+
+  const registerMessageNode = (messageId: string, node: HTMLDivElement | null, shouldTrack: boolean) => {
+    stopTrackingMessage(messageId)
+    if (!node || !shouldTrack) {
+      return
+    }
+
+    node.dataset.messageId = messageId
+    const observer = getObserver()
+    if (observer) {
+      messageElementMapRef.current.set(messageId, node)
+      observer.observe(node)
     }
   }
+
+  const getVisibilityRef = (messageId: string, shouldTrack: boolean) => (node: HTMLDivElement | null) => {
+    registerMessageNode(messageId, node, shouldTrack)
+  }
+
+  useEffect(() => {
+    messagesSnapshotRef.current = messages
+  }, [messages])
+
+  useEffect(() => {
+    currentUserIdRef.current = currentUserId
+  }, [currentUserId])
+
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+        observerRef.current = null
+      }
+      messageElementMapRef.current.clear()
+      seenInFlightRef.current.clear()
+    }
+  }, [])
 
   // Load match and user info
   useEffect(() => {
@@ -245,14 +366,17 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         const loadedMessages = await getMessages(matchId, user.id, currentMatchType)
         setMessages(loadedMessages)
 
-        // Mark messages as seen
-        await markSeen(matchId, user.id, currentMatchType)
-
         // Mark received messages as delivered
-        for (const msg of loadedMessages) {
-          if (msg.receiver_id === user.id && !msg.delivered_at) {
-            await markDelivered(msg.id, user.id, currentMatchType)
-          }
+        const pendingDeliveries = loadedMessages
+          .filter((msg) => msg.receiver_id === user.id && !msg.delivered_at)
+          .map((msg) =>
+            markMessageDelivered(msg.id, user.id).then((updated) => {
+              applyLocalMessageUpdate(updated)
+            }),
+          )
+
+        if (pendingDeliveries.length > 0) {
+          await Promise.allSettled(pendingDeliveries)
         }
 
         setLoading(false)
@@ -289,13 +413,18 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
           // Mark as delivered if we're the receiver
           if (message.receiver_id === currentUserId && !message.delivered_at) {
-            await markDelivered(message.id, currentUserId, matchType)
+            const updated = await markMessageDelivered(message.id, currentUserId)
+            applyLocalMessageUpdate(updated)
           }
         },
         onUpdate: (message: Message) => {
           setMessages((prev) =>
             prev.map((m) => (m.id === message.id ? message : m))
           )
+        },
+        onDelete: (messageId: string) => {
+          setMessages((prev) => prev.filter((m) => m.id !== messageId))
+          setActiveMenu((prev) => (prev?.messageId === messageId ? null : prev))
         },
         onError: (error) => {
           console.error('Realtime subscription error:', error)
@@ -324,22 +453,6 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     }
   }, [matchId, isConnected, joinConversation, leaveConversation])
 
-  // Mark messages as seen when component is visible
-  useEffect(() => {
-    if (!matchId || !currentUserId || !matchType) return
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        markSeen(matchId, currentUserId, matchType)
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [matchId, currentUserId, matchType])
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
@@ -347,6 +460,11 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  const hideMessageForCurrentUser = (message: Message) => {
+    if (!currentUserId) return false
+    return (message.deleted_by || []).includes(currentUserId)
+  }
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !matchId || !currentUserId || !chatUser) return
@@ -364,9 +482,14 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         sender_id: currentUserId,
         receiver_id: chatUser.id,
         content: messageContent,
+        reply_to_message_id: replyPreview?.messageId || null,
+        deleted_by: [],
         created_at: new Date().toISOString(),
         delivered_at: null,
         seen_at: null,
+        status: 'sent',
+        delivered_to: [],
+        seen_by: [],
         match_type: matchType,
       }
 
@@ -377,7 +500,9 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         currentUserId,
         chatUser.id,
         messageContent,
-        matchType
+        matchType,
+        false,
+        replyPreview?.messageId || null
       )
 
       if (!sentMessage) {
@@ -393,6 +518,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
       if (sentMessage && isConnected) {
         sendMessageSocket(matchId, chatUser.id, sentMessage)
       }
+      setReplyPreview(null)
     } catch (error: any) {
       console.error('Error sending message:', error)
       
@@ -543,32 +669,157 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
               if (shouldHideMessage(message.content)) {
                 return null
               }
+              if (hideMessageForCurrentUser(message)) {
+                return null
+              }
               const isOwn = message.sender_id === currentUserId
+              const shouldTrackVisibility = !isOwn && message.receiver_id === currentUserId && !message.seen_at
+              const repliedMessage = message.reply_to_message_id
+                ? messages.find((m) => m.id === message.reply_to_message_id)
+                : null
               return (
                 <div key={message.id} className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
                   <div className={cn("flex mb-3", isOwn ? "justify-end" : "justify-start")}>
-                  <div
-                    className={cn(
-                      "max-w-[85%] sm:max-w-[80%] px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl",
-                      "backdrop-blur-sm border",
-                      isOwn
-                        ? "bg-white/20 border-white/30 text-white rounded-br-md"
-                        : "bg-white/15 border-white/20 text-white rounded-bl-md",
-                    )}
-                  >
-                    {message.content.trim() && (
-                      <p className="text-sm leading-relaxed">{message.content}</p>
-                    )}
-                    <div
-                      className={cn(
-                        "flex items-center justify-end space-x-1 mt-2",
-                        isOwn ? "text-white/70" : "text-white/60",
+                    <div className="relative max-w-[85%] sm:max-w-[80%]">
+                      <div
+                        ref={getVisibilityRef(message.id, shouldTrackVisibility)}
+                        data-message-id={message.id}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          showMenuForMessage(event.currentTarget, {
+                            messageId: message.id,
+                            messageText: message.content,
+                            isOwn,
+                          })
+                        }}
+                        onContextMenu={(event) => {
+                          event.preventDefault()
+                          showMenuForMessage(event.currentTarget, {
+                            messageId: message.id,
+                            messageText: message.content,
+                            isOwn,
+                          })
+                        }}
+                        className={cn(
+                          "px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl backdrop-blur-sm border cursor-pointer",
+                          isOwn
+                            ? "bg-white/20 border-white/30 text-white rounded-br-md"
+                            : "bg-white/15 border-white/20 text-white rounded-bl-md",
+                          activeMenu?.messageId === message.id && "ring-2 ring-white/60",
+                        )}
+                      >
+                        {repliedMessage && (
+                          <div className="mb-2 rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs text-white/80">
+                            <p className="text-[11px] uppercase tracking-wide text-white/70">
+                              Reply to {repliedMessage.sender_id === currentUserId ? "You" : chatUser.name}
+                            </p>
+                            <p className="line-clamp-2 text-white/90">
+                              {repliedMessage.content || "Message deleted"}
+                            </p>
+                          </div>
+                        )}
+                        {message.content.trim() && (
+                          <p className="text-sm leading-relaxed whitespace-pre-line break-words">{message.content}</p>
+                        )}
+                        <div
+                          className={cn(
+                            "flex items-center justify-end mt-2",
+                            isOwn ? "text-white/80" : "text-white/60",
+                          )}
+                        >
+                          {isOwn ? (
+                            <span className="text-xs font-medium transition-all duration-200">
+                              {getMessageStatusText(message)}
+                            </span>
+                          ) : (
+                            <span className="text-xs">{formatClockTime(message.created_at)}</span>
+                          )}
+                        </div>
+                      </div>
+                      {activeMenu?.messageId === message.id && activeMenu && (
+                        <MessageActionMenu
+                          messageId={message.id}
+                          messageText={message.content}
+                          isOwnMessage={isOwn}
+                          anchor={isOwn ? "right" : "left"}
+                          anchorElement={activeMenu.anchorElement}
+                          preferredPlacement={activeMenu.preferredPlacement}
+                          onReply={() => {
+                            setReplyPreview({
+                              messageId: message.id,
+                              text: message.content,
+                              senderLabel: isOwn ? "You" : chatUser.name,
+                            })
+                          }}
+                          onCopy={async () => {
+                            try {
+                              await navigator.clipboard.writeText(message.content)
+                              toast({
+                                title: "Copied",
+                                description: "Message copied to clipboard",
+                              })
+                            } catch (error) {
+                              console.error("Copy failed", error)
+                              toast({
+                                title: "Unable to copy",
+                                description: "Clipboard permission denied",
+                                variant: "destructive",
+                              })
+                            }
+                          }}
+                          onDeleteMe={async () => {
+                            if (!currentUserId) return
+                            const previousDeletedBy = message.deleted_by || []
+                            setMessages((prev) =>
+                              prev.map((m) =>
+                                m.id === message.id
+                                  ? {
+                                      ...m,
+                                      deleted_by: Array.from(new Set([...(m.deleted_by || []), currentUserId])),
+                                    }
+                                  : m,
+                              ),
+                            )
+                            const updated = await deleteMessageForMe(message.id, currentUserId)
+                            if (!updated) {
+                              toast({
+                                title: "Delete failed",
+                                description: "Unable to delete message for you",
+                                variant: "destructive",
+                              })
+                              setMessages((prev) =>
+                                prev.map((m) =>
+                                  m.id === message.id ? { ...m, deleted_by: previousDeletedBy } : m,
+                                ),
+                              )
+                            }
+                          }}
+                          onDeleteEveryone={async () => {
+                            if (!currentUserId) return
+                            const deletedMessageSnapshot = message
+                            setMessages((prev) => prev.filter((m) => m.id !== message.id))
+                            const success = await deleteMessageForEveryone(message.id, currentUserId)
+                            if (!success) {
+                              toast({
+                                title: "Delete failed",
+                                description: "Unable to delete message for everyone",
+                                variant: "destructive",
+                              })
+                              setMessages((prev) => {
+                                if (prev.some((m) => m.id === deletedMessageSnapshot.id)) {
+                                  return prev
+                                }
+                                return [...prev, deletedMessageSnapshot].sort(
+                                  (a, b) =>
+                                    new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+                                )
+                              })
+                            }
+                          }}
+                          onClose={() => setActiveMenu(null)}
+                        />
                       )}
-                    >
-                      <span className="text-xs">{formatTimestamp(message.created_at)}</span>
-                      {getStatusIndicator(message, isOwn)}
                     </div>
-                  </div>
                   </div>
                 </div>
               )
@@ -596,6 +847,22 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
       {/* Message Input */}
       <div className="flex-shrink-0 p-4 border-t border-border glass-apple bg-background">
+        {replyPreview && (
+          <div className="mb-2 flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-white">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-white/70">Replying to {replyPreview.senderLabel}</p>
+              <p className="line-clamp-2 text-white/90">{replyPreview.text || "Media message"}</p>
+            </div>
+            <button
+              type="button"
+              className="ml-3 rounded-full p-1 text-white/70 hover:bg-white/20"
+              onClick={() => setReplyPreview(null)}
+              aria-label="Cancel reply"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
         <div className="flex items-end space-x-3">
           <div className="flex-1 relative">
             <Input

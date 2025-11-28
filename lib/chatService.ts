@@ -112,7 +112,8 @@ export async function sendMessage(
   receiverId: string,
   content: string,
   matchType: 'dating' | 'matrimony',
-  allowEmpty: boolean = false
+  allowEmpty: boolean = false,
+  replyToMessageId?: string | null
 ): Promise<Message | null> {
   try {
     if (!allowEmpty && !content.trim()) {
@@ -131,6 +132,8 @@ export async function sendMessage(
         receiver_id: receiverId,
         content: messageContent,
         match_type: matchType,
+        reply_to_message_id: replyToMessageId || null,
+        status: 'sent',
       })
       .select()
       .single()
@@ -150,72 +153,44 @@ export async function sendMessage(
 /**
  * Mark a message as delivered
  */
-export async function markDelivered(messageId: string, userId: string, matchType: 'dating' | 'matrimony'): Promise<boolean> {
+export async function markMessageDelivered(messageId: string, userId: string): Promise<Message | null> {
   try {
-    // First verify the user is the receiver and message type matches
-    const { data: message, error: fetchError } = await supabase
-      .from('messages')
-      .select('receiver_id, delivered_at, match_type')
-      .eq('id', messageId)
-      .eq('match_type', matchType)
-      .single()
-
-    if (fetchError || !message) {
-      console.error('[markDelivered] Message not found:', fetchError)
-      return false
-    }
-
-    if (message.receiver_id !== userId) {
-      console.error('[markDelivered] User is not the receiver')
-      return false
-    }
-
-    // Only update if not already delivered
-    if (message.delivered_at) {
-      return true
-    }
-
-    const { error } = await supabase
-      .from('messages')
-      .update({ delivered_at: new Date().toISOString() })
-      .eq('id', messageId)
-      .eq('receiver_id', userId)
-      .eq('match_type', matchType)
+    const { data, error } = await supabase.rpc('mark_message_delivered', {
+      p_message_id: messageId,
+      p_user_id: userId,
+    })
 
     if (error) {
-      console.error('[markDelivered] Error:', error)
-      return false
+      console.error('[markMessageDelivered] Error:', error)
+      return null
     }
 
-    return true
+    return data as Message
   } catch (error: any) {
-    console.error('[markDelivered] Exception:', error)
-    return false
+    console.error('[markMessageDelivered] Exception:', error)
+    return null
   }
 }
 
 /**
  * Mark all messages in a match as seen
  */
-export async function markSeen(matchId: string, userId: string, matchType: 'dating' | 'matrimony'): Promise<boolean> {
+export async function markMessageSeen(messageId: string, userId: string): Promise<Message | null> {
   try {
-    const { error } = await supabase
-      .from('messages')
-      .update({ seen_at: new Date().toISOString() })
-      .eq('match_id', matchId)
-      .eq('match_type', matchType)
-      .eq('receiver_id', userId)
-      .is('seen_at', null)
+    const { data, error } = await supabase.rpc('mark_message_seen', {
+      p_message_id: messageId,
+      p_user_id: userId,
+    })
 
     if (error) {
-      console.error('[markSeen] Error:', error)
-      return false
+      console.error('[markMessageSeen] Error:', error)
+      return null
     }
 
-    return true
+    return data as Message
   } catch (error: any) {
-    console.error('[markSeen] Exception:', error)
-    return false
+    console.error('[markMessageSeen] Exception:', error)
+    return null
   }
 }
 
@@ -228,6 +203,7 @@ export function subscribeToMessages(
   callbacks: {
     onInsert?: (message: Message) => void
     onUpdate?: (message: Message) => void
+    onDelete?: (messageId: string) => void
     onError?: (error: Error) => void
   }
 ): RealtimeChannel {
@@ -258,6 +234,20 @@ export function subscribeToMessages(
       (payload) => {
         if (callbacks.onUpdate) {
           callbacks.onUpdate(payload.new as Message)
+        }
+      }
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'messages',
+        filter: `match_id=eq.${matchId}&match_type=eq.${matchType}`,
+      },
+      (payload) => {
+        if (callbacks.onDelete) {
+          callbacks.onDelete((payload.old as { id: string }).id)
         }
       }
     )
@@ -350,6 +340,92 @@ export async function getTotalUnreadCount(userId: string): Promise<number> {
   } catch (error: any) {
     console.error('[getTotalUnreadCount] Exception:', error)
     return 0
+  }
+}
+
+/**
+ * Delete a message only for the current user by adding their id to deleted_by
+ */
+export async function deleteMessageForMe(
+  messageId: string,
+  userId: string
+): Promise<Message | null> {
+  try {
+    const { data: existingMessage, error: fetchError } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('id', messageId)
+      .single()
+
+    if (fetchError || !existingMessage) {
+      console.error('[deleteMessageForMe] Message not found:', fetchError)
+      return null
+    }
+
+    if (![existingMessage.sender_id, existingMessage.receiver_id].includes(userId)) {
+      throw new Error('User cannot delete messages outside the conversation')
+    }
+
+    const currentDeletedBy: string[] = existingMessage.deleted_by || []
+    if (currentDeletedBy.includes(userId)) {
+      return existingMessage as Message
+    }
+
+    const updatedDeletedBy = [...currentDeletedBy, userId]
+
+    const { data, error } = await supabase
+      .from('messages')
+      .update({ deleted_by: updatedDeletedBy })
+      .eq('id', messageId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('[deleteMessageForMe] Error updating message:', error)
+      throw error
+    }
+
+    return data as Message
+  } catch (error) {
+    console.error('[deleteMessageForMe] Exception:', error)
+    return null
+  }
+}
+
+/**
+ * Delete a message for everyone (hard delete from DB)
+ */
+export async function deleteMessageForEveryone(
+  messageId: string,
+  userId: string
+): Promise<boolean> {
+  try {
+    const { data: existingMessage, error: fetchError } = await supabase
+      .from('messages')
+      .select('sender_id')
+      .eq('id', messageId)
+      .single()
+
+    if (fetchError || !existingMessage) {
+      console.error('[deleteMessageForEveryone] Message not found:', fetchError)
+      return false
+    }
+
+    if (existingMessage.sender_id !== userId) {
+      throw new Error('Only the sender can delete a message for everyone')
+    }
+
+    const { error } = await supabase.from('messages').delete().eq('id', messageId)
+
+    if (error) {
+      console.error('[deleteMessageForEveryone] Error deleting message:', error)
+      throw error
+    }
+
+    return true
+  } catch (error) {
+    console.error('[deleteMessageForEveryone] Exception:', error)
+    return false
   }
 }
 
