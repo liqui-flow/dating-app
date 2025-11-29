@@ -1,9 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Loader2, MapPin, Star, Trash2 } from "lucide-react"
 import type { MatrimonyProfile } from "@/lib/mockMatrimonyProfiles"
 import { cn } from "@/lib/utils"
@@ -55,81 +54,71 @@ export function MatrimonyShortlistView({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {profiles.map((profile) => (
-          <Card
-            key={profile.id}
-            className="relative overflow-hidden bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border border-border/60 shadow-lg hover:shadow-xl transition-all"
-          >
-            <div
-              className="absolute inset-0 z-10 cursor-pointer"
-              role="button"
-              tabIndex={0}
-              onClick={() => onOpenProfile?.(profile)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault()
-                  onOpenProfile?.(profile)
-                }
-              }}
-              aria-label={`Open profile for ${profile.name}`}
-            />
-            <div className="relative z-20 flex gap-4 p-4">
-              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-muted shrink-0">
-                <Image
-                  src={profile.photos?.[0] || "/placeholder-user.jpg"}
-                  alt={profile.name}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 space-y-1 text-left">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-base font-semibold">
-                      {profile.name}, {profile.age}
-                    </p>
-                    {profile.location && (
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5" />
-                        {profile.location}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "relative z-30 rounded-full border border-border/50 bg-background/80 hover:bg-destructive hover:text-destructive-foreground",
-                      removingId === profile.id && "opacity-60 pointer-events-none",
-                    )}
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      handleRemove(profile.id)
-                    }}
-                    aria-label="Remove from shortlist"
-                  >
-                    {removingId === profile.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-
-                {profile.education && (
-                  <p className="text-sm text-muted-foreground">{profile.education}</p>
-                )}
-                {profile.profession && (
-                  <p className="text-sm text-muted-foreground">{profile.profession}</p>
-                )}
-              </div>
+    <div className="space-y-3">
+      {profiles.map((profile) => (
+        <div
+          key={profile.id}
+          className="bg-white/15 border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/20 transition-all duration-200 cursor-pointer"
+          onClick={() => onOpenProfile?.(profile)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault()
+              onOpenProfile?.(profile)
+            }
+          }}
+          aria-label={`Open profile for ${profile.name}`}
+        >
+          <div className="flex items-center space-x-3">
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+              <Avatar className="w-12 h-12 border-2 border-white/30">
+                <AvatarImage src={profile.photos?.[0] || "/placeholder.svg"} alt={profile.name} />
+                <AvatarFallback className="bg-white/20 text-white">{profile.name[0]}</AvatarFallback>
+              </Avatar>
             </div>
-          </Card>
-        ))}
-      </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm text-white truncate">
+                {profile.name}
+                {profile.age && <span className="text-white/70 ml-1">, {profile.age}</span>}
+              </h3>
+              {profile.location && (
+                <p className="text-sm text-white/70 flex items-center gap-1 mt-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {profile.location}
+                </p>
+              )}
+              {profile.education && (
+                <p className="text-sm text-white/70 mt-1">{profile.education}</p>
+              )}
+            </div>
+
+            {/* Remove Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "flex-shrink-0 rounded-full hover:bg-destructive/20 hover:text-destructive transition-all",
+                removingId === profile.id && "opacity-60 pointer-events-none",
+              )}
+              onClick={(event) => {
+                event.stopPropagation()
+                handleRemove(profile.id)
+              }}
+              aria-label="Remove from shortlist"
+            >
+              {removingId === profile.id ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <Trash2 className="w-4 h-4 text-white" />
+              )}
+            </Button>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

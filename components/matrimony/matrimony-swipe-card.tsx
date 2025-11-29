@@ -5,7 +5,7 @@ import { motion, useMotionValue, useTransform, animate } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { Check, X, Info, MoreHorizontal, MapPin, Briefcase, GraduationCap, Users, ChevronLeft, ChevronRight, Flag, Heart } from "lucide-react"
+import { Check, X, Info, MoreHorizontal, MapPin, Briefcase, GraduationCap, Users, ChevronLeft, ChevronRight, Flag, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "../discovery/swipe-animations"
 import { MatrimonyProfileModal } from "./matrimony-profile-modal"
@@ -372,7 +372,7 @@ export function MatrimonySwipeCard({
                 shortlistBusy && "opacity-60 pointer-events-none",
               )}
             >
-              <Heart className="w-4 h-4" fill={isShortlisted ? "currentColor" : "none"} strokeWidth={1.8} />
+              <Star className="w-4 h-4" fill={isShortlisted ? "currentColor" : "none"} strokeWidth={1.8} />
             </motion.button>
           )}
           <Button

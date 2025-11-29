@@ -13,6 +13,7 @@ import { MatrimonyChatList } from "@/components/matrimony/matrimony-chat-list"
 import { ChatScreen } from "@/components/chat/chat-screen"
 import { MatrimonyFilterSheet } from "@/components/matrimony/matrimony-filter-sheet"
 import { DynamicBackground } from "@/components/discovery/dynamic-background"
+import { StaticBackground } from "@/components/discovery/static-background"
 import { BackFloatingButton } from "@/components/navigation/back-floating-button"
 import { SettingsScreen } from "@/components/settings/settings-screen"
 import { ActivityScreen } from "@/components/activity/activity-screen"
@@ -779,27 +780,32 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
       )}
 
       {currentScreen === "shortlist" && (
-        <div
-          className="relative p-4 pb-24 mt-2 w-full min-h-screen bg-cover bg-center"
-          style={{ backgroundImage: "url('/image%2052.png')" }}
-        >
-          <div className="absolute inset-0 bg-black/70" />
-          <div className="relative z-10 max-w-2xl mx-auto space-y-4 text-white">
-            <div>
-              <h2 className="text-2xl font-semibold">Your Shortlist</h2>
-              <p className="text-sm text-white/80">
-                Saved profiles stay here until you decide to connect or remove them.
-              </p>
+        <div className="p-4 pb-20 mt-2 w-full">
+          <div className="flex flex-col h-full relative">
+            {/* Static Background */}
+            <StaticBackground />
+            
+            {/* Header */}
+            <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h1 className="text-2xl font-bold">Shortlist</h1>
+                </div>
+              </div>
             </div>
-            <MatrimonyShortlistView
-              profiles={shortlistedProfiles}
-              loading={shortlistLoading}
-              onRemove={async (profileId) => {
-                const profile = shortlistedProfiles.find((p) => p.id === profileId)
-                return handleShortlistRemove(profileId, profile?.name)
-              }}
-              onOpenProfile={(profile) => setShortlistModalProfile(profile)}
-            />
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <MatrimonyShortlistView
+                profiles={shortlistedProfiles}
+                loading={shortlistLoading}
+                onRemove={async (profileId) => {
+                  const profile = shortlistedProfiles.find((p) => p.id === profileId)
+                  return handleShortlistRemove(profileId, profile?.name)
+                }}
+                onOpenProfile={(profile) => setShortlistModalProfile(profile)}
+              />
+            </div>
           </div>
         </div>
       )}

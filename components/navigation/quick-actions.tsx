@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { MessageCircle, User, Search, Bell, Heart } from "lucide-react"
+import { MessageCircle, User, Search, Bell, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUnreadMessageCount } from "@/hooks/useUnreadMessageCount"
 
@@ -35,7 +35,7 @@ export function QuickActions({
   
   const tabs = [
     { id: "discover", icon: Search, onClick: onDiscover, show: !!onDiscover },
-    { id: "shortlist", icon: Heart, onClick: onOpenShortlist, show: showShortlist && !!onOpenShortlist },
+    { id: "shortlist", icon: Star, onClick: onOpenShortlist, show: showShortlist && !!onOpenShortlist },
     { id: "messages", icon: MessageCircle, onClick: onOpenChat, show: true },
     { id: "activity", icon: Bell, onClick: onOpenActivity, show: !!onOpenActivity },
     { id: "profile", icon: User, onClick: onOpenProfile, show: true },
