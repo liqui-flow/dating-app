@@ -34,6 +34,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useMatrimonyShortlist } from "@/hooks/useMatrimonyShortlist"
 import { MatrimonyShortlistView } from "@/components/matrimony/matrimony-shortlist"
 import { MatrimonyProfileModal } from "@/components/matrimony/matrimony-profile-modal"
+import { ProfileView } from "@/components/profile/profile-view"
 
 // Helper function to calculate age from date of birth
 function calculateAge(dob: string | null, ageFromProfile: number | null): number {
@@ -78,6 +79,7 @@ interface MatrimonyMainProps {
     | "verification-status"
     | "app-settings"
     | "shortlist"
+    | "view-profile"
 }
 
 
@@ -99,8 +101,10 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
     | "verification-status"
     | "app-settings"
     | "shortlist"
+    | "view-profile"
   >(initialScreen)
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
+  const [viewedUserId, setViewedUserId] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
@@ -758,22 +762,12 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
           <ActivityScreen
             mode="matrimony"
             onProfileClick={(userId) => {
-              // Navigate to profile view if needed
-              console.log("Profile clicked:", userId)
+              setViewedUserId(userId)
+              setCurrentScreen("view-profile")
             }}
-            onMatchClick={async (userId) => {
-              // Get matchId from userId - always use matrimony match type in matrimony mode
-              const { data: { user } } = await supabase.auth.getUser()
-              if (user) {
-                const { getMatchId } = await import('@/lib/chatService')
-                const matchId = await getMatchId(user.id, userId, 'matrimony')
-                if (matchId) {
-                  setSelectedChatId(matchId)
-                  setCurrentScreen("chat")
-                } else {
-                  console.error("Could not find matrimony matchId for users:", user.id, userId)
-                }
-              }
+            onMatchClick={(matchId) => {
+              setSelectedChatId(matchId)
+              setCurrentScreen("chat")
             }}
           />
         </div>
@@ -885,6 +879,16 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
         </div>
       )}
 
+      {currentScreen === "view-profile" && viewedUserId && (
+        <div className="p-0 pb-0 mt-0">
+          <ProfileView 
+            mode="matrimony" 
+            userId={viewedUserId}
+            onEdit={() => setCurrentScreen("profile-setup")} 
+          />
+        </div>
+      )}
+
       {/* Match Notification */}
       {showMatchNotification && matchedProfile && (
         <MatchNotification
@@ -953,11 +957,14 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
       {(currentScreen === "messages" ||
         currentScreen === "activity" ||
         currentScreen === "profile" ||
-        currentScreen === "shortlist") && (
+        currentScreen === "shortlist" ||
+        currentScreen === "view-profile") && (
         <BackFloatingButton
           onClick={() => {
             if (currentScreen === "shortlist") {
               handleOpenDiscover()
+            } else if (currentScreen === "view-profile") {
+              setCurrentScreen("activity")
             } else {
               setCurrentScreen("discover")
             }

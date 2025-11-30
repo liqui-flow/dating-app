@@ -7,11 +7,12 @@ import type { Message } from '@/lib/types'
 interface UseSocketOptions {
   onMessage?: (message: Message) => void
   onError?: (error: Error) => void
+  onTyping?: (data: { matchId: string; userId: string; isTyping: boolean }) => void
 }
 
 export function useSocket(options: UseSocketOptions = {}) {
   const { socket, isConnected } = useSocketContext()
-  const { onMessage, onError } = options
+  const { onMessage, onError, onTyping } = options
   const receivedMessageIds = useRef<Set<string>>(new Set())
   const joinedRooms = useRef<Set<string>>(new Set())
 
@@ -72,6 +73,24 @@ export function useSocket(options: UseSocketOptions = {}) {
     [socket, isConnected]
   )
 
+  // Send typing indicator
+  const sendTyping = useCallback(
+    (matchId: string, receiverId: string, isTyping: boolean) => {
+      if (!socket || !isConnected) {
+        return false
+      }
+
+      socket.emit('typing', {
+        matchId,
+        receiverId,
+        isTyping,
+      })
+
+      return true
+    },
+    [socket, isConnected]
+  )
+
   // Listen for incoming messages
   useEffect(() => {
     if (!socket || !isConnected) {
@@ -107,14 +126,22 @@ export function useSocket(options: UseSocketOptions = {}) {
       }
     }
 
+    const handleTyping = (data: { matchId: string; userId: string; isTyping: boolean }) => {
+      if (onTyping) {
+        onTyping(data)
+      }
+    }
+
     socket.on('receive_message', handleReceiveMessage)
     socket.on('error', handleError)
+    socket.on('typing', handleTyping)
 
     return () => {
       socket.off('receive_message', handleReceiveMessage)
       socket.off('error', handleError)
+      socket.off('typing', handleTyping)
     }
-  }, [socket, isConnected, onMessage, onError])
+  }, [socket, isConnected, onMessage, onError, onTyping])
 
   // Clean up received message IDs periodically to prevent memory leaks
   useEffect(() => {
@@ -135,6 +162,7 @@ export function useSocket(options: UseSocketOptions = {}) {
     joinConversation,
     leaveConversation,
     sendMessageSocket,
+    sendTyping,
   }
 }
 

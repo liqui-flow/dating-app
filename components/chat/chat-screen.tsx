@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, MoreVertical, Send, Heart, X } from "lucide-react"
+import { ArrowLeft, MoreVertical, Send, Heart, X, CheckSquare, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { supabase } from "@/lib/supabaseClient"
@@ -27,6 +27,16 @@ import { useSocket } from "@/hooks/useSocket"
 import { useMessageNotifications } from "@/hooks/useMessageNotifications"
 import { MessageActionMenu } from "@/components/chat/message-action-menu"
 import { getPreferredVerticalPlacement, type VerticalPlacement } from "@/components/chat/menu-position"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface ChatUser {
   id: string
@@ -58,6 +68,9 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     preferredPlacement: VerticalPlacement
   } | null>(null)
   const [isTyping, setIsTyping] = useState(false)
+  const [otherUserTyping, setOtherUserTyping] = useState(false)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const typingEmitTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -71,6 +84,11 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
   const messagesSnapshotRef = useRef<Message[]>([])
   const currentUserIdRef = useRef<string | null>(null)
   const [inPageNotification, setInPageNotification] = useState<{ message: string; senderName: string } | null>(null)
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false)
+  const [isSelectMode, setIsSelectMode] = useState(false)
+  const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const headerMenuRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
   const showMenuForMessage = (
     bubbleElement: HTMLDivElement,
@@ -92,7 +110,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
   }
 
   // Socket.io integration
-  const { joinConversation, leaveConversation, sendMessageSocket, isConnected } = useSocket({
+  const { joinConversation, leaveConversation, sendMessageSocket, sendTyping, isConnected } = useSocket({
     onMessage: async (message: Message) => {
       // Only add message if it's for this conversation and not already present
       if (message.match_id === matchId) {
@@ -114,6 +132,22 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     },
     onError: (error) => {
       console.error('Socket error in chat:', error)
+    },
+    onTyping: (data) => {
+      if (data.matchId === matchId && data.userId === chatUser?.id) {
+        setOtherUserTyping(data.isTyping)
+        
+        // Auto-hide typing indicator after 3 seconds of no typing
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current)
+        }
+        
+        if (data.isTyping) {
+          typingTimeoutRef.current = setTimeout(() => {
+            setOtherUserTyping(false)
+          }, 3000)
+        }
+      }
     },
   })
 
@@ -274,8 +308,26 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
       }
       messageElementMapRef.current.clear()
       seenInFlightRef.current.clear()
+      
+      // Clean up typing timeouts
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+      if (typingEmitTimeoutRef.current) {
+        clearTimeout(typingEmitTimeoutRef.current)
+      }
     }
   }, [])
+
+  // Cleanup typing when leaving chat
+  useEffect(() => {
+    return () => {
+      // Stop typing when component unmounts or matchId changes
+      if (matchId && chatUser?.id && isConnected && sendTyping) {
+        sendTyping(matchId, chatUser.id, false)
+      }
+    }
+  }, [matchId, chatUser?.id, isConnected, sendTyping])
 
   // Load match and user info
   useEffect(() => {
@@ -466,6 +518,24 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     return (message.deleted_by || []).includes(currentUserId)
   }
 
+  // Handle typing indicator
+  const handleTyping = () => {
+    if (!matchId || !chatUser?.id || !currentUserId || !isConnected) return
+
+    // Clear existing timeout
+    if (typingEmitTimeoutRef.current) {
+      clearTimeout(typingEmitTimeoutRef.current)
+    }
+
+    // Emit typing start
+    sendTyping(matchId, chatUser.id, true)
+
+    // Emit typing stop after 2 seconds of no typing
+    typingEmitTimeoutRef.current = setTimeout(() => {
+      sendTyping(matchId, chatUser.id, false)
+    }, 2000)
+  }
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !matchId || !currentUserId || !chatUser) return
 
@@ -518,6 +588,13 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
       if (sentMessage && isConnected) {
         sendMessageSocket(matchId, chatUser.id, sentMessage)
       }
+      
+      // Stop typing indicator
+      if (typingEmitTimeoutRef.current) {
+        clearTimeout(typingEmitTimeoutRef.current)
+      }
+      sendTyping(matchId, chatUser.id, false)
+      
       setReplyPreview(null)
     } catch (error: any) {
       console.error('Error sending message:', error)
@@ -550,6 +627,116 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
       handleSendMessage()
     }
   }
+
+  const toggleSelectMode = () => {
+    setIsSelectMode(!isSelectMode)
+    setSelectedMessages(new Set())
+    setIsHeaderMenuOpen(false)
+    setActiveMenu(null) // Close any open message menu
+  }
+
+  const toggleMessageSelection = (messageId: string) => {
+    setSelectedMessages((prev) => {
+      const next = new Set(prev)
+      if (next.has(messageId)) {
+        next.delete(messageId)
+      } else {
+        next.add(messageId)
+      }
+      return next
+    })
+  }
+
+  const handleDeleteSelected = async (deleteType: 'me' | 'everyone') => {
+    if (selectedMessages.size === 0 || !currentUserId) return
+
+    try {
+      const messageIds = Array.from(selectedMessages)
+      let successCount = 0
+      let failCount = 0
+
+      for (const messageId of messageIds) {
+        const message = messages.find((m) => m.id === messageId)
+        if (!message) continue
+
+        try {
+          if (deleteType === 'everyone') {
+            // Only allow delete for everyone if user is the sender
+            if (message.sender_id === currentUserId) {
+              const result = await deleteMessageForEveryone(messageId, currentUserId)
+              if (result) {
+                setMessages((prev) => prev.filter((m) => m.id !== messageId))
+                successCount++
+              } else {
+                failCount++
+              }
+            } else {
+              failCount++
+            }
+          } else {
+            // Delete for me
+            const result = await deleteMessageForMe(messageId, currentUserId)
+            if (result) {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === messageId
+                    ? { ...m, deleted_by: Array.from(new Set([...(m.deleted_by || []), currentUserId])) }
+                    : m
+                )
+              )
+              successCount++
+            } else {
+              failCount++
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to delete message ${messageId}:`, error)
+          failCount++
+        }
+      }
+
+      if (successCount > 0) {
+        toast({
+          title: "Success",
+          description: `Deleted ${successCount} message${successCount > 1 ? 's' : ''}`,
+        })
+      }
+      if (failCount > 0) {
+        toast({
+          title: "Error",
+          description: `Failed to delete ${failCount} message${failCount > 1 ? 's' : ''}`,
+          variant: "destructive",
+        })
+      }
+
+      setSelectedMessages(new Set())
+      setIsSelectMode(false)
+    } catch (error: any) {
+      console.error("Error deleting messages:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete messages",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Close header menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(event.target as Node)) {
+        setIsHeaderMenuOpen(false)
+      }
+    }
+
+    if (isHeaderMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isHeaderMenuOpen])
 
   if (loading) {
     return (
@@ -634,9 +821,57 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-muted/50 rounded-full">
-              <MoreVertical className="w-5 h-5" />
-            </Button>
+            {isSelectMode && selectedMessages.size > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDeleteDialog(true)}
+                className="mr-2"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete ({selectedMessages.size})
+              </Button>
+            )}
+            {isSelectMode && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleSelectMode}
+                className="mr-2"
+              >
+                Cancel
+              </Button>
+            )}
+            {!isSelectMode && (
+              <div className="relative" ref={headerMenuRef}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 hover:bg-muted/50 rounded-full"
+                  onClick={() => setIsHeaderMenuOpen(!isHeaderMenuOpen)}
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </Button>
+
+                {/* Header Menu */}
+                {isHeaderMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 z-50 min-w-[160px] rounded-2xl border border-white/10 bg-black/90 text-sm text-white shadow-2xl backdrop-blur-lg">
+                    <div className="flex flex-col py-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleSelectMode()
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20"
+                      >
+                        <CheckSquare className="w-4 h-4" />
+                        <span>Select</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -679,33 +914,41 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
                 : null
               return (
                 <div key={message.id} className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
-                  <div className={cn("flex mb-3", isOwn ? "justify-end" : "justify-start")}>
+                  <div className={cn("flex mb-3 items-start gap-2", isOwn ? "justify-end" : "justify-start")}>
                     <div className="relative max-w-[85%] sm:max-w-[80%]">
                       <div
                         ref={getVisibilityRef(message.id, shouldTrackVisibility)}
                         data-message-id={message.id}
                         onClick={(event) => {
                           event.stopPropagation()
-                          showMenuForMessage(event.currentTarget, {
-                            messageId: message.id,
-                            messageText: message.content,
-                            isOwn,
-                          })
+                          if (isSelectMode) {
+                            toggleMessageSelection(message.id)
+                          } else {
+                            showMenuForMessage(event.currentTarget, {
+                              messageId: message.id,
+                              messageText: message.content,
+                              isOwn,
+                            })
+                          }
                         }}
                         onContextMenu={(event) => {
                           event.preventDefault()
-                          showMenuForMessage(event.currentTarget, {
-                            messageId: message.id,
-                            messageText: message.content,
-                            isOwn,
-                          })
+                          if (!isSelectMode) {
+                            showMenuForMessage(event.currentTarget, {
+                              messageId: message.id,
+                              messageText: message.content,
+                              isOwn,
+                            })
+                          }
                         }}
                         className={cn(
-                          "px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl backdrop-blur-sm border cursor-pointer",
+                          "px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl backdrop-blur-sm border",
+                          isSelectMode ? "cursor-pointer" : "cursor-pointer",
                           isOwn
                             ? "bg-white/20 border-white/30 text-white rounded-br-md"
                             : "bg-white/15 border-white/20 text-white rounded-bl-md",
-                          activeMenu?.messageId === message.id && "ring-2 ring-white/60",
+                          activeMenu?.messageId === message.id && !isSelectMode && "ring-2 ring-white/60",
+                          selectedMessages.has(message.id) && "ring-2 ring-primary",
                         )}
                       >
                         {repliedMessage && (
@@ -736,7 +979,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
                           )}
                         </div>
                       </div>
-                      {activeMenu?.messageId === message.id && activeMenu && (
+                      {activeMenu?.messageId === message.id && activeMenu && !isSelectMode && (
                         <MessageActionMenu
                           messageId={message.id}
                           messageText={message.content}
@@ -820,6 +1063,16 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
                         />
                       )}
                     </div>
+                    {isSelectMode && (
+                      <div className="flex items-center pt-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedMessages.has(message.id)}
+                          onChange={() => toggleMessageSelection(message.id)}
+                          className="w-5 h-5 rounded border-white/30 bg-white/10 text-primary focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               )
@@ -828,7 +1081,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
         )}
         
         {/* Typing Indicator */}
-        {isTyping && (
+        {otherUserTyping && (
           <div className="flex justify-start mb-3">
             <div className="bg-white/15 border border-white/20 backdrop-blur-sm text-white rounded-2xl rounded-bl-md px-4 py-2 max-w-[85%] sm:max-w-[80%] shadow-lg">
               <div className="flex items-center space-x-1">
@@ -868,7 +1121,10 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
             <Input
               placeholder="Type a message..."
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => {
+                setNewMessage(e.target.value)
+                handleTyping()
+              }}
               onKeyPress={handleKeyPress}
               className="pr-12 rounded-full text-sm border-2 focus:border-primary/50 transition-colors"
               disabled={uploading}
@@ -884,6 +1140,47 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedMessages.size} {selectedMessages.size === 1 ? 'message' : 'messages'}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Choose how you want to delete the selected {selectedMessages.size === 1 ? 'message' : 'messages'}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+            <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteDialog(false)
+                  handleDeleteSelected('me')
+                }}
+                className="flex-1 sm:flex-initial"
+              >
+                Delete for me
+              </Button>
+              {currentUserId && Array.from(selectedMessages).some(msgId => {
+                const msg = messages.find(m => m.id === msgId)
+                return msg?.sender_id === currentUserId
+              }) && (
+                <AlertDialogAction
+                  onClick={() => {
+                    setShowDeleteDialog(false)
+                    handleDeleteSelected('everyone')
+                  }}
+                  className="flex-1 sm:flex-initial"
+                >
+                  Delete for everyone
+                </AlertDialogAction>
+              )}
+            </div>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

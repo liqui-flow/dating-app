@@ -43,7 +43,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
     setIsLoading(true)
     setError(null)
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -56,7 +56,8 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
       })
       if (error) throw error
 
-      router.push("/onboarding/verification")
+      // Redirect to email verification page
+      router.push("/auth/verify-email")
     } catch (err: any) {
       setError(err.message || "Something went wrong")
     } finally {
@@ -67,6 +68,14 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   // 🔹 Handle Post-Login Redirect Logic
   const handlePostLogin = async (userId: string) => {
     try {
+      // First check if email is verified
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && !user.email_confirmed_at) {
+        console.log('Email not verified, sending to email verification')
+        router.push('/auth/verify-email')
+        return
+      }
+
       const { data: profile, error } = await supabase
         .from('user_profiles')
         .select('selected_path, onboarding_completed')

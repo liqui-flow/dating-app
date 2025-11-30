@@ -260,25 +260,9 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating' }
               <div
                 key={activity.id}
                 className="bg-white/15 border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/20 transition-all duration-200 cursor-pointer"
-                onClick={async () => {
-                  if (activity.type === 'match') {
-                    // Get matchId from database
-                    const { data: { user } } = await supabase.auth.getUser()
-                    if (user) {
-                      const { getMatchId, getMatchIdAuto } = await import('@/lib/chatService')
-                      // In matrimony mode, always use matrimony match type
-                      // In dating mode, try both (dating first)
-                      const matchId = mode === 'matrimony'
-                        ? await getMatchId(user.id, activity.userId, 'matrimony')
-                        : (await getMatchIdAuto(user.id, activity.userId))?.matchId
-                      
-                      if (matchId && onMatchClick) {
-                        onMatchClick(matchId)
-                      }
-                    }
-                  } else {
-                    onProfileClick?.(activity.userId)
-                  }
+                onClick={() => {
+                  // Always open profile when clicking on the card
+                  onProfileClick?.(activity.userId)
                 }}
               >
                 <div className="flex items-center space-x-3">
@@ -315,9 +299,24 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating' }
                   {activity.type === 'match' && (
                     <Button
                       size="sm"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation()
-                        onMatchClick?.(activity.userId)
+                        const { data: { user } } = await supabase.auth.getUser()
+                        if (user) {
+                          const { getMatchId, getMatchIdAuto } = await import('@/lib/chatService')
+                          // In matrimony mode, always use matrimony match type
+                          // In dating mode, try both (dating first)
+                          const matchId = mode === 'matrimony'
+                            ? await getMatchId(user.id, activity.userId, 'matrimony')
+                            : (await getMatchIdAuto(user.id, activity.userId))?.matchId
+                          
+                          if (matchId && onMatchClick) {
+                            onMatchClick(matchId)
+                          } else if (onProfileClick) {
+                            // Fall back to opening profile if matchId not found
+                            onProfileClick(activity.userId)
+                          }
+                        }
                       }}
                       className="bg-violet-500/80 hover:bg-violet-500/90 text-white"
                     >

@@ -159,6 +159,31 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handle typing indicator
+  socket.on('typing', (data) => {
+    try {
+      const { matchId, receiverId, isTyping } = data;
+
+      if (!matchId || !receiverId) {
+        return;
+      }
+
+      // Get receiver's socket ID
+      const receiverSocketId = userSocketMap.get(receiverId);
+
+      if (receiverSocketId) {
+        // Emit to the receiver
+        io.to(receiverSocketId).emit('typing', {
+          matchId,
+          userId,
+          isTyping,
+        });
+      }
+    } catch (error) {
+      console.error('Error handling typing event:', error);
+    }
+  });
+
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${userId} (socket: ${socket.id})`);

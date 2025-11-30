@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Slider } from "@/components/ui/slider"
-import { Camera, Upload, X, Save, ArrowLeft, Plus, Trash2 } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Camera, X, Save, ArrowLeft, Plus, Trash2 } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { useToast } from "@/hooks/use-toast"
@@ -219,7 +220,15 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
   }
 
   const addPrompt = () => {
-    setDatingPromptsData(prev => [...prev, { prompt: "", answer: "" }])
+    // Get available prompts (not already used)
+    const usedPrompts = datingPromptsData.map(p => p.prompt).filter(Boolean)
+    const availablePrompts = datingPrompts.filter(p => !usedPrompts.includes(p))
+    
+    if (availablePrompts.length > 0) {
+      setDatingPromptsData(prev => [...prev, { prompt: availablePrompts[0], answer: "" }])
+    } else {
+      setDatingPromptsData(prev => [...prev, { prompt: "", answer: "" }])
+    }
   }
 
   const removePrompt = (index: number) => {
@@ -447,63 +456,70 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
             <TabsTrigger value="about">Edit About Myself</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="photos" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Photos</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  {currentPhotos.map((photo, index) => (
-                    <div key={index} className="relative space-y-2">
-                      <div className="relative aspect-square">
-                        <img
-                          src={photo.url}
-                          alt={`Photo ${index + 1}`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="absolute top-2 right-2 w-6 h-6 rounded-full p-0"
-                          onClick={() => removePhoto(index)}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
+          <TabsContent value="photos" className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold mb-1">Your Photos</h2>
+                <p className="text-sm text-muted-foreground">
+                  Add up to 6 photos to showcase yourself ({currentPhotos.length}/6)
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {currentPhotos.map((photo, index) => (
+                  <div key={index} className="relative group">
+                    <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-border bg-muted">
+                      <img
+                        src={photo.url}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        onClick={() => removePhoto(index)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                      <div className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                        {index + 1}
                       </div>
-                      {userPath === 'dating' && (
-                        <Input
-                          placeholder={photoPrompts[index] || "Caption (optional)"}
-                          value={photo.caption || ""}
-                          onChange={(e) => updatePhotoCaption(index, e.target.value)}
-                          className="text-xs"
-                        />
-                      )}
                     </div>
-                  ))}
-                </div>
-
+                    {userPath === 'dating' && (
+                      <Input
+                        placeholder={photoPrompts[index] || "Caption (optional)"}
+                        value={photo.caption || ""}
+                        onChange={(e) => updatePhotoCaption(index, e.target.value)}
+                        className="text-xs mt-2"
+                      />
+                    )}
+                  </div>
+                ))}
+                
                 {currentPhotos.length < 6 && (
-                  <Button
-                    variant="outline"
+                  <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full"
+                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed border-border bg-muted/50 hover:bg-muted transition-colors flex flex-col items-center justify-center gap-2 group"
                   >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Add Photo ({currentPhotos.length}/6)
-                  </Button>
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                      <Plus className="w-5 h-5 text-primary" />
+                    </div>
+                    <span className="text-xs text-muted-foreground font-medium">Add Photo</span>
+                  </button>
                 )}
+              </div>
 
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                />
-              </CardContent>
-            </Card>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="about" className="space-y-4">
@@ -536,42 +552,62 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {datingPromptsData.map((prompt, index) => (
-                      <div key={index} className="space-y-2 p-4 border rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <Label>Prompt {index + 1}</Label>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => removePrompt(index)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs text-muted-foreground">Prompt Question:</Label>
-                          <div className="space-y-2">
-                            <Input
-                              list={`prompts-${index}`}
-                              placeholder="Select a prompt or type your own..."
-                              value={prompt.prompt}
-                              onChange={(e) => updatePrompt(index, 'prompt', e.target.value)}
-                            />
-                            <datalist id={`prompts-${index}`}>
-                              {datingPrompts.map((p) => (
-                                <option key={p} value={p} />
-                              ))}
-                            </datalist>
+                    {datingPromptsData.map((prompt, index) => {
+                      // Get available prompts (not already used by other prompts)
+                      const usedPrompts = datingPromptsData
+                        .map((p, i) => i !== index ? p.prompt : "")
+                        .filter(Boolean)
+                      const availablePrompts = datingPrompts.filter(p => !usedPrompts.includes(p))
+                      
+                      return (
+                        <div key={index} className="space-y-2 p-4 border rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <Label>Prompt {index + 1}</Label>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removePrompt(index)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs text-muted-foreground">Prompt Question:</Label>
+                            {prompt.prompt ? (
+                              // Display selected prompt as read-only text
+                              <div className="p-2.5 bg-muted rounded-md text-sm font-medium border">
+                                {prompt.prompt}
+                              </div>
+                            ) : (
+                              // Show dropdown only when no prompt is selected
+                              <Select
+                                value=""
+                                onValueChange={(value) => updatePrompt(index, 'prompt', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a prompt..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availablePrompts.map((p) => (
+                                    <SelectItem key={p} value={p}>
+                                      {p}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
+                          {prompt.prompt && (
+                            <Textarea
+                              placeholder="Your answer..."
+                              value={prompt.answer}
+                              onChange={(e) => updatePrompt(index, 'answer', e.target.value)}
+                              rows={2}
+                            />
+                          )}
                         </div>
-                        <Textarea
-                          placeholder="Your answer..."
-                          value={prompt.answer}
-                          onChange={(e) => updatePrompt(index, 'answer', e.target.value)}
-                          rows={2}
-                        />
-                      </div>
-                    ))}
+                      )
+                    })}
                     {datingPromptsData.length === 0 && (
                       <p className="text-sm text-muted-foreground text-center py-4">
                         No prompts yet. Click "Add Prompt" to add one.

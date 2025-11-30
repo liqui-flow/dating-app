@@ -26,7 +26,14 @@ export default function VerificationPage() {
         const { data: { user } } = await supabase.auth.getUser()
         
         if (!user) {
-          setIsCheckingProfile(false)
+          router.push('/auth')
+          return
+        }
+
+        // Check if email is verified first
+        if (!user.email_confirmed_at) {
+          console.log('Email not verified, redirecting to email verification')
+          router.push('/auth/verify-email')
           return
         }
 

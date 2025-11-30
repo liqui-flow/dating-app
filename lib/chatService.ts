@@ -429,3 +429,59 @@ export async function deleteMessageForEveryone(
   }
 }
 
+/**
+ * Mark all messages in a match as deleted for a user (soft delete)
+ * This hides messages from the UI but keeps them in the database
+ */
+export async function deleteAllMessagesForUser(
+  matchId: string,
+  userId: string,
+  matchType: 'dating' | 'matrimony'
+): Promise<boolean> {
+  try {
+    // Get all messages in this match where the user is either sender or receiver
+    const { data: messages, error: fetchError } = await supabase
+      .from('messages')
+      .select('id, deleted_by')
+      .eq('match_id', matchId)
+      .eq('match_type', matchType)
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+
+    if (fetchError) {
+      console.error('[deleteAllMessagesForUser] Error fetching messages:', fetchError)
+      return false
+    }
+
+    if (!messages || messages.length === 0) {
+      return true // No messages to delete
+    }
+
+    // Update each message to add the user to deleted_by array
+    const updatePromises = messages.map(async (message) => {
+      const currentDeletedBy: string[] = message.deleted_by || []
+      
+      // Skip if already deleted for this user
+      if (currentDeletedBy.includes(userId)) {
+        return Promise.resolve()
+      }
+
+      const updatedDeletedBy = [...currentDeletedBy, userId]
+
+      const { error } = await supabase
+        .from('messages')
+        .update({ deleted_by: updatedDeletedBy })
+        .eq('id', message.id)
+
+      if (error) {
+        console.error(`[deleteAllMessagesForUser] Error updating message ${message.id}:`, error)
+      }
+    })
+
+    await Promise.all(updatePromises)
+    return true
+  } catch (error) {
+    console.error('[deleteAllMessagesForUser] Exception:', error)
+    return false
+  }
+}
+

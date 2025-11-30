@@ -39,6 +39,7 @@ type Screen =
   | "premium-features"
   | "my-profile"
   | "app-settings"
+  | "view-profile"
 
 interface AppState {
   currentScreen: Screen
@@ -47,6 +48,7 @@ interface AppState {
   showSuperLike: boolean
   chatMatchId?: string
   selectedPlanId?: string
+  viewedUserId?: string
 }
 
 export function AppMain() {
@@ -83,11 +85,12 @@ export function AppMain() {
     }))
   }
 
-  const handleNavigation = (screen: Screen, options?: { chatMatchId?: string }) => {
+  const handleNavigation = (screen: Screen, options?: { chatMatchId?: string; viewedUserId?: string }) => {
     setAppState((prev) => ({
       ...prev,
       currentScreen: screen,
       chatMatchId: options?.chatMatchId,
+      viewedUserId: options?.viewedUserId,
     }))
   }
 
@@ -131,7 +134,7 @@ export function AppMain() {
         return (
           <ActivityScreen
             onProfileClick={(userId) => {
-              handleNavigation("my-profile")
+              handleNavigation("view-profile", { viewedUserId: userId })
             }}
             onMatchClick={(matchId) => {
               handleNavigation("chat", { chatMatchId: matchId })
@@ -207,6 +210,14 @@ export function AppMain() {
         return <PremiumFeatures onBack={() => handleNavigation("profile")} />
       case "my-profile":
         return <ProfileView mode="dating" isOwnProfile onEdit={() => handleNavigation("profile-setup")} />
+      case "view-profile":
+        return (
+          <ProfileView 
+            mode="dating" 
+            userId={appState.viewedUserId}
+            onEdit={() => handleNavigation("profile-setup")} 
+          />
+        )
       case "app-settings":
         return (
           <AppSettings
@@ -239,9 +250,15 @@ export function AppMain() {
         {renderScreen()}
       </AppLayout>
 
-      {(appState.currentScreen === "messages" || appState.currentScreen === "activity" || appState.currentScreen === "profile") && (
+      {(appState.currentScreen === "messages" || appState.currentScreen === "activity" || appState.currentScreen === "profile" || appState.currentScreen === "view-profile") && (
         <BackFloatingButton
-          onClick={() => setAppState((prev) => ({ ...prev, currentScreen: "discover", activeTab: "discover" }))}
+          onClick={() => {
+            if (appState.currentScreen === "view-profile") {
+              setAppState((prev) => ({ ...prev, currentScreen: "activity", activeTab: "activity" }))
+            } else {
+              setAppState((prev) => ({ ...prev, currentScreen: "discover", activeTab: "discover" }))
+            }
+          }}
         />
       )}
 

@@ -15,6 +15,12 @@ export async function GET(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (user) {
+      // Check if email is verified (OAuth providers usually verify automatically, but check anyway)
+      if (!user.email_confirmed_at) {
+        console.log('Email not verified, sending to email verification')
+        return NextResponse.redirect(new URL('/auth/verify-email', requestUrl.origin))
+      }
+
       // Check user profile for onboarding status
       const { data: profile, error } = await supabase
         .from('user_profiles')
@@ -41,6 +47,6 @@ export async function GET(request: NextRequest) {
   }
 
   // URL to redirect to after sign in process completes
-  return NextResponse.redirect(new URL('/onboarding/verification', requestUrl.origin))
+  return NextResponse.redirect(new URL('/auth/verify-email', requestUrl.origin))
 }
 
