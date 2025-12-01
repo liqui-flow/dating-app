@@ -11,13 +11,13 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Camera, X, Save, ArrowLeft, Plus, Trash2 } from "lucide-react"
+import { Camera, X, Save, ArrowLeft, Plus, Trash2, Video } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { useToast } from "@/hooks/use-toast"
 import type { DatingProfileFull } from "@/lib/datingProfileService"
 import type { MatrimonyProfileFull } from "@/lib/matrimonyService"
-import { saveDatingPreferences, uploadProfilePhoto } from "@/lib/datingProfileService"
+import { saveDatingPreferences, uploadProfilePhoto, uploadProfileVideo } from "@/lib/datingProfileService"
 import { uploadAsset } from "@/lib/matrimonyService"
 
 interface EditProfileProps {
@@ -73,6 +73,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
   const [matrimonyProfile, setMatrimonyProfile] = useState<MatrimonyProfileFull | null>(null)
   const [activeTab, setActiveTab] = useState("photos")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
 
   // Dating profile state
@@ -86,6 +87,8 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
   const [datingShowOnProfile, setDatingShowOnProfile] = useState(true)
   const [datingAgeRange, setDatingAgeRange] = useState<[number, number]>([21, 35])
   const [datingDistance, setDatingDistance] = useState([25])
+  const [datingVideo, setDatingVideo] = useState<File | null>(null)
+  const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null)
 
   // Matrimony profile state
   const [matrimonyPhotos, setMatrimonyPhotos] = useState<Array<{ url: string; file?: File }>>([])
@@ -146,6 +149,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
           setDatingShowOnProfile(prefs.show_on_profile !== false)
           setDatingAgeRange([prefs.min_age || 21, prefs.max_age || 35])
           setDatingDistance([prefs.max_distance || 25])
+          setExistingVideoUrl(data.video_url || null)
         }
       } else if (currentMode === 'matrimony') {
         // ALWAYS fetch from matrimony_profile_full when in matrimony mode
@@ -202,6 +206,13 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
       } else {
         setMatrimonyPhotos(prev => [...prev, ...newPhotos])
       }
+    }
+  }
+
+  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setDatingVideo(file)
     }
   }
 
@@ -291,6 +302,24 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
           .eq('user_id', user.id)
           .maybeSingle()
 
+        // Upload video if a new one is selected
+        let videoUrl = existingVideoUrl
+        let videoFileName = existing?.video_file_name
+        if (datingVideo) {
+          const videoResult = await uploadProfileVideo(user.id, datingVideo)
+          if (videoResult.success && videoResult.data) {
+            videoUrl = videoResult.data
+            videoFileName = datingVideo.name
+          } else {
+            console.error("Failed to upload video:", videoResult.error)
+            toast({
+              title: "Warning",
+              description: "Failed to upload video. Your profile was saved without the video.",
+              variant: "destructive"
+            })
+          }
+        }
+
         const updateData: any = {
           user_id: user.id,
           name: existing?.name || '',
@@ -325,8 +354,8 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
         if (existing) {
           updateData.dob = existing.dob
           updateData.gender = existing.gender
-          updateData.video_url = existing.video_url
-          updateData.video_file_name = existing.video_file_name
+          updateData.video_url = videoUrl
+          updateData.video_file_name = videoFileName
           updateData.setup_completed = existing.setup_completed
           updateData.preferences_completed = existing.preferences_completed
           updateData.questionnaire_completed = existing.questionnaire_completed
@@ -519,6 +548,89 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 onChange={handlePhotoUpload}
                 className="hidden"
               />
+
+              {/* Video Section - Only for dating profile */}
+              {userPath === 'dating' && (
+                <div className="space-y-4 mt-6 pt-6 border-t border-border">
+                  <div>
+                    <h2 className="text-base font-semibold mb-1 sm:text-lg">Profile Video</h2>
+                    <p className="text-xs text-muted-foreground sm:text-sm">
+                      Add a 15-second video to bring your profile to life (optional)
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {existingVideoUrl && !datingVideo && (
+                      <div className="relative">
+                        <div className="aspect-video bg-muted rounded-xl overflow-hidden border-2 border-border max-h-48 sm:max-h-56 md:max-h-64 lg:max-h-72">
+                          <video
+                            src={existingVideoUrl}
+                            controls
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <p className="text-xs text-muted-foreground sm:text-sm">Current video</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => videoInputRef.current?.click()}
+                            className="w-full sm:w-auto h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4"
+                          >
+                            <Video className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                            Replace Video
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {datingVideo && (
+                      <div className="relative">
+                        <div className="aspect-video bg-muted rounded-xl overflow-hidden border-2 border-border max-h-48 sm:max-h-56 md:max-h-64 lg:max-h-72">
+                          <video
+                            src={URL.createObjectURL(datingVideo)}
+                            controls
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <p className="text-xs text-muted-foreground truncate sm:text-sm">{datingVideo.name}</p>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => setDatingVideo(null)}
+                            className="w-full sm:w-auto h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4"
+                          >
+                            <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!existingVideoUrl && !datingVideo && (
+                      <button
+                        onClick={() => videoInputRef.current?.click()}
+                        className="w-full aspect-video bg-muted/50 rounded-xl border-2 border-dashed border-border hover:bg-muted transition-colors flex flex-col items-center justify-center gap-2 sm:gap-3 group max-h-48 sm:max-h-56 md:max-h-64 lg:max-h-72"
+                      >
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                          <Video className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                        </div>
+                        <span className="text-xs sm:text-sm text-muted-foreground font-medium">Add Video</span>
+                        <span className="text-xs text-muted-foreground">MP4, MOV (Max 15 seconds)</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                  />
+                </div>
+              )}
             </div>
           </TabsContent>
 
