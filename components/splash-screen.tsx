@@ -114,6 +114,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           backgroundRepeat: 'no-repeat',
         }}
       >
+        <div className="absolute inset-0 bg-black/70" />
         <h1 
           className="text-[#E0E0E0] relative z-10 flex"
           style={{
@@ -221,6 +222,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         backgroundRepeat: 'no-repeat',
       }}
     >
+      <div className="absolute inset-0 bg-black/70" />
       <h1 
         className="text-[#E0E0E0] relative z-10 flex"
         style={{
@@ -248,3 +250,4 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     </div>
   )
 }
+
