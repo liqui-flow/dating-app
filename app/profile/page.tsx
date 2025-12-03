@@ -1,15 +1,11 @@
-// app/profile/page.tsx
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ProfileView } from "@/components/profile/profile-view"
 import { supabase } from "@/lib/supabaseClient"
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(true)
@@ -62,5 +58,17 @@ export default function ProfilePage() {
       mode={mode}
       isOwnProfile={!searchParams.get('userId')}
     />
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading profile...</p>
+      </div>
+    }>
+      <ProfilePageContent />
+    </Suspense>
   )
 }
