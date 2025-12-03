@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { MessageCircle, User, Search, Bell, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUnreadMessageCount } from "@/hooks/useUnreadMessageCount"
+import { useUnreadActivityCount } from "@/hooks/useUnreadActivityCount"
 
 interface QuickActionsProps {
   onOpenChat: () => void
@@ -14,6 +15,7 @@ interface QuickActionsProps {
   showShortlist?: boolean
   activeTab?: string
   className?: string
+  mode?: 'dating' | 'matrimony'
 }
 
 export function QuickActions({
@@ -25,13 +27,16 @@ export function QuickActions({
   showShortlist = false,
   activeTab,
   className,
+  mode = 'dating',
 }: QuickActionsProps) {
   const unreadCount = useUnreadMessageCount()
+  const { unreadCount: activityUnreadCount } = useUnreadActivityCount(mode)
   
   // Debug log
   useEffect(() => {
     console.log('[QuickActions] Unread count:', unreadCount)
-  }, [unreadCount])
+    console.log('[QuickActions] Activity unread count:', activityUnreadCount)
+  }, [unreadCount, activityUnreadCount])
   
   const tabs = [
     { id: "discover", icon: Search, onClick: onDiscover, show: !!onDiscover },
@@ -78,6 +83,12 @@ export function QuickActions({
               {tab.id === "messages" && unreadCount > 0 && (
                 <div className="absolute -top-1 -right-1 min-w-[20px] h-[20px] flex items-center justify-center px-1 rounded-full bg-red-500 text-white text-xs font-bold border-2 border-white shadow-lg z-10">
                   {unreadCount > 99 ? '99+' : unreadCount}
+                </div>
+              )}
+              {/* Unread activity badge for activity icon */}
+              {tab.id === "activity" && activityUnreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 min-w-[20px] h-[20px] flex items-center justify-center px-1 rounded-full bg-red-500 text-white text-xs font-bold border-2 border-white shadow-lg z-10">
+                  {activityUnreadCount > 99 ? '99+' : activityUnreadCount}
                 </div>
               )}
             </button>

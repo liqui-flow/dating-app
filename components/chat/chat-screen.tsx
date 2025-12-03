@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, MoreVertical, Send, Heart, X, CheckSquare, Trash2 } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ArrowLeft, MoreVertical, Send, Heart, X, CheckSquare, Trash2, User, Ban, Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { supabase } from "@/lib/supabaseClient"
@@ -20,12 +23,14 @@ import {
   deleteMessageForMe,
   deleteMessageForEveryone,
 } from "@/lib/chatService"
+import { blockUser } from "@/lib/blockService"
 import type { Message } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { RealtimeChannel } from "@supabase/supabase-js"
 import { useSocket } from "@/hooks/useSocket"
 import { useMessageNotifications } from "@/hooks/useMessageNotifications"
 import { MessageActionMenu } from "@/components/chat/message-action-menu"
+import { ReportDialog } from "@/components/chat/report-dialog"
 import { getPreferredVerticalPlacement, type VerticalPlacement } from "@/components/chat/menu-position"
 import {
   AlertDialog,
@@ -37,6 +42,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useRouter } from "next/navigation"
 
 interface ChatUser {
   id: string
@@ -53,6 +59,7 @@ interface ChatScreenProps {
 }
 
 export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
+  const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [replyPreview, setReplyPreview] = useState<{
@@ -84,10 +91,12 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
   const messagesSnapshotRef = useRef<Message[]>([])
   const currentUserIdRef = useRef<string | null>(null)
   const [inPageNotification, setInPageNotification] = useState<{ message: string; senderName: string } | null>(null)
-  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false)
   const [isSelectMode, setIsSelectMode] = useState(false)
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showBlockDialog, setShowBlockDialog] = useState(false)
+  const [showReportDialog, setShowReportDialog] = useState(false)
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false)
   const headerMenuRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
   const showMenuForMessage = (
@@ -621,6 +630,42 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
     }
   }
 
+  const handleBlockUser = async () => {
+    if (!currentUserId || !chatUser) return
+
+    try {
+      const result = await blockUser(currentUserId, chatUser.id, matchType)
+      
+      if (result.success) {
+        toast({
+          title: "User Blocked",
+          description: `${chatUser.name} has been blocked`,
+          variant: "destructive",
+        })
+        // Navigate back to dashboard after blocking
+        if (onBack) {
+          onBack()
+        } else {
+          router.push('/dating/dashboard')
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to block user",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      console.error("Error blocking user:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to block user",
+        variant: "destructive",
+      })
+    }
+    setShowBlockDialog(false)
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
@@ -631,7 +676,6 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
   const toggleSelectMode = () => {
     setIsSelectMode(!isSelectMode)
     setSelectedMessages(new Set())
-    setIsHeaderMenuOpen(false)
     setActiveMenu(null) // Close any open message menu
   }
 
@@ -776,7 +820,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
       <StaticBackground />
       
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
+      <div className="flex-shrink-0 p-4 border-b border-border glass-apple relative z-[40]">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {onBack && (
@@ -843,7 +887,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
               </Button>
             )}
             {!isSelectMode && (
-              <div className="relative" ref={headerMenuRef}>
+              <div className="relative z-[50]" ref={headerMenuRef}>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -855,17 +899,59 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
 
                 {/* Header Menu */}
                 {isHeaderMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 z-50 min-w-[160px] rounded-2xl border border-white/10 bg-black/90 text-sm text-white shadow-2xl backdrop-blur-lg">
+                  <div className="absolute right-0 top-full mt-2 z-[9999] min-w-[160px] rounded-2xl border border-white/10 bg-black/90 text-sm text-white shadow-2xl backdrop-blur-lg pointer-events-auto">
                     <div className="flex flex-col py-1">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation()
+                        onClick={() => {
                           toggleSelectMode()
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20"
+                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
                       >
                         <CheckSquare className="w-4 h-4" />
                         <span>Select</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          // Select all messages
+                          setIsSelectMode(true)
+                          setSelectedMessages(new Set(messages.map(m => m.id)))
+                          setIsHeaderMenuOpen(false)
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
+                      >
+                        <CheckSquare className="w-4 h-4" />
+                        <span>Select all</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          // Navigate to user's profile
+                          setIsHeaderMenuOpen(false)
+                          router.push(`/profile?userId=${chatUser.id}&mode=${matchType}`)
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>View profile</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsHeaderMenuOpen(false)
+                          setShowBlockDialog(true)
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
+                      >
+                        <Ban className="w-4 h-4" />
+                        <span>Block</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsHeaderMenuOpen(false)
+                          setShowReportDialog(true)
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
+                      >
+                        <Flag className="w-4 h-4" />
+                        <span>Report</span>
                       </button>
                     </div>
                   </div>
@@ -915,6 +1001,18 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
               return (
                 <div key={message.id} className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
                   <div className={cn("flex mb-3 items-start gap-2", isOwn ? "justify-end" : "justify-start")}>
+                    {/* Checkbox for received messages (left side) */}
+                    {isSelectMode && !isOwn && (
+                      <div className="flex items-center pt-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedMessages.has(message.id)}
+                          onChange={() => toggleMessageSelection(message.id)}
+                          className="w-5 h-5 rounded border-white/30 bg-white/10 text-primary focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                    )}
+                    
                     <div className="relative max-w-[85%] sm:max-w-[80%]">
                       <div
                         ref={getVisibilityRef(message.id, shouldTrackVisibility)}
@@ -1063,7 +1161,7 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
                         />
                       )}
                     </div>
-                    {isSelectMode && (
+                    {isSelectMode && isOwn && (
                       <div className="flex items-center pt-2">
                         <input
                           type="checkbox"
@@ -1181,6 +1279,42 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Block Confirmation Dialog */}
+      <AlertDialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Block {chatUser?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will block {chatUser?.name} and you won't be able to message each other anymore. The match will be deactivated. You can unblock them later from your settings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowBlockDialog(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBlockUser} className="bg-red-600 hover:bg-red-700">
+              Block User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Report Dialog */}
+      {currentUserId && chatUser && (
+        <ReportDialog
+          open={showReportDialog}
+          onOpenChange={setShowReportDialog}
+          reportedUserId={chatUser.id}
+          reporterId={currentUserId}
+          matchType={matchType}
+          userName={chatUser.name}
+          onSuccess={() => {
+            toast({
+              title: "Report Submitted",
+              description: `Your report for ${chatUser.name} has been submitted for review.`,
+            })
+          }}
+        />
+      )}
     </div>
   )
 }

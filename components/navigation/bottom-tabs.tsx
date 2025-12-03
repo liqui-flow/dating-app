@@ -5,6 +5,8 @@ import type React from "react"
 import { useState } from "react"
 import { Heart, Search, MessageCircle, User, Compass, Bell } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useUnreadMessageCount } from "@/hooks/useUnreadMessageCount"
+import { useUnreadActivityCount } from "@/hooks/useUnreadActivityCount"
 
 interface TabItem {
   id: string
@@ -21,10 +23,13 @@ const tabs: TabItem[] = [
 interface BottomTabsProps {
   activeTab?: string
   onTabChange?: (tabId: string) => void
+  mode?: 'dating' | 'matrimony'
 }
 
-export function BottomTabs({ activeTab = "discover", onTabChange }: BottomTabsProps) {
+export function BottomTabs({ activeTab = "discover", onTabChange, mode = 'dating' }: BottomTabsProps) {
   const [currentTab, setCurrentTab] = useState(activeTab)
+  const unreadCount = useUnreadMessageCount()
+  const { unreadCount: activityUnreadCount } = useUnreadActivityCount(mode)
 
   const handleTabClick = (tabId: string) => {
     setCurrentTab(tabId)
@@ -48,7 +53,21 @@ export function BottomTabs({ activeTab = "discover", onTabChange }: BottomTabsPr
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Icon className={cn("w-5 h-5 sm:w-6 sm:h-6 mb-1", isActive && "fill-current")} />
+              <div className="relative">
+                <Icon className={cn("w-5 h-5 sm:w-6 sm:h-6 mb-1", isActive && "fill-current")} />
+                {/* Unread message badge for messages icon */}
+                {tab.id === "messages" && unreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full bg-red-500 text-white text-[10px] font-bold border-2 border-card shadow-lg z-10">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </div>
+                )}
+                {/* Unread activity badge for activity icon */}
+                {tab.id === "activity" && activityUnreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full bg-red-500 text-white text-[10px] font-bold border-2 border-card shadow-lg z-10">
+                    {activityUnreadCount > 99 ? '99+' : activityUnreadCount}
+                  </div>
+                )}
+              </div>
               <span className="text-xs font-medium truncate">{tab.label}</span>
             </button>
           )

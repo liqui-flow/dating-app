@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 import type { VerticalPlacement } from "@/components/chat/menu-position"
 
@@ -40,6 +41,7 @@ export function MessageActionMenu({
 }: MessageActionMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const [placement, setPlacement] = useState<VerticalPlacement>(preferredPlacement)
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
 
   useEffect(() => {
     setPlacement(preferredPlacement)
@@ -47,23 +49,20 @@ export function MessageActionMenu({
 
   const resolvePlacement = useCallback(() => {
     if (typeof window === "undefined") return
-    if (!menuRef.current || !anchorElement) return
+    if (!anchorElement) return
 
     const bubbleRect = anchorElement.getBoundingClientRect()
-    const menuRect = menuRef.current.getBoundingClientRect()
-    const spaceAbove = bubbleRect.top
-    const spaceBelow = window.innerHeight - bubbleRect.bottom
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft
 
-    let nextPlacement = preferredPlacement
+    // Position the menu below the message bubble
+    const top = bubbleRect.bottom + scrollTop + 8 // 8px margin
+    const left = anchor === "right" 
+      ? bubbleRect.right + scrollLeft - 160 // 160px is menu width
+      : bubbleRect.left + scrollLeft
 
-    if (nextPlacement === "up" && menuRect.height > spaceAbove) {
-      nextPlacement = "down"
-    } else if (nextPlacement === "down" && menuRect.height > spaceBelow) {
-      nextPlacement = "up"
-    }
-
-    setPlacement(nextPlacement)
-  }, [anchorElement, preferredPlacement])
+    setMenuPosition({ top, left })
+  }, [anchorElement, anchor])
 
   useLayoutEffect(() => {
     resolvePlacement()
@@ -129,18 +128,16 @@ export function MessageActionMenu({
     onClose()
   }
 
-  return (
+  return createPortal(
     <div
       ref={menuRef}
       data-message-id={messageId}
       data-placement={placement}
-      className={cn(
-        "absolute z-20 min-w-[160px] rounded-2xl border border-white/10 bg-black/80 text-sm text-white shadow-2xl backdrop-blur-lg transition-transform duration-150 ease-out pointer-events-auto",
-        anchor === "right" ? "right-0" : "left-0",
-        placement === "up"
-          ? "bottom-full mb-2 origin-bottom animate-in fade-in-0 zoom-in-95"
-          : "top-full mt-2 origin-top animate-in fade-in-0 zoom-in-95",
-      )}
+      className="fixed z-[9999] min-w-[160px] rounded-2xl border border-white/10 bg-black/80 text-sm text-white shadow-2xl backdrop-blur-lg transition-transform duration-150 ease-out pointer-events-auto animate-in fade-in-0 zoom-in-95"
+      style={{
+        top: `${menuPosition.top}px`,
+        left: `${menuPosition.left}px`,
+      }}
     >
       <div className="flex flex-col py-1">
         {actions.map((action) => {
@@ -163,7 +160,8 @@ export function MessageActionMenu({
           )
         })}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

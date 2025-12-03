@@ -246,6 +246,7 @@ export function AppMain() {
         onSettingsClick={() => handleNavigation("app-settings")}
         showSettingsButton={true}
         currentScreen={appState.currentScreen}
+        mode="dating"
       >
         {renderScreen()}
       </AppLayout>
@@ -277,6 +278,7 @@ export function AppMain() {
           onDiscover={() =>
             setAppState((prev) => ({ ...prev, currentScreen: "discover", activeTab: "discover" }))
           }
+          mode="dating"
         />
       )}
 

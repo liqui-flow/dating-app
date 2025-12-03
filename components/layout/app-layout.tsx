@@ -14,6 +14,7 @@ interface AppLayoutProps {
   onSettingsClick?: () => void
   showSettingsButton?: boolean
   currentScreen?: string
+  mode?: 'dating' | 'matrimony'
 }
 
 export function AppLayout({ 
@@ -23,7 +24,8 @@ export function AppLayout({
   showBottomTabs = true, 
   onSettingsClick,
   showSettingsButton = true,
-  currentScreen
+  currentScreen,
+  mode = 'dating'
 }: AppLayoutProps) {
   const isDiscoverScreen = currentScreen === "discover"
   
@@ -45,7 +47,7 @@ export function AppLayout({
         isDiscoverScreen && "h-full overflow-hidden"
       )}>{children}</main>
 
-      {showBottomTabs && <BottomTabs activeTab={activeTab} onTabChange={onTabChange} />}
+      {showBottomTabs && <BottomTabs activeTab={activeTab} onTabChange={onTabChange} mode={mode} />}
     </div>
   )
 }
