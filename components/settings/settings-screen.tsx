@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
@@ -24,6 +25,7 @@ import {
   Bug,
   AlertCircle,
   CheckCircle,
+  ArrowLeft,
 } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { StaticBackground } from "@/components/discovery/static-background"
@@ -91,7 +93,7 @@ interface UserInfo {
   userPath: 'dating' | 'matrimony' | null
 }
 
-export function SettingsScreen({ onNavigate, onLogout, mode }: { onNavigate?: SettingsNavigateHandler; onLogout?: () => void; mode?: 'dating' | 'matrimony' }) {
+export function SettingsScreen({ onNavigate, onLogout, mode, onBack }: { onNavigate?: SettingsNavigateHandler; onLogout?: () => void; mode?: 'dating' | 'matrimony'; onBack?: () => void }) {
   const [userInfo, setUserInfo] = useState<UserInfo>({
     name: "Loading...",
     email: "Loading...",
@@ -249,6 +251,16 @@ export function SettingsScreen({ onNavigate, onLogout, mode }: { onNavigate?: Se
       {/* Header */}
       <div className="flex-shrink-0 p-6 border-b border-border glass-apple">
         <div className="flex items-center space-x-4">
+          {onBack && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-muted/50 rounded-full" 
+              onClick={onBack}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
           <Avatar className="w-16 h-16">
             <AvatarImage src={userInfo.photo || "/placeholder-user.jpg"} alt="Profile" />
             <AvatarFallback>{getInitials(userInfo.name)}</AvatarFallback>

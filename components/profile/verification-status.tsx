@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Camera, X, FileText, AlertCircle, CheckCircle, Shield } from "lucide-react"
-import { BackFloatingButton } from "@/components/navigation/back-floating-button"
+import { Upload, Camera, X, FileText, AlertCircle, CheckCircle, Shield, ArrowLeft } from "lucide-react"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { FaceScanModal } from "@/components/kyc/FaceScanModal"
 import { useToast } from "@/components/ui/use-toast"
@@ -181,18 +180,25 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
   const needsVerification = !verificationStatus || isRejected
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="min-h-screen relative">
       <StaticBackground />
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Profile Verification</h1>
+      <div className="sticky top-0 backdrop-blur-sm border-b border-border z-10">
+        <div className="flex items-center justify-between p-4">
+          <Button variant="ghost" size="sm" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <h1 className="text-xl font-semibold">Profile Verification</h1>
           {isPending && (
             <div className="flex items-center space-x-2 text-destructive">
-              <AlertCircle className="w-6 h-6" />
-              <span className="text-sm font-semibold">Verification Pending</span>
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-xs font-semibold">Pending</span>
             </div>
           )}
+          {!isPending && <div className="w-16"></div>}
         </div>
+      </div>
+      <div className="p-6 space-y-6">
 
         {checkingStatus ? (
           <Card>
@@ -359,7 +365,6 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
           </Card>
         )}
       </div>
-      <BackFloatingButton onClick={onBack} />
       
       {/* Face Scan Modal */}
       <FaceScanModal

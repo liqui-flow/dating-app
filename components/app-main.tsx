@@ -49,6 +49,7 @@ interface AppState {
   chatMatchId?: string
   selectedPlanId?: string
   viewedUserId?: string
+  cameFromChat?: boolean
 }
 
 export function AppMain() {
@@ -129,7 +130,11 @@ export function AppMain() {
             currentScreen: "chat",
             chatMatchId: matchId
           }))
-        }} />
+        }} onBack={() => setAppState(prev => ({
+          ...prev,
+          currentScreen: "discover",
+          activeTab: "discover"
+        }))} />
       case "activity":
         return (
           <ActivityScreen
@@ -139,6 +144,11 @@ export function AppMain() {
             onMatchClick={(matchId) => {
               handleNavigation("chat", { chatMatchId: matchId })
             }}
+            onBack={() => setAppState(prev => ({
+              ...prev,
+              currentScreen: "discover",
+              activeTab: "discover"
+            }))}
           />
         )
       case "chat":
@@ -151,6 +161,14 @@ export function AppMain() {
                 currentScreen: "messages",
                 activeTab: "messages"
               }))}
+              onViewProfile={(userId, mode) => {
+                setAppState(prev => ({
+                  ...prev,
+                  viewedUserId: userId,
+                  currentScreen: "view-profile",
+                  cameFromChat: true
+                }))
+              }}
             />
           </div>
         )
@@ -166,9 +184,13 @@ export function AppMain() {
               else if (id === "help_contact") window.alert("Contact us at support@example.com")
               else if (id === "help_report_bug") window.alert("Bug report submitted")
               else if (id === "app_settings") window.alert("Open App Settings")
-            }
-            }
+            }}
             onLogout={handleLogout}
+            onBack={() => setAppState(prev => ({
+              ...prev,
+              currentScreen: "discover",
+              activeTab: "discover"
+            }))}
           />
         )
       case "edit-profile":
@@ -209,13 +231,32 @@ export function AppMain() {
       case "premium-features":
         return <PremiumFeatures onBack={() => handleNavigation("profile")} />
       case "my-profile":
-        return <ProfileView mode="dating" isOwnProfile onEdit={() => handleNavigation("profile-setup")} />
+        return <ProfileView mode="dating" isOwnProfile onEdit={() => handleNavigation("profile-setup")} onBack={() => setAppState(prev => ({
+          ...prev,
+          currentScreen: "discover",
+          activeTab: "discover"
+        }))} />
       case "view-profile":
         return (
           <ProfileView 
             mode="dating" 
             userId={appState.viewedUserId}
             onEdit={() => handleNavigation("profile-setup")} 
+            onBack={() => setAppState(prev => {
+              if (prev.cameFromChat) {
+                return {
+                  ...prev,
+                  currentScreen: "chat",
+                  cameFromChat: false
+                }
+              } else {
+                return {
+                  ...prev,
+                  currentScreen: "activity",
+                  activeTab: "activity"
+                }
+              }
+            })}
           />
         )
       case "app-settings":
@@ -251,19 +292,8 @@ export function AppMain() {
         {renderScreen()}
       </AppLayout>
 
-      {(appState.currentScreen === "messages" || appState.currentScreen === "activity" || appState.currentScreen === "profile" || appState.currentScreen === "view-profile") && (
-        <BackFloatingButton
-          onClick={() => {
-            if (appState.currentScreen === "view-profile") {
-              setAppState((prev) => ({ ...prev, currentScreen: "activity", activeTab: "activity" }))
-            } else {
-              setAppState((prev) => ({ ...prev, currentScreen: "discover", activeTab: "discover" }))
-            }
-          }}
-        />
-      )}
-
-      {appState.currentScreen !== "chat" && (
+      
+      {appState.currentScreen !== "chat" && appState.currentScreen !== "app-settings" && (
         <QuickActions
           activeTab={appState.activeTab}
           onOpenChat={() =>

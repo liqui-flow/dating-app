@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { AppLayout } from "@/components/layout/app-layout"
 import { QuickActions } from "@/components/navigation/quick-actions"
 // Removed TopBackButton usage
-import { Filter, Check, X } from "lucide-react"
+import { Filter, Check, X, ArrowLeft } from "lucide-react"
 import { MatrimonySwipeCard } from "@/components/matrimony/matrimony-swipe-card"
 import { MatrimonyChatList } from "@/components/matrimony/matrimony-chat-list"
 import { ChatScreen } from "@/components/chat/chat-screen"
@@ -105,6 +105,8 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
   >(initialScreen)
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [viewedUserId, setViewedUserId] = useState<string | null>(null)
+  const [cameFromChat, setCameFromChat] = useState<boolean>(false)
+  const [cameFromShortlist, setCameFromShortlist] = useState<boolean>(false)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
@@ -325,7 +327,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
         console.log(`Excluding ${likedProfileIds.length} already liked/passed matrimony profiles`)
 
         // Combine all data from consolidated table
-        const combinedProfiles: MatrimonyProfile[] = matrimonyProfiles
+        const combinedProfiles = matrimonyProfiles
           .map((matrimonyProfile) => {
             // Extract data from JSONB fields
             const photosData = (matrimonyProfile.photos as string[]) || []
@@ -542,7 +544,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
               height, // Add height to profile
             }
           })
-          .filter((profile): profile is MatrimonyProfile => profile !== null)
+          .filter((profile): profile is NonNullable<typeof profile> => profile !== null) as MatrimonyProfile[]
 
         console.log(`Successfully processed ${combinedProfiles.length} matrimony profiles for display`)
         setProfiles(combinedProfiles)
@@ -753,7 +755,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
           <MatrimonyChatList onChatClick={(chatId) => {
             setSelectedChatId(chatId)
             setCurrentScreen("chat")
-          }} />
+          }} onBack={() => setCurrentScreen("discover")} />
         </div>
       )}
 
@@ -769,6 +771,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
               setSelectedChatId(matchId)
               setCurrentScreen("chat")
             }}
+            onBack={() => setCurrentScreen("discover")}
           />
         </div>
       )}
@@ -782,7 +785,15 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
             {/* Header */}
             <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="p-2 hover:bg-muted/50 rounded-full" 
+                    onClick={handleOpenDiscover}
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
                   <h1 className="text-2xl font-bold">Shortlist</h1>
                 </div>
               </div>
@@ -797,7 +808,11 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
                   const profile = shortlistedProfiles.find((p) => p.id === profileId)
                   return handleShortlistRemove(profileId, profile?.name)
                 }}
-                onOpenProfile={(profile) => setShortlistModalProfile(profile)}
+                onOpenProfile={(profile) => {
+  setViewedUserId(profile.id)
+  setCameFromShortlist(true)
+  setCurrentScreen("view-profile")
+}}
               />
             </div>
           </div>
@@ -809,6 +824,11 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
           <ChatScreen 
             matchId={selectedChatId} 
             onBack={() => setCurrentScreen("messages")} 
+            onViewProfile={(userId, mode) => {
+              setViewedUserId(userId)
+              setCameFromChat(true)
+              setCurrentScreen("view-profile")
+            }}
           />
         </div>
       )}
@@ -822,6 +842,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
             else if (id === "verification") setCurrentScreen("verification-status")
           }}
           onLogout={handleLogout}
+          onBack={() => setCurrentScreen("discover")}
         />
       )}
 
@@ -885,6 +906,17 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
             mode="matrimony" 
             userId={viewedUserId}
             onEdit={() => setCurrentScreen("profile-setup")} 
+            onBack={() => {
+              if (cameFromChat) {
+                setCameFromChat(false)
+                setCurrentScreen("chat")
+              } else if (cameFromShortlist) {
+                setCameFromShortlist(false)
+                setCurrentScreen("shortlist")
+              } else {
+                setCurrentScreen("activity")
+              }
+            }}
           />
         </div>
       )}
@@ -954,25 +986,8 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
         </div>
       )}
 
-      {(currentScreen === "messages" ||
-        currentScreen === "activity" ||
-        currentScreen === "profile" ||
-        currentScreen === "shortlist" ||
-        currentScreen === "view-profile") && (
-        <BackFloatingButton
-          onClick={() => {
-            if (currentScreen === "shortlist") {
-              handleOpenDiscover()
-            } else if (currentScreen === "view-profile") {
-              setCurrentScreen("activity")
-            } else {
-              setCurrentScreen("discover")
-            }
-          }}
-        />
-      )}
-
-      {currentScreen !== "chat" && (
+      
+      {currentScreen !== "chat" && currentScreen !== "app-settings" && (
         <QuickActions
           activeTab={currentScreen}
           onOpenChat={() => setCurrentScreen("messages")}

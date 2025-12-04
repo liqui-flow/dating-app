@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Heart, Eye, Sparkles, Loader2 } from "lucide-react"
+import { Heart, Eye, Sparkles, Loader2, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { supabase } from "@/lib/supabaseClient"
@@ -21,9 +21,10 @@ interface ActivityScreenProps {
   onProfileClick?: (userId: string) => void
   onMatchClick?: (matchId: string) => void
   mode?: 'dating' | 'matrimony'
+  onBack?: () => void
 }
 
-export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating' }: ActivityScreenProps) {
+export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', onBack }: ActivityScreenProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'matches' | 'likes' | 'views'>('all')
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -95,7 +96,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating' }
           // Optionally navigate to chat
           if (result.matchId && onMatchClick) {
             setTimeout(() => {
-              onMatchClick(result.matchId)
+              onMatchClick(result.matchId!)
             }, 500)
           }
         } else {
@@ -175,10 +176,20 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating' }
       {/* Static Background */}
       <StaticBackground />
       
-      {/* Header */}
+      {/* Header with Back Button */}
       <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {onBack && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 hover:bg-muted/50 rounded-full" 
+                onClick={onBack}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            )}
             <h1 className="text-2xl font-bold">Activity</h1>
           </div>
 

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { MapPin, Briefcase, GraduationCap, Users, Edit, Share, MoreVertical, Heart, Video, Home, Building2, ChevronLeft, ChevronRight, Sparkles, CheckCircle2 } from "lucide-react"
+import { MapPin, Briefcase, GraduationCap, Users, Edit, Share, MoreVertical, Heart, Video, Home, Building2, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { supabase } from "@/lib/supabaseClient"
@@ -17,6 +17,7 @@ import { recordDatingLike, recordMatrimonyLike } from "@/lib/matchmakingService"
 interface ProfileViewProps {
   isOwnProfile?: boolean
   onEdit?: () => void
+  onBack?: () => void
   userId?: string // Optional: if viewing another user's profile
   mode?: 'dating' | 'matrimony' // Required: determines which profile table to use
 }
@@ -33,7 +34,7 @@ function calculateAge(dob: string | null | undefined): number | null {
   return age
 }
 
-export function ProfileView({ isOwnProfile = false, onEdit, userId, mode }: ProfileViewProps) {
+export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode }: ProfileViewProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [userPath, setUserPath] = useState<'dating' | 'matrimony' | null>(null)
@@ -297,9 +298,21 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId, mode }: Prof
       {/* Header */}
       <div className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-black/60 via-black/40 to-transparent border-b border-white/10">
         <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-bold text-white">{isOwnProfile ? "My Profile" : name}</h1>
+          <div className="flex items-center space-x-4">
+            {!isOwnProfile && onBack && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 hover:bg-white/20 rounded-full" 
+                onClick={onBack}
+              >
+                <ArrowLeft className="w-5 h-5 text-white" />
+              </Button>
+            )}
+            <h1 className="text-xl font-bold text-white">{isOwnProfile ? "My Profile" : name}</h1>
+          </div>
           <div className="flex items-center space-x-2">
-            {isOwnProfile ? (
+            {isOwnProfile && (
               <>
                 <Button variant="outline" size="sm" onClick={handleEdit} className="bg-white/10 border-white/20 text-white hover:bg-white/20">
                   <Edit className="w-4 h-4 mr-2" />
@@ -309,10 +322,6 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId, mode }: Prof
                   <Share className="w-4 h-4" />
                 </Button>
               </>
-            ) : (
-              <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                <MoreVertical className="w-4 h-4" />
-              </Button>
             )}
           </div>
         </div>
@@ -506,7 +515,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId, mode }: Prof
                     {(datingProfile.interests as string[]).map((interest) => (
                       <Badge 
                         key={interest} 
-                        className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-white border-white/30 hover:from-purple-500/40 hover:to-pink-500/40 transition-all px-3 py-1.5"
+                        className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-black border-white/30 hover:from-purple-500/40 hover:to-pink-500/40 transition-all px-3 py-1.5"
                       >
                         {interest}
                       </Badge>
@@ -545,7 +554,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId, mode }: Prof
                           className={cn(
                             "px-4 py-2 text-sm transition-all",
                             choice.selected === 0 
-                              ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 shadow-lg" 
+                              ? "bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-black border-white/30 hover:from-purple-500/40 hover:to-pink-500/40 transition-all" 
                               : "bg-white/10 text-white/60 border-white/20"
                           )}
                         >
@@ -556,7 +565,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, userId, mode }: Prof
                           className={cn(
                             "px-4 py-2 text-sm transition-all",
                             choice.selected === 1 
-                              ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 shadow-lg" 
+                              ? "bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-black border-white/30 hover:from-purple-500/40 hover:to-pink-500/40 transition-all" 
                               : "bg-white/10 text-white/60 border-white/20"
                           )}
                         >

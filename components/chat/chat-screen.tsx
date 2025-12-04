@@ -56,9 +56,10 @@ interface ChatUser {
 interface ChatScreenProps {
   matchId?: string
   onBack?: () => void
+  onViewProfile?: (userId: string, mode: string) => void
 }
 
-export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
+export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) {
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
@@ -926,7 +927,12 @@ export function ChatScreen({ matchId, onBack }: ChatScreenProps) {
                         onClick={() => {
                           // Navigate to user's profile
                           setIsHeaderMenuOpen(false)
-                          router.push(`/profile?userId=${chatUser.id}&mode=${matchType}`)
+                          if (onViewProfile) {
+                            onViewProfile(chatUser.id, matchType)
+                          } else {
+                            // Fallback to router navigation if onViewProfile not provided
+                            router.push(`/profile?userId=${chatUser.id}&mode=${matchType}`)
+                          }
                         }}
                         className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
                       >

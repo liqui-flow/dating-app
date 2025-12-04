@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Star, Heart, Trash2, CheckSquare, Square, MoreVertical } from "lucide-react"
+import { Search, Star, Heart, Trash2, CheckSquare, Square, MoreVertical, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import {
@@ -41,9 +41,10 @@ interface ChatPreview {
 
 interface MatrimonyChatListProps {
   onChatClick?: (matchId: string) => void
+  onBack?: () => void
 }
 
-export function MatrimonyChatList({ onChatClick }: MatrimonyChatListProps) {
+export function MatrimonyChatList({ onChatClick, onBack }: MatrimonyChatListProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [chats, setChats] = useState<ChatPreview[]>([])
   const [loading, setLoading] = useState(true)
@@ -291,7 +292,7 @@ export function MatrimonyChatList({ onChatClick }: MatrimonyChatListProps) {
         channelsRef.current.delete(matchId)
       }
 
-      setActiveMenuId(null)
+      setIsHeaderMenuOpen(false)
     } catch (error) {
       console.error('Error deleting chat:', error)
     }
@@ -404,8 +405,19 @@ export function MatrimonyChatList({ onChatClick }: MatrimonyChatListProps) {
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {onBack && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 hover:bg-muted/50 rounded-full" 
+                onClick={onBack}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            )}
             <h1 className="text-2xl font-bold">Messages</h1>
+            <div className="flex-1" />
             <div className="flex items-center gap-2">
               {isSelectMode && (
                 <>

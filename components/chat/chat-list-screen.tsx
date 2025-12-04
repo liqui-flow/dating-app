@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Heart } from "lucide-react"
+import { Search, Heart, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { getDatingMatches, type Match } from "@/lib/matchmakingService"
@@ -31,9 +31,10 @@ interface ChatPreview {
 
 interface ChatListScreenProps {
   onChatClick?: (matchId: string) => void
+  onBack?: () => void
 }
 
-export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
+export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [chats, setChats] = useState<ChatPreview[]>([])
   const [loading, setLoading] = useState(true)
@@ -159,7 +160,7 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
 
             // Move this chat to the top (most recent first)
             updatedChats.splice(chatIndex, 1)
-            updatedChats.unshift(currentChat)
+            updatedChats.unshift(updatedChat)
 
             return updatedChats
           })
@@ -277,7 +278,17 @@ export function ChatListScreen({ onChatClick }: ChatListScreenProps) {
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {onBack && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 hover:bg-muted/50 rounded-full" 
+                onClick={onBack}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            )}
             <h1 className="text-2xl font-bold">Messages</h1>
           </div>
 

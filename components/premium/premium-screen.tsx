@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Crown, Eye, MessageCircle, Zap, Star, Check } from "lucide-react"
-import { BackFloatingButton } from "@/components/navigation/back-floating-button"
+import { Crown, Eye, MessageCircle, Zap, Star, Check, ArrowLeft } from "lucide-react"
 import { StaticBackground } from "@/components/discovery/static-background"
 
 interface PremiumPlan {
@@ -105,22 +104,33 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
   const [selectedPlan, setSelectedPlan] = useState<string>("quarterly")
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="min-h-screen relative">
       <StaticBackground />
       {/* Header */}
-      <div className="flex-shrink-0 glass-apple bg-gradient-to-br from-purple-600/90 via-blue-600/90 to-indigo-700/90 text-white p-6">
-        <div className="text-center space-y-4">
-          <div className="flex justify-center">
-            <Crown className="w-16 h-16 fill-current" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Go Premium</h1>
-            <p className="text-white/90">Unlock all features and find your perfect match faster</p>
-          </div>
+      <div className="sticky top-0 backdrop-blur-sm border-b border-border z-10">
+        <div className="flex items-center justify-between p-4">
+          <Button variant="ghost" size="sm" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <h1 className="text-xl font-semibold">Go Premium</h1>
+          <div className="w-16"></div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="overflow-y-auto">
+        {/* Hero Section */}
+        <div className="glass-apple bg-gradient-to-br from-purple-600/90 via-blue-600/90 to-indigo-700/90 text-white p-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              <Crown className="w-16 h-16 fill-current" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Go Premium</h1>
+              <p className="text-white/90">Unlock all features and find your perfect match faster</p>
+            </div>
+          </div>
+        </div>
         {/* Features Section */}
         <div className="p-6 space-y-6">
           <div className="space-y-4">
@@ -228,7 +238,6 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
           </div>
         </div>
       </div>
-      <BackFloatingButton onClick={onBack} />
     </div>
   )
 }

@@ -1,8 +1,8 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle } from "lucide-react"
-import { BackFloatingButton } from "@/components/navigation/back-floating-button"
+import { CheckCircle, ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { StaticBackground } from "@/components/discovery/static-background"
 
 export function PremiumFeatures({ onBack }: { onBack?: () => void }) {
@@ -13,10 +13,19 @@ export function PremiumFeatures({ onBack }: { onBack?: () => void }) {
   ]
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="min-h-screen relative">
       <StaticBackground />
+      <div className="sticky top-0 backdrop-blur-sm border-b border-border z-10">
+        <div className="flex items-center justify-between p-4">
+          <Button variant="ghost" size="sm" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <h1 className="text-xl font-semibold">Premium Features</h1>
+          <div className="w-16"></div>
+        </div>
+      </div>
       <div className="p-6 space-y-4">
-        <h1 className="text-2xl font-bold">Your Premium Features</h1>
         <Card>
           <CardHeader>
             <CardTitle>Included Features</CardTitle>
@@ -31,7 +40,6 @@ export function PremiumFeatures({ onBack }: { onBack?: () => void }) {
           </CardContent>
         </Card>
       </div>
-      <BackFloatingButton onClick={onBack} />
     </div>
   )
 }
