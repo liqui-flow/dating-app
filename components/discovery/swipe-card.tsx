@@ -12,6 +12,9 @@ import { Info, MapPin, X, Heart, Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "./swipe-animations"
 import { getDatingProfile, type DatingProfileFull } from "@/lib/datingProfileService"
+import { ReportDialog } from "@/components/chat/report-dialog"
+import { supabase } from "@/lib/supabaseClient"
+import { useToast } from "@/hooks/use-toast"
 
 interface Profile {
   id: string
@@ -43,7 +46,10 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
   const [isFlipped, setIsFlipped] = useState(false)
   const [fullProfile, setFullProfile] = useState<DatingProfileFull | null>(null)
   const [loadingProfile, setLoadingProfile] = useState(false)
+  const [showReportDialog, setShowReportDialog] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const { animation, showHeartBurst, showXBurst, hideAnimation } = useSwipeAnimation()
+  const { toast } = useToast()
   
   // Motion value for 3D rotation
   const rotateY = useMotionValue(0)
@@ -215,6 +221,31 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
   const getInitial = (value?: string) => {
     const trimmed = value?.trim()
     return trimmed && trimmed.length > 0 ? trimmed[0]!.toUpperCase() : "?"
+  }
+
+  // Get current user on component mount
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUserId(user.id)
+      }
+    }
+    getCurrentUser()
+  }, [])
+
+  const handleReportClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (currentUserId) {
+      setShowReportDialog(true)
+    }
+  }
+
+  const handleReportSuccess = () => {
+    toast({
+      title: "Report Submitted",
+      description: "Thank you for helping keep our community safe.",
+    })
   }
 
   const cardInitial = getInitial(profile.name)
@@ -418,11 +449,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                                 "transition-all duration-200",
                                 "shadow-lg"
                               )}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                // Handle report functionality
-                                console.log("Report user:", profile.id)
-                              }}
+                              onClick={handleReportClick}
                               aria-label="Report profile"
                             >
                               <Flag className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
@@ -676,6 +703,19 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
           )}
         </motion.div>
       </motion.div>
+
+      {/* Report Dialog */}
+      {currentUserId && (
+        <ReportDialog
+          open={showReportDialog}
+          onOpenChange={setShowReportDialog}
+          reportedUserId={profile.id}
+          reporterId={currentUserId}
+          matchType="dating"
+          userName={profile.name}
+          onSuccess={handleReportSuccess}
+        />
+      )}
     </>
   )
 }

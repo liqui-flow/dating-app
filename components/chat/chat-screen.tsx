@@ -856,9 +856,8 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${chatUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
                   <p className="text-sm text-muted-foreground">
-                    {isTyping ? "typing..." : chatUser.isOnline ? "Online now" : `Last seen ${chatUser.lastSeen || 'recently'}`}
+                    {isTyping ? "typing..." : chatUser.isOnline ? "Online now" : ""}
                   </p>
                 </div>
               </div>

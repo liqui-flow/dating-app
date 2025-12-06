@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils"
 import { SwipeAnimations, useSwipeAnimation } from "../discovery/swipe-animations"
 import { MatrimonyProfileModal } from "./matrimony-profile-modal"
 import { getMatrimonyProfile, type MatrimonyProfileFull } from "@/lib/matrimonyService"
+import { ReportDialog } from "@/components/chat/report-dialog"
+import { supabase } from "@/lib/supabaseClient"
+import { useToast } from "@/hooks/use-toast"
 
 interface MatrimonySwipeCardProps {
   profileId: string // user_id for fetching full profile
@@ -62,6 +65,34 @@ export function MatrimonySwipeCard({
   const [fullProfile, setFullProfile] = useState<MatrimonyProfileFull | null>(null)
   const [loadingProfile, setLoadingProfile] = useState(false)
   const [shortlistBusy, setShortlistBusy] = useState(false)
+  const [showReportDialog, setShowReportDialog] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const { toast } = useToast()
+  // Get current user on component mount
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUserId(user.id)
+      }
+    }
+    getCurrentUser()
+  }, [])
+
+  const handleReportClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (currentUserId) {
+      setShowReportDialog(true)
+    }
+  }
+
+  const handleReportSuccess = () => {
+    toast({
+      title: "Report Submitted",
+      description: "Thank you for helping keep our community safe.",
+    })
+  }
+
   const handleShortlistClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!onToggleShortlist || shortlistBusy) return
@@ -515,11 +546,7 @@ export function MatrimonySwipeCard({
                                 "transition-all duration-200",
                                 "shadow-lg"
                               )}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                // Handle report functionality
-                                console.log("Report user:", profileId)
-                              }}
+                              onClick={handleReportClick}
                               aria-label="Report profile"
                             >
                               <Flag className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
@@ -887,6 +914,19 @@ export function MatrimonySwipeCard({
         onNotNow()
       }}
     />
+
+    {/* Report Dialog */}
+    {currentUserId && (
+      <ReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        reportedUserId={profileId}
+        reporterId={currentUserId}
+        matchType="matrimony"
+        userName={name || "User"}
+        onSuccess={handleReportSuccess}
+      />
+    )}
     </>
   )
 }

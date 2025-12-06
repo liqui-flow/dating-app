@@ -987,7 +987,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
       )}
 
       
-      {currentScreen !== "chat" && currentScreen !== "app-settings" && (
+      {currentScreen !== "chat" && currentScreen !== "app-settings" && currentScreen !== "premium" && currentScreen !== "payment" && currentScreen !== "premium-features" && currentScreen !== "verification-status" && currentScreen !== "edit-profile" && (
         <QuickActions
           activeTab={currentScreen}
           onOpenChat={() => setCurrentScreen("messages")}

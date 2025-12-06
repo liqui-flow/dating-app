@@ -92,12 +92,12 @@ export function ReportDialog({
           <div className="space-y-2">
             <Label htmlFor="reason">Reason for reporting</Label>
             <Select value={reason} onValueChange={setReason}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-background border-border">
                 <SelectValue placeholder="Select a reason" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
                 {REPORT_REASONS[matchType].map((reportReason) => (
-                  <SelectItem key={reportReason} value={reportReason}>
+                  <SelectItem key={reportReason} value={reportReason} className="text-foreground">
                     {reportReason}
                   </SelectItem>
                 ))}

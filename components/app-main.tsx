@@ -293,7 +293,7 @@ export function AppMain() {
       </AppLayout>
 
       
-      {appState.currentScreen !== "chat" && appState.currentScreen !== "app-settings" && (
+      {appState.currentScreen !== "chat" && appState.currentScreen !== "app-settings" && appState.currentScreen !== "premium" && appState.currentScreen !== "verification-status" && appState.currentScreen !== "edit-profile" && (
         <QuickActions
           activeTab={appState.activeTab}
           onOpenChat={() =>
