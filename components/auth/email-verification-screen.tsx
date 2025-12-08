@@ -115,7 +115,7 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
         }
 
         // Set up auth state listener to detect when email is verified
-        subscription = supabase.auth.onAuthStateChange((event, newSession) => {
+        const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
           if (mounted && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED')) {
             if (newSession?.user?.email_confirmed_at) {
               setIsVerified(true)
@@ -127,6 +127,7 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
             }
           }
         })
+        subscription = authSubscription
       } catch (error) {
         console.error("Error checking email verification:", error)
         if (mounted) {
@@ -164,11 +165,20 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
   }, [router, onVerified, isVerified])
 
   const handleResendEmail = async () => {
+    if (!userEmail) {
+      toast({
+        title: "Error",
+        description: "No email address found. Please try signing in again.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsResending(true)
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: userEmail || undefined,
+        email: userEmail,
       })
 
       if (error) throw error
