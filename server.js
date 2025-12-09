@@ -10,7 +10,7 @@ const httpServer = createServer(app);
 // CORS configuration
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    origin: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:10000',
     methods: ['GET', 'POST'],
     credentials: true,
   },
