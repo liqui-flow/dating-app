@@ -8,6 +8,7 @@ import { careerEducationSchema } from "@/lib/schemas/matrimony"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
 import { saveStep3 } from "@/lib/matrimonyService"
 import { supabase } from "@/lib/supabaseClient"
@@ -15,9 +16,68 @@ import { toast } from "sonner"
 
 type FormValues = z.infer<typeof careerEducationSchema>
 
+const EDUCATION_OPTIONS = [
+  "High School",
+  "Diploma",
+  "Associate's Degree",
+  "Bachelor's Degree",
+  "Master's Degree",
+  "MBA",
+  "PhD",
+  "MD",
+  "JD",
+  "Other"
+]
+
+const JOB_TITLE_OPTIONS = [
+  "Software Engineer",
+  "Data Scientist",
+  "Product Manager",
+  "Business Analyst",
+  "Consultant",
+  "Doctor",
+  "Engineer",
+  "Teacher",
+  "Professor",
+  "Lawyer",
+  "Accountant",
+  "Architect",
+  "Designer",
+  "Marketing Manager",
+  "Sales Manager",
+  "HR Manager",
+  "Operations Manager",
+  "Financial Analyst",
+  "Investment Banker",
+  "Entrepreneur",
+  "Business Owner",
+  "Nurse",
+  "Pharmacist",
+  "Dentist",
+  "Veterinarian",
+  "Scientist",
+  "Researcher",
+  "Journalist",
+  "Writer",
+  "Artist",
+  "Musician",
+  "Chef",
+  "Pilot",
+  "Civil Servant",
+  "Government Employee",
+  "Student",
+  "Unemployed",
+  "Retired",
+  "Other"
+]
+
 export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { career, setPartial } = useMatrimonySetupStore()
   const [isLoading, setIsLoading] = React.useState(false)
+  const [isOtherEducation, setIsOtherEducation] = React.useState(false)
+  const [otherEducationValue, setOtherEducationValue] = React.useState("")
+  const [isOtherJobTitle, setIsOtherJobTitle] = React.useState(false)
+  const [otherJobTitleValue, setOtherJobTitleValue] = React.useState("")
 
   const form = useForm<FormValues>({
     resolver: zodResolver(careerEducationSchema),
@@ -31,6 +91,28 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
     },
     mode: "onChange",
   })
+
+  // Check if the current value is "Other" or not in the predefined list
+  useEffect(() => {
+    const currentEducationValue = career.highestEducation || ""
+    if (currentEducationValue && !EDUCATION_OPTIONS.slice(0, -1).includes(currentEducationValue)) {
+      setIsOtherEducation(true)
+      setOtherEducationValue(currentEducationValue)
+    } else {
+      setIsOtherEducation(false)
+      setOtherEducationValue("")
+    }
+
+    const currentJobTitleValue = career.jobTitle || ""
+    if (currentJobTitleValue && !JOB_TITLE_OPTIONS.slice(0, -1).includes(currentJobTitleValue)) {
+      setIsOtherJobTitle(true)
+      setOtherJobTitleValue(currentJobTitleValue)
+    } else {
+      setIsOtherJobTitle(false)
+      setOtherJobTitleValue("")
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const sub = form.watch((values) => {
@@ -83,8 +165,44 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
               <FormItem>
                 <FormLabel>Highest Education</FormLabel>
                 <FormControl>
-                  <Input placeholder="Bachelor's, Master's, PhD, etc." {...field} />
+                  <Select 
+                    onValueChange={(value) => {
+                      if (value === "Other") {
+                        setIsOtherEducation(true)
+                        setOtherEducationValue("")
+                        field.onChange("")
+                      } else {
+                        setIsOtherEducation(false)
+                        setOtherEducationValue("")
+                        field.onChange(value)
+                      }
+                    }} 
+                    value={field.value && EDUCATION_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherEducation ? "Other" : undefined}
+                  >
+                    <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/50 transition">
+                      <SelectValue placeholder="Select highest education" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                      {EDUCATION_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option} className="text-foreground">
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
+                {isOtherEducation && (
+                  <Input
+                    placeholder="Enter your education"
+                    value={otherEducationValue}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setOtherEducationValue(value)
+                      field.onChange(value)
+                    }}
+                    className="mt-2 h-11 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                  />
+                )}
                 <FormMessage />
               </FormItem>
             )} />
@@ -101,8 +219,44 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
               <FormItem>
                 <FormLabel>Current Profession / Job Title</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Software Engineer" {...field} />
+                  <Select 
+                    onValueChange={(value) => {
+                      if (value === "Other") {
+                        setIsOtherJobTitle(true)
+                        setOtherJobTitleValue("")
+                        field.onChange("")
+                      } else {
+                        setIsOtherJobTitle(false)
+                        setOtherJobTitleValue("")
+                        field.onChange(value)
+                      }
+                    }} 
+                    value={field.value && JOB_TITLE_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherJobTitle ? "Other" : undefined}
+                  >
+                    <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/50 transition">
+                      <SelectValue placeholder="Select job title" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                      {JOB_TITLE_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option} className="text-foreground">
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
+                {isOtherJobTitle && (
+                  <Input
+                    placeholder="Enter your job title"
+                    value={otherJobTitleValue}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setOtherJobTitleValue(value)
+                      field.onChange(value)
+                    }}
+                    className="mt-2 h-11 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                  />
+                )}
                 <FormMessage />
               </FormItem>
             )} />

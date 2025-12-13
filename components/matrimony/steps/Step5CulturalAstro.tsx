@@ -8,6 +8,7 @@ import { culturalAstroSchema } from "@/lib/schemas/matrimony"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMatrimonySetupStore } from "@/components/matrimony/store"
 import { saveStep5 } from "@/lib/matrimonyService"
 import { supabase } from "@/lib/supabaseClient"
@@ -15,9 +16,56 @@ import { toast } from "sonner"
 
 type FormValues = z.infer<typeof culturalAstroSchema>
 
+const RELIGION_OPTIONS = [
+  "Hinduism",
+  "Islam",
+  "Christianity",
+  "Sikhism",
+  "Buddhism",
+  "Jainism",
+  "Judaism",
+  "Zoroastrianism",
+  "Bahá'í",
+  "Atheist",
+  "Agnostic",
+  "Spiritual",
+  "Other"
+]
+
+const MOTHER_TONGUE_OPTIONS = [
+  "Hindi",
+  "English",
+  "Bengali",
+  "Telugu",
+  "Marathi",
+  "Tamil",
+  "Gujarati",
+  "Urdu",
+  "Kannada",
+  "Odia",
+  "Malayalam",
+  "Punjabi",
+  "Assamese",
+  "Sanskrit",
+  "Kashmiri",
+  "Sindhi",
+  "Konkani",
+  "Manipuri",
+  "Nepali",
+  "Bodo",
+  "Santhali",
+  "Maithili",
+  "Dogri",
+  "Other"
+]
+
 export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { cultural, setPartial } = useMatrimonySetupStore()
   const [isLoading, setIsLoading] = React.useState(false)
+  const [isOtherReligion, setIsOtherReligion] = React.useState(false)
+  const [otherReligionValue, setOtherReligionValue] = React.useState("")
+  const [isOtherMotherTongue, setIsOtherMotherTongue] = React.useState(false)
+  const [otherMotherTongueValue, setOtherMotherTongueValue] = React.useState("")
 
   const form = useForm<FormValues>({
     resolver: zodResolver(culturalAstroSchema),
@@ -34,6 +82,28 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
     },
     mode: "onChange",
   })
+
+  // Check if the current values are "Other" or not in the predefined list
+  useEffect(() => {
+    const currentReligionValue = cultural.religion || ""
+    if (currentReligionValue && !RELIGION_OPTIONS.slice(0, -1).includes(currentReligionValue)) {
+      setIsOtherReligion(true)
+      setOtherReligionValue(currentReligionValue)
+    } else {
+      setIsOtherReligion(false)
+      setOtherReligionValue("")
+    }
+
+    const currentMotherTongueValue = cultural.motherTongue || ""
+    if (currentMotherTongueValue && !MOTHER_TONGUE_OPTIONS.slice(0, -1).includes(currentMotherTongueValue)) {
+      setIsOtherMotherTongue(true)
+      setOtherMotherTongueValue(currentMotherTongueValue)
+    } else {
+      setIsOtherMotherTongue(false)
+      setOtherMotherTongueValue("")
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const sub = form.watch((values) => {
@@ -95,14 +165,90 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
             <FormField control={form.control} name="religion" render={({ field }) => (
               <FormItem>
                 <FormLabel>Religion</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormControl>
+                  <Select 
+                    onValueChange={(value) => {
+                      if (value === "Other") {
+                        setIsOtherReligion(true)
+                        setOtherReligionValue("")
+                        field.onChange("")
+                      } else {
+                        setIsOtherReligion(false)
+                        setOtherReligionValue("")
+                        field.onChange(value)
+                      }
+                    }} 
+                    value={field.value && RELIGION_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherReligion ? "Other" : undefined}
+                  >
+                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                      <SelectValue placeholder="Select religion" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                      {RELIGION_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option} className="text-foreground">
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                {isOtherReligion && (
+                  <Input
+                    placeholder="Enter religion"
+                    value={otherReligionValue}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setOtherReligionValue(value)
+                      field.onChange(value)
+                    }}
+                    className="mt-2 h-10 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                  />
+                )}
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="motherTongue" render={({ field }) => (
               <FormItem>
                 <FormLabel>Mother Tongue</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormControl>
+                  <Select 
+                    onValueChange={(value) => {
+                      if (value === "Other") {
+                        setIsOtherMotherTongue(true)
+                        setOtherMotherTongueValue("")
+                        field.onChange("")
+                      } else {
+                        setIsOtherMotherTongue(false)
+                        setOtherMotherTongueValue("")
+                        field.onChange(value)
+                      }
+                    }} 
+                    value={field.value && MOTHER_TONGUE_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherMotherTongue ? "Other" : undefined}
+                  >
+                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                      <SelectValue placeholder="Select mother tongue" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                      {MOTHER_TONGUE_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option} className="text-foreground">
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                {isOtherMotherTongue && (
+                  <Input
+                    placeholder="Enter mother tongue"
+                    value={otherMotherTongueValue}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setOtherMotherTongueValue(value)
+                      field.onChange(value)
+                    }}
+                    className="mt-2 h-10 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                  />
+                )}
                 <FormMessage />
               </FormItem>
             )} />

@@ -17,9 +17,56 @@ import { toast } from "sonner"
 
 type FormValues = z.infer<typeof familySchema>
 
+const OCCUPATION_OPTIONS = [
+  "Software Engineer",
+  "Data Scientist",
+  "Product Manager",
+  "Business Analyst",
+  "Consultant",
+  "Doctor",
+  "Engineer",
+  "Teacher",
+  "Professor",
+  "Lawyer",
+  "Accountant",
+  "Architect",
+  "Designer",
+  "Marketing Manager",
+  "Sales Manager",
+  "HR Manager",
+  "Operations Manager",
+  "Financial Analyst",
+  "Investment Banker",
+  "Entrepreneur",
+  "Business Owner",
+  "Nurse",
+  "Pharmacist",
+  "Dentist",
+  "Veterinarian",
+  "Scientist",
+  "Researcher",
+  "Journalist",
+  "Writer",
+  "Artist",
+  "Musician",
+  "Chef",
+  "Pilot",
+  "Civil Servant",
+  "Government Employee",
+  "Student",
+  "Unemployed",
+  "Retired",
+  "Homemaker",
+  "Other"
+]
+
 export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { family, setPartial } = useMatrimonySetupStore()
   const [isLoading, setIsLoading] = React.useState(false)
+  const [isOtherFatherOccupation, setIsOtherFatherOccupation] = React.useState(false)
+  const [otherFatherOccupationValue, setOtherFatherOccupationValue] = React.useState("")
+  const [isOtherMotherOccupation, setIsOtherMotherOccupation] = React.useState(false)
+  const [otherMotherOccupationValue, setOtherMotherOccupationValue] = React.useState("")
 
   const form = useForm<FormValues>({
     resolver: zodResolver(familySchema),
@@ -37,6 +84,28 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
     },
     mode: "onChange",
   })
+
+  // Check if the current values are "Other" or not in the predefined list
+  useEffect(() => {
+    const currentFatherOccupation = family.fatherOccupation || ""
+    if (currentFatherOccupation && !OCCUPATION_OPTIONS.slice(0, -1).includes(currentFatherOccupation)) {
+      setIsOtherFatherOccupation(true)
+      setOtherFatherOccupationValue(currentFatherOccupation)
+    } else {
+      setIsOtherFatherOccupation(false)
+      setOtherFatherOccupationValue("")
+    }
+
+    const currentMotherOccupation = family.motherOccupation || ""
+    if (currentMotherOccupation && !OCCUPATION_OPTIONS.slice(0, -1).includes(currentMotherOccupation)) {
+      setIsOtherMotherOccupation(true)
+      setOtherMotherOccupationValue(currentMotherOccupation)
+    } else {
+      setIsOtherMotherOccupation(false)
+      setOtherMotherOccupationValue("")
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const sub = form.watch((values) => {
@@ -94,9 +163,9 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
                       <SelectValue placeholder="Select family type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                  <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
                     {["Joint", "Nuclear", "Extended", "Single Parent"].map((option) => (
-                      <SelectItem key={option} value={option}>
+                      <SelectItem key={option} value={option} className="text-foreground">
                         {option}
                       </SelectItem>
                     ))}
@@ -114,9 +183,9 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
                       <SelectValue placeholder="Select values" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                  <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
                     {["Traditional", "Moderate", "Modern", "Progressive"].map((option) => (
-                      <SelectItem key={option} value={option}>
+                      <SelectItem key={option} value={option} className="text-foreground">
                         {option}
                       </SelectItem>
                     ))}
@@ -131,7 +200,45 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
             <FormField control={form.control} name="fatherOccupation" render={({ field }) => (
               <FormItem>
                 <FormLabel>Father's Occupation</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormControl>
+                  <Select 
+                    onValueChange={(value) => {
+                      if (value === "Other") {
+                        setIsOtherFatherOccupation(true)
+                        setOtherFatherOccupationValue("")
+                        field.onChange("")
+                      } else {
+                        setIsOtherFatherOccupation(false)
+                        setOtherFatherOccupationValue("")
+                        field.onChange(value)
+                      }
+                    }} 
+                    value={field.value && OCCUPATION_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherFatherOccupation ? "Other" : undefined}
+                  >
+                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                      <SelectValue placeholder="Select occupation" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                      {OCCUPATION_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option} className="text-foreground">
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                {isOtherFatherOccupation && (
+                  <Input
+                    placeholder="Enter occupation"
+                    value={otherFatherOccupationValue}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setOtherFatherOccupationValue(value)
+                      field.onChange(value)
+                    }}
+                    className="mt-2 h-10 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                  />
+                )}
                 <FormMessage />
               </FormItem>
             )} />
@@ -145,7 +252,45 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
             <FormField control={form.control} name="motherOccupation" render={({ field }) => (
               <FormItem>
                 <FormLabel>Mother's Occupation</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormControl>
+                  <Select 
+                    onValueChange={(value) => {
+                      if (value === "Other") {
+                        setIsOtherMotherOccupation(true)
+                        setOtherMotherOccupationValue("")
+                        field.onChange("")
+                      } else {
+                        setIsOtherMotherOccupation(false)
+                        setOtherMotherOccupationValue("")
+                        field.onChange(value)
+                      }
+                    }} 
+                    value={field.value && OCCUPATION_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherMotherOccupation ? "Other" : undefined}
+                  >
+                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                      <SelectValue placeholder="Select occupation" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                      {OCCUPATION_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option} className="text-foreground">
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                {isOtherMotherOccupation && (
+                  <Input
+                    placeholder="Enter occupation"
+                    value={otherMotherOccupationValue}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setOtherMotherOccupationValue(value)
+                      field.onChange(value)
+                    }}
+                    className="mt-2 h-10 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                  />
+                )}
                 <FormMessage />
               </FormItem>
             )} />
@@ -182,9 +327,9 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="bg-white/90 text-black border border-white/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+                  <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
                     {["None", "Some", "All", "Mostly Married", "Mostly Single"].map((option) => (
-                      <SelectItem key={option} value={option}>
+                      <SelectItem key={option} value={option} className="text-foreground">
                         {option}
                       </SelectItem>
                     ))}

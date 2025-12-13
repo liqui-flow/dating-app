@@ -50,8 +50,8 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
   }, [form, setPartial])
 
   const onSubmit = async (values: FormValues) => {
-    if (photos.length < 3) {
-      toast.error("Please upload at least 3 photos")
+    if (photos.length < 2) {
+      toast.error("Please upload at least 2 photos")
       return
     }
 
@@ -160,7 +160,7 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
             </div>
           )}
 
-          <div className="text-xs text-muted-foreground">Add minimum 3, maximum 6 photos.</div>
+          <div className="text-xs text-muted-foreground">Add minimum 2, maximum 6 photos.</div>
 
           <FormField
             control={form.control}
@@ -247,7 +247,7 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
               } catch {}
               router.push("/")
             }}>Back</Button>
-            <Button type="submit" disabled={isLoading || photos.length < 3}>
+            <Button type="submit" disabled={isLoading || photos.length < 2}>
               {isLoading ? "Saving..." : "Next"}
             </Button>
           </div>

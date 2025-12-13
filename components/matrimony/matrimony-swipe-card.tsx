@@ -429,11 +429,31 @@ export function MatrimonySwipeCard({
               {cardInitial}, {age}
             </h2>
             {location && (
-              <div className="flex items-center space-x-1 text-white/90">
+              <div className="flex items-center space-x-1 text-white/90 mb-1">
                 <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="text-sm sm:text-base">{location}</span>
               </div>
             )}
+            {/* Religion/Caste and Profession */}
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              {(fullProfile?.cultural?.religion || fullProfile?.cultural?.community || community) && (
+                <div className="text-white/90 text-xs sm:text-sm">
+                  {fullProfile?.cultural?.religion 
+                    ? (fullProfile?.cultural?.community 
+                        ? `${fullProfile.cultural.religion} / ${fullProfile.cultural.community}`
+                        : fullProfile.cultural.religion)
+                    : (fullProfile?.cultural?.community || community || 'N/A')}
+                  {(profession || fullProfile?.career?.job_title) && (
+                    <span>, {fullProfile?.career?.job_title || profession}</span>
+                  )}
+                </div>
+              )}
+              {!(fullProfile?.cultural?.religion || fullProfile?.cultural?.community || community) && (profession || fullProfile?.career?.job_title) && (
+                <div className="text-white/90 text-xs sm:text-sm">
+                  {fullProfile?.career?.job_title || profession}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -531,6 +551,26 @@ export function MatrimonySwipeCard({
                             <span>{location}</span>
                           </div>
                         )}
+                        {/* Religion/Caste and Profession */}
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          {(fullProfile?.cultural?.religion || fullProfile?.cultural?.community || community) && (
+                            <div className="text-white/80 text-sm">
+                              {fullProfile?.cultural?.religion 
+                                ? (fullProfile?.cultural?.community 
+                                    ? `${fullProfile.cultural.religion} / ${fullProfile.cultural.community}`
+                                    : fullProfile.cultural.religion)
+                                : (fullProfile?.cultural?.community || community || 'N/A')}
+                              {(profession || fullProfile?.career?.job_title) && (
+                                <span>, {fullProfile?.career?.job_title || profession}</span>
+                              )}
+                            </div>
+                          )}
+                          {!(fullProfile?.cultural?.religion || fullProfile?.cultural?.community || community) && (profession || fullProfile?.career?.job_title) && (
+                            <div className="text-white/80 text-sm">
+                              {fullProfile?.career?.job_title || profession}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Tooltip>

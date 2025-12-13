@@ -80,7 +80,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
   }
 
   const handleNext = async () => {
-    if (name.trim() && photos.length >= 3) {
+    if (name.trim() && photos.length >= 2) {
       setIsLoading(true)
       
       try {
@@ -133,7 +133,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
     }
   }
 
-  const isComplete = name.trim() && photos.length >= 3
+  const isComplete = name.trim() && photos.length >= 2
 
   return (
     <div className="h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white overflow-hidden relative">
@@ -151,7 +151,7 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
                 Welcome{name ? `, ${name}` : ""}! Now, let's add some photos.
               </h2>
               <p className="text-xs text-primary mt-1">
-                Show us who you are. Add at least 3 photos to stand out.
+                Show us who you are. Add at least 2 photos to stand out.
               </p>
             </div>
             
@@ -199,9 +199,9 @@ export function ProfileSetup({ onComplete, onBack }: ProfileSetupProps) {
                 <Upload className="w-3 h-3 mr-1" />
                 {photos.length >= 6 ? "Max reached" : "Upload Photo"}
               </Button>
-              {photos.length < 3 && (
+              {photos.length < 2 && (
                 <p className="text-red-500 text-xs mt-1">
-                  Min 3 photos, max 6. {photos.length > 0 ? `${photos.length} added.` : 'None yet.'}
+                  Min 2 photos, max 6. {photos.length > 0 ? `${photos.length} added.` : 'None yet.'}
                 </p>
               )}
               {photos.length >= 6 && (
