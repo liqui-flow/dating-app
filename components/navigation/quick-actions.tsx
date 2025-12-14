@@ -53,7 +53,7 @@ export function QuickActions({
         className,
       )}
     >
-      <div className="flex items-center gap-4 px-8 py-3 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+      <div className="flex items-center gap-4 px-8 py-3 rounded-3xl bg-white/95 backdrop-blur-md border border-black/12 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -65,29 +65,29 @@ export function QuickActions({
               className={cn(
                 "relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200",
                 isActive 
-                  ? "bg-white shadow-[0_0_15px_rgba(255,255,255,0.3)]" 
-                  : "hover:bg-white/10"
+                  ? "bg-[#97011A] shadow-[0_0_15px_rgba(151,1,26,0.3)]" 
+                  : "hover:bg-black/5"
               )}
             >
               <Icon 
                 className={cn(
                   "w-5 h-5",
-                  isActive ? "text-black" : "text-white"
+                  isActive ? "text-white" : "text-black"
                 )} 
                 strokeWidth={isActive ? 2.5 : 2} 
               />
               {isActive && (
-                <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-black" />
+                <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white" />
               )}
               {/* Unread message badge for messages icon */}
               {tab.id === "messages" && unreadCount > 0 && (
-                <div className="absolute -top-1 -right-1 min-w-[20px] h-[20px] flex items-center justify-center px-1 rounded-full bg-red-500 text-white text-xs font-bold border-2 border-white shadow-lg z-10">
+                <div className="absolute -top-1 -right-1 min-w-[20px] h-[20px] flex items-center justify-center px-1 rounded-full bg-[#97011A] text-white text-xs font-bold border-2 border-white shadow-md z-10">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </div>
               )}
               {/* Unread activity badge for activity icon */}
               {tab.id === "activity" && activityUnreadCount > 0 && (
-                <div className="absolute -top-1 -right-1 min-w-[20px] h-[20px] flex items-center justify-center px-1 rounded-full bg-red-500 text-white text-xs font-bold border-2 border-white shadow-lg z-10">
+                <div className="absolute -top-1 -right-1 min-w-[20px] h-[20px] flex items-center justify-center px-1 rounded-full bg-[#97011A] text-white text-xs font-bold border-2 border-white shadow-md z-10">
                   {activityUnreadCount > 99 ? '99+' : activityUnreadCount}
                 </div>
               )}

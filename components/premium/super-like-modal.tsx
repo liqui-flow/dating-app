@@ -27,7 +27,7 @@ export function SuperLikeModal({
         <Card className="border-0 shadow-none">
           <CardContent className="p-0">
             {/* Header */}
-            <div className="relative bg-gradient-to-br from-blue-500 to-purple-600 text-white p-6 text-center">
+            <div className="relative bg-gradient-to-br from-[#97011A] to-[#7A0115] text-white p-6 text-center">
               <Button
                 variant="ghost"
                 size="sm"

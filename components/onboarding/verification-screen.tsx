@@ -2,10 +2,9 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Shield, CheckCircle, Upload, Camera, X, FileText, CalendarDays } from "lucide-react"
+import { Shield, CheckCircle, Upload, Camera, X, FileText, CalendarDays, ArrowLeft } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { FaceScanModal } from "@/components/kyc/FaceScanModal"
 import { 
@@ -13,7 +12,6 @@ import {
   saveGender, 
   completeIDVerification 
 } from "@/lib/verificationApi"
-import { StaticBackground } from "@/components/discovery/static-background"
 
 interface VerificationScreenProps {
   onComplete?: () => void
@@ -301,370 +299,321 @@ export function VerificationScreen({ onComplete, onSkip }: VerificationScreenPro
 
   // Progress indicator helpers
   const currentStepIndex = step === "profile" ? 1 : step === "gender" ? 2 : 3
-  const renderStep = (index: number, label: string) => {
-    const state = currentStepIndex === index ? "active" : currentStepIndex > index ? "completed" : "inactive"
-    const base = "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-    const className =
-      state === "completed"
-        ? `bg-primary text-primary-foreground ${base}`
-        : state === "active"
-          ? `bg-primary text-primary-foreground ${base}`
-          : `bg-muted text-muted-foreground ${base}`
-
+  const totalSteps = 3
+  
+  // Progress dots renderer
+  const renderProgressDots = () => {
     return (
-      <div className="flex items-center space-x-2">
-        <div className={className}>
-          {state === "completed" ? <CheckCircle className="w-4 h-4" /> : index}
-        </div>
-        <span className="text-sm text-primary">{label}</span>
+      <div className="flex items-center justify-center gap-2">
+        {Array.from({ length: totalSteps }, (_, i) => i + 1).map((stepNum) => (
+          <div
+            key={stepNum}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              stepNum === currentStepIndex
+                ? "w-8 bg-[#97011A]"
+                : stepNum < currentStepIndex
+                ? "w-2 bg-[#97011A]"
+                : "w-2 bg-black/20"
+            }`}
+          />
+        ))}
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
-      <StaticBackground />
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Shield className="w-8 h-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl text-primary">Verify Your Account</CardTitle>
-          <CardDescription className="text-primary">Help us keep Lovesathi safe and authentic for everyone</CardDescription>
-        </CardHeader>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Header with back button and progress */}
+      <div className="sticky top-0 z-10 bg-white">
+        <div className="flex items-center justify-between px-6 py-4">
+          <button
+            onClick={() => {
+              if (step === "gender") {
+                setStep("profile")
+              } else if (step === "id") {
+                setStep("gender")
+              } else {
+                window.location.href = '/'
+              }
+            }}
+            disabled={isLoading}
+            className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors disabled:opacity-50"
+          >
+            <ArrowLeft className="w-6 h-6 text-black" />
+          </button>
+          {renderProgressDots()}
+          <div className="w-10" /> {/* Spacer for centering */}
+        </div>
+      </div>
 
-        <CardContent className="space-y-6">
-          {/* Progress Steps */}
-          <div className="flex items-center justify-between">
-            {renderStep(1, "DOB")}
-            {renderStep(2, "Details")}
-            {renderStep(3, "ID")}
-          </div>
-
-          {/* Contact step removed – start at DOB */}
-
-          {/* Profile step (DOB + Gender) */}
-          {step === "profile" && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2 text-primary">When were you born?</h3>
-                <p className="text-sm text-primary">Select your date of birth. Minimum age is 18.</p>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col px-6 py-8">
+        {/* Profile step (DOB) */}
+        {step === "profile" && (
+          <div className="flex-1 flex flex-col justify-between max-w-md w-full mx-auto">
+            <div className="space-y-6 pt-8">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-[#111]">When were you born?</h1>
+                <p className="text-base text-black/60">Select your date of birth. Minimum age is 18.</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <Label htmlFor="dob" className="text-primary text-sm uppercase tracking-[0.2em]">Date of Birth</Label>
-                  <div className="relative max-w-sm mx-auto rounded-3xl border border-white/15 bg-white/5 p-4 shadow-[0_10px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                    <div className="absolute inset-0 rounded-3xl pointer-events-none border border-white/5" />
-                    <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 group-hover:text-white transition-colors duration-200">
-                        <CalendarDays className="w-5 h-5" />
-                      </div>
-                      <Input
-                        id="dob"
-                        type="date"
-                        value={dob}
-                        onChange={(e) => setDob(e.target.value)}
-                        min="1950-01-01"
-                        max={`${today.getFullYear() - 18}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`}
-                        className="glass-input w-full border-white/20 bg-white/10 pl-12 pr-4 py-3 text-base font-semibold text-primary focus:border-white/70 focus:ring-2 focus:ring-white/30 transition-all duration-200"
-                      />
-                    </div>
+              <div className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dob" className="text-sm font-semibold text-[#111] uppercase tracking-wide">
+                    DATE OF BIRTH
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="dob"
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
+                      min="1950-01-01"
+                      max={`${today.getFullYear() - 18}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`}
+                      className="w-full h-14 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                    />
                   </div>
                 </div>
-                <div className="text-center text-sm text-primary">
-                  {dob ? `Age: ${calculateAge(dob)}` : "Age: --"}
-                </div>
 
-                {underageMessage && (
-                  <div className="text-sm text-destructive text-center">{underageMessage}</div>
+                {dob && (
+                  <div className="text-center py-2">
+                    <p className="text-sm text-black/60">Age: {calculateAge(dob)}</p>
+                  </div>
                 )}
 
-                <div className="space-y-3">
-                  <Button 
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      console.log('🔘 Continue button clicked', { dob, isLoading })
-                      handleProfileContinue()
-                    }} 
-                    className="w-full" 
-                    disabled={isLoading || !dob}
-                    type="button"
-                  >
-                    {isLoading ? "Saving..." : "Continue"}
-                  </Button>
-                  <Button 
-                    onClick={() => window.location.href = '/'} 
-                    variant="outline" 
-                    className="w-full bg-white/10 backdrop-blur-md border-white/20 text-white hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
-                    disabled={isLoading}
-                  >
-                    Back
-                  </Button>
-                </div>
+                {underageMessage && (
+                  <div className="p-4 bg-[#97011A]/10 rounded-xl">
+                    <p className="text-sm text-[#97011A] text-center font-medium">{underageMessage}</p>
+                  </div>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Details step: user's gender only */}
-          {step === "gender" && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2 text-primary">Who are you?</h3>
-                <p className="text-sm text-primary">Select your gender.</p>
+            <div className="pb-8">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  console.log('🔘 Continue button clicked', { dob, isLoading })
+                  handleProfileContinue()
+                }}
+                className="w-full h-14 text-base font-semibold bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full shadow-sm transition-colors"
+                disabled={isLoading || !dob}
+                type="button"
+              >
+                {isLoading ? "Saving..." : "Continue"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Gender step */}
+        {step === "gender" && (
+          <div className="flex-1 flex flex-col justify-between max-w-md w-full mx-auto">
+            <div className="space-y-6 pt-8">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-[#111]">Who are you?</h1>
+                <p className="text-base text-black/60">Select your gender.</p>
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                <Button
+
+              <div className="space-y-3 pt-4">
+                <button
                   type="button"
-                  variant="outline"
-                  className={`w-full rounded-md px-4 py-2 text-sm border ${
-                    gender === "male"
-                      ? "!bg-primary !text-primary-foreground !border-primary hover:!bg-primary"
-                      : "bg-white text-primary border-primary hover:!bg-primary hover:!text-primary-foreground"
-                  }`}
                   onClick={() => setGender("male")}
+                  className={`w-full h-14 text-base font-semibold rounded-xl border-2 transition-all ${
+                    gender === "male"
+                      ? "bg-[#97011A] text-white border-[#97011A]"
+                      : "bg-white text-[#111] border-black/20 hover:border-black/40"
+                  }`}
                 >
                   Male
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant="outline"
-                  className={`w-full rounded-md px-4 py-2 text-sm border ${
-                    gender === "female"
-                      ? "!bg-primary !text-primary-foreground !border-primary hover:!bg-primary"
-                      : "bg-white text-primary border-primary hover:!bg-primary hover:!text-primary-foreground"
-                  }`}
                   onClick={() => setGender("female")}
+                  className={`w-full h-14 text-base font-semibold rounded-xl border-2 transition-all ${
+                    gender === "female"
+                      ? "bg-[#97011A] text-white border-[#97011A]"
+                      : "bg-white text-[#111] border-black/20 hover:border-black/40"
+                  }`}
                 >
                   Female
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant="outline"
-                  className={`w-full rounded-md px-3 py-2 text-xs border whitespace-nowrap ${
-                    gender === "prefer_not_to_say"
-                      ? "!bg-primary !text-primary-foreground !border-primary hover:!bg-primary"
-                      : "bg-white text-primary border-primary hover:!bg-primary hover:!text-primary-foreground"
-                  }`}
                   onClick={() => setGender("prefer_not_to_say")}
+                  className={`w-full h-14 text-base font-semibold rounded-xl border-2 transition-all ${
+                    gender === "prefer_not_to_say"
+                      ? "bg-[#97011A] text-white border-[#97011A]"
+                      : "bg-white text-[#111] border-black/20 hover:border-black/40"
+                  }`}
                 >
                   Prefer not to say
-                </Button>
-              </div>
-              <div className="space-y-3">
-                <Button 
-                  className="w-full" 
-                  onClick={async () => {
-                    if (gender === null) return
-                    
-                    setIsLoading(true)
-                    
-                    // Save gender to Supabase
-                    const result = await saveGender(gender)
-                    
-                    setIsLoading(false)
-                    
-                    if (result.success) {
-                      toast({
-                        title: "Gender Saved",
-                        description: "Your gender has been saved successfully.",
-                      })
-                      setStep("id")
-                    } else {
-                      toast({
-                        title: "Error",
-                        description: result.error || "Failed to save gender. Please try again.",
-                        variant: "destructive",
-                      })
-                    }
-                  }} 
-                  disabled={gender === null || isLoading}
-                >
-                  {isLoading ? "Saving..." : "Continue"}
-                </Button>
-                <Button 
-                  onClick={() => setStep("profile")} 
-                  variant="outline" 
-                  className="w-full bg-white/10 backdrop-blur-md border-white/20 text-white hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
-                  disabled={isLoading}
-                >
-                  Back
-                </Button>
+                </button>
               </div>
             </div>
-          )}
 
-          {/* ID Verification */}
-          {step === "id" && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2 text-primary">ID Verification</h3>
-                <p className="text-sm text-muted-foreground">Optional but recommended for enhanced trust</p>
+            <div className="pb-8">
+              <Button
+                className="w-full h-14 text-base font-semibold bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full shadow-sm transition-colors"
+                onClick={async () => {
+                  if (gender === null) return
+                  
+                  setIsLoading(true)
+                  
+                  // Save gender to Supabase
+                  const result = await saveGender(gender)
+                  
+                  setIsLoading(false)
+                  
+                  if (result.success) {
+                    toast({
+                      title: "Gender Saved",
+                      description: "Your gender has been saved successfully.",
+                    })
+                    setStep("id")
+                  } else {
+                    toast({
+                      title: "Error",
+                      description: result.error || "Failed to save gender. Please try again.",
+                      variant: "destructive",
+                    })
+                  }
+                }}
+                disabled={gender === null || isLoading}
+              >
+                {isLoading ? "Saving..." : "Continue"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ID Verification step */}
+        {step === "id" && (
+          <div className="flex-1 flex flex-col justify-between max-w-md w-full mx-auto">
+            <div className="space-y-6 pt-8">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-[#111]">ID Verification</h1>
+                <p className="text-base text-black/60">Optional but recommended for enhanced trust</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-start space-x-3">
-                    <Shield className="w-5 h-5 text-primary mt-0.5" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-primary">Why verify your ID?</p>
-                      <ul className="text-xs text-muted-foreground space-y-1">
-                        <li>• Get a verified badge on your profile</li>
-                        <li>• Increase trust with potential matches</li>
-                        <li>• Access premium features</li>
-                      </ul>
-                    </div>
+              <div className="p-4 bg-black/5 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <Shield className="w-5 h-5 text-[#97011A] mt-0.5 flex-shrink-0" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-[#111]">Why verify your ID?</p>
+                    <ul className="text-sm text-black/60 space-y-1">
+                      <li>• Get a verified badge on your profile</li>
+                      <li>• Increase trust with potential matches</li>
+                      <li>• Access premium features</li>
+                    </ul>
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-4">
-                  {/* Hidden input for file picking */}
-                  <input
-                    ref={uploadInputRef}
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                    style={{ display: "none" }}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        handleFileUpload(file)
-                      }
-                    }}
-                  />
+              <div className="space-y-4 pt-2">
+                {/* Hidden input for file picking */}
+                <input
+                  ref={uploadInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      handleFileUpload(file)
+                    }
+                  }}
+                />
 
-                  {/* Upload ID and Take Photo buttons */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Upload ID Button - Transforms when file is uploaded */}
-                    {!uploadedFile ? (
-                      <Button 
-                        onClick={handleUploadId} 
-                        variant="outline" 
-                        className="h-auto p-4 flex flex-col space-y-2 bg-white/10 text-white border-white/20 w-full transition-all duration-300 hover:!bg-white hover:!text-black hover:!border-black"
-                      >
-                        <Upload className="w-6 h-6" />
-                        <span className="text-sm">Upload ID</span>
-                      </Button>
-                    ) : (
-                      <div className="relative h-auto p-3 border border-border rounded-lg bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm overflow-hidden transition-all duration-300 animate-in fade-in-50 scale-in-95">
-                        {/* Delete Button - Top Right */}
-                        <button
-                          onClick={handleRemoveFile}
-                          className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-destructive/90 hover:bg-destructive text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* File Preview Content */}
-                        <div className="flex flex-col items-center space-y-2">
-                          {/* Image Preview or PDF Icon */}
-                          {filePreview ? (
-                            <div className="w-full h-20 rounded-md overflow-hidden border border-border/50 shadow-sm">
-                              <img 
-                                src={filePreview} 
-                                alt="ID Preview" 
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-full h-20 rounded-md bg-primary/10 flex items-center justify-center border border-border/50">
-                              <FileText className="w-10 h-10 text-primary" />
-                            </div>
-                          )}
-                          
-                          {/* File Info */}
-                          <div className="w-full space-y-0.5 pr-4">
-                            <p className="text-xs font-medium text-primary truncate">
-                              {uploadedFile.name}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">
-                              {(uploadedFile.size / 1024).toFixed(1)} KB
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Take Photo Button - Transforms when face photo is captured */}
-                    {!capturedFacePhoto ? (
-                      <Button 
-                        onClick={handleTakePhoto} 
-                        variant="outline" 
-                        className="h-auto p-4 flex flex-col space-y-2 bg-white/10 text-white border-white/20 w-full transition-all duration-300 hover:!bg-white hover:!text-black hover:!border-black"
-                      >
-                        <Camera className="w-6 h-6" />
-                        <span className="text-sm">Take Photo</span>
-                      </Button>
-                    ) : (
-                      <div className="relative h-auto p-3 border border-border rounded-lg bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm overflow-hidden transition-all duration-300 animate-in fade-in-50 scale-in-95">
-                        {/* Delete Button - Top Right */}
-                        <button
-                          onClick={handleRemoveFacePhoto}
-                          className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-destructive/90 hover:bg-destructive text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Face Photo Preview Content */}
-                        <div className="flex flex-col items-center space-y-2">
-                          {/* Image Preview */}
-                          {facePhotoPreview && (
-                            <div className="w-full h-20 rounded-md overflow-hidden border border-border/50 shadow-sm">
-                              <img 
-                                src={facePhotoPreview} 
-                                alt="Face Scan" 
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          
-                          {/* File Info */}
-                          <div className="w-full space-y-0.5 pr-4">
-                            <p className="text-xs font-medium text-primary truncate">
-                              {capturedFacePhoto.name}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">
-                              {(capturedFacePhoto.size / 1024).toFixed(1)} KB
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Button 
-                    onClick={handleComplete} 
-                    className="w-full" 
-                    disabled={isLoading || !uploadedFile || !capturedFacePhoto}
-                  >
-                    {isLoading ? "Uploading & Saving..." : "Verify ID"}
-                  </Button>
-                  <Button 
-                    onClick={() => setStep("gender")} 
-                    variant="outline" 
-                    className="w-full bg-white/10 backdrop-blur-md border-white/20 text-white hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
-                    disabled={isLoading}
-                  >
-                    Back
-                  </Button>
-                  {onSkip && (
-                    <Button 
-                      onClick={onSkip} 
-                      variant="outline" 
-                      className="w-full bg-white/10 backdrop-blur-md border-white/20 text-white hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
-                      disabled={isLoading}
+                {/* Upload ID and Take Photo buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Upload ID Button */}
+                  {!uploadedFile ? (
+                    <button
+                      onClick={handleUploadId}
+                      className="h-32 flex flex-col items-center justify-center gap-2 bg-white border-2 border-dashed border-black/20 rounded-xl hover:border-black/40 transition-colors"
                     >
-                      Skip for now
-                    </Button>
+                      <Upload className="w-6 h-6 text-[#111]" />
+                      <span className="text-sm font-medium text-[#111]">Upload ID</span>
+                    </button>
+                  ) : (
+                    <div className="relative h-32 border-2 border-[#97011A] rounded-xl bg-[#97011A]/5 p-3 overflow-hidden">
+                      <button
+                        onClick={handleRemoveFile}
+                        className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-[#97011A] hover:bg-[#7A010E] text-white flex items-center justify-center transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                      <div className="flex flex-col items-center justify-center h-full gap-2">
+                        {filePreview ? (
+                          <div className="w-full h-16 rounded-lg overflow-hidden">
+                            <img src={filePreview} alt="ID Preview" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <FileText className="w-8 h-8 text-[#97011A]" />
+                        )}
+                        <p className="text-xs font-medium text-[#111] truncate w-full text-center px-2">
+                          {uploadedFile.name}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Take Photo Button */}
+                  {!capturedFacePhoto ? (
+                    <button
+                      onClick={handleTakePhoto}
+                      className="h-32 flex flex-col items-center justify-center gap-2 bg-white border-2 border-dashed border-black/20 rounded-xl hover:border-black/40 transition-colors"
+                    >
+                      <Camera className="w-6 h-6 text-[#111]" />
+                      <span className="text-sm font-medium text-[#111]">Take Photo</span>
+                    </button>
+                  ) : (
+                    <div className="relative h-32 border-2 border-[#97011A] rounded-xl bg-[#97011A]/5 p-3 overflow-hidden">
+                      <button
+                        onClick={handleRemoveFacePhoto}
+                        className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-[#97011A] hover:bg-[#7A010E] text-white flex items-center justify-center transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                      <div className="flex flex-col items-center justify-center h-full gap-2">
+                        {facePhotoPreview && (
+                          <div className="w-full h-16 rounded-lg overflow-hidden">
+                            <img src={facePhotoPreview} alt="Face Scan" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <p className="text-xs font-medium text-[#111] truncate w-full text-center px-2">
+                          {capturedFacePhoto.name}
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            <div className="space-y-3 pb-8">
+              <Button
+                onClick={handleComplete}
+                className="w-full h-14 text-base font-semibold bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full shadow-sm transition-colors"
+                disabled={isLoading || !uploadedFile || !capturedFacePhoto}
+              >
+                {isLoading ? "Uploading & Saving..." : "Verify ID"}
+              </Button>
+              {onSkip && (
+                <button
+                  onClick={onSkip}
+                  disabled={isLoading}
+                  className="w-full h-14 text-base font-semibold text-[#111] hover:bg-black/5 rounded-full transition-colors disabled:opacity-50"
+                >
+                  Skip for now
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Face Scan Modal */}
       <FaceScanModal

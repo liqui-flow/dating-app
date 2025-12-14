@@ -27,9 +27,6 @@ export function DynamicBackground({ imageUrl, className = "" }: DynamicBackgroun
     >
       {/* Additional blur layer for iOS liquid glass effect */}
       <div className="absolute inset-0 backdrop-blur-3xl" />
-      
-      {/* Subtle overlay to ensure content remains visible */}
-      <div className="absolute inset-0 bg-black/10" />
     </motion.div>
   )
 }

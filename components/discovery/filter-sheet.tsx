@@ -335,23 +335,22 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
 
           {/* Relationship Goals */}
           <div className="space-y-3">
-            <Label className="text-white/80 text-sm tracking-wide">Relationship Goal</Label>
+            <Label className="text-black text-sm tracking-wide font-medium">Relationship Goal</Label>
             <Select 
               value={filters.relationshipGoal}
               onValueChange={(value) => setFilters((prev) => ({ ...prev, relationshipGoal: value }))}
             >
-              <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/70 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition-all duration-200 px-4">
-                <SelectValue placeholder="Any relationship goal" className="text-white" />
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Any relationship goal" />
               </SelectTrigger>
-              <SelectContent className="bg-white/90 text-black border border-white/40 shadow-[0_15px_40px_rgba(0,0,0,0.3)] rounded-2xl">
-                <SelectItem value="any" className="text-sm data-[state=checked]:bg-black/5 data-[state=checked]:text-black rounded-xl">
+              <SelectContent>
+                <SelectItem value="any">
                   Any relationship goal
                 </SelectItem>
                 {relationshipGoals.map((goal) => (
                   <SelectItem
                     key={goal}
                     value={goal}
-                    className="text-sm data-[state=checked]:bg-black/5 data-[state=checked]:text-black rounded-xl"
                   >
                     {goal}
                   </SelectItem>
@@ -481,7 +480,7 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
         </div>
 
         {/* Save Button */}
-        <div className="sticky bottom-0 bg-background border-t border-border p-4">
+        <div className="sticky bottom-0 bg-white border-t border-black/12 p-4">
           <Button onClick={handleSave} className="w-full" size="lg" disabled={saving || loading}>
             {saving ? "Saving..." : loading ? "Loading..." : "Save Preferences"}
           </Button>

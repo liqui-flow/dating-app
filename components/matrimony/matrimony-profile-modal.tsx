@@ -161,7 +161,7 @@ export function MatrimonyProfileModal({ profile, open, onOpenChange, onConnect, 
                 </Badge>
               )}
               {profile.premium && (
-                <Badge className="bg-[#4A0E0E] text-white text-xs px-3 py-1.5 font-medium shadow-lg">
+                <Badge className="bg-[#97011A] text-white text-xs px-3 py-1.5 font-medium shadow-lg">
                   Premium
                 </Badge>
               )}
@@ -278,9 +278,9 @@ export function MatrimonyProfileModal({ profile, open, onOpenChange, onConnect, 
                 <X className="w-7 h-7" />
               </Button>
 
-              <Button 
-                size="lg" 
-                className="w-16 h-16 rounded-full p-0 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 shadow-lg shadow-pink-500/30"
+              <Button
+                size="lg"
+                className="w-16 h-16 rounded-full p-0 bg-gradient-to-r from-[#97011A] to-[#7A0115] hover:from-[#7A0115] hover:to-[#97011A] shadow-lg shadow-[#97011A]/30"
                 onClick={onConnect}
               >
                 <Heart className="w-7 h-7 fill-white text-white" />

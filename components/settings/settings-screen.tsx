@@ -244,31 +244,31 @@ export function SettingsScreen({ onNavigate, onLogout, mode, onBack }: { onNavig
   }
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-full relative bg-white">
       {/* Static Background */}
       <StaticBackground />
       
       {/* Header */}
-      <div className="flex-shrink-0 p-6 border-b border-border glass-apple">
+      <div className="flex-shrink-0 p-6 border-b border-black/25 bg-white/95 backdrop-blur-sm relative z-10">
         <div className="flex items-center space-x-4">
           {onBack && (
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-2 hover:bg-muted/50 rounded-full" 
+              className="p-2 hover:bg-black/5 rounded-full text-black" 
               onClick={onBack}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
           )}
-          <Avatar className="w-16 h-16">
+          <Avatar className="w-16 h-16 border-2 border-black/20">
             <AvatarImage src={userInfo.photo || "/placeholder-user.jpg"} alt="Profile" />
-            <AvatarFallback>{getInitials(userInfo.name)}</AvatarFallback>
+            <AvatarFallback className="bg-black/10 text-black font-semibold">{getInitials(userInfo.name)}</AvatarFallback>
           </Avatar>
           <div className="space-y-1">
-            <h1 className="text-xl font-bold">{userInfo.name}</h1>
-            <p className="text-sm text-muted-foreground">{userInfo.email}</p>
-            <Badge variant="secondary" className="text-xs">
+            <h1 className="text-xl font-bold text-black">{userInfo.name}</h1>
+            <p className="text-sm text-black/75 font-medium">{userInfo.email}</p>
+            <Badge variant="secondary" className="text-xs font-semibold">
               {userInfo.accountType}
             </Badge>
           </div>
@@ -276,11 +276,11 @@ export function SettingsScreen({ onNavigate, onLogout, mode, onBack }: { onNavig
       </div>
 
       {/* Settings */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto relative z-10">
         <div className="p-6 space-y-6">
           {getSettingsSections(userInfo.userPath).map((section) => (
             <div key={section.title} className="space-y-3">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{section.title}</h2>
+              <h2 className="text-sm font-semibold text-black/75 uppercase tracking-wider">{section.title}</h2>
 
               <Card className="overflow-hidden">
                 <CardContent className="p-0">
@@ -288,7 +288,7 @@ export function SettingsScreen({ onNavigate, onLogout, mode, onBack }: { onNavig
                     <div key={item.id}>
                       <div
                         className={`flex items-center justify-between p-4 ${
-                          item.type !== "toggle" ? "cursor-pointer hover:bg-muted/50" : ""
+                          item.type !== "toggle" ? "cursor-pointer hover:bg-black/5" : ""
                         } transition-colors`}
                         onClick={() => {
                           if (item.type === "navigation") handleNavigation(item.id)
@@ -298,21 +298,21 @@ export function SettingsScreen({ onNavigate, onLogout, mode, onBack }: { onNavig
                         <div className="flex items-center space-x-3">
                           <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              item.destructive ? "bg-destructive/10" : "bg-muted"
+                              item.destructive ? "bg-[#97011A]/10" : "bg-black/10"
                             }`}
                           >
                             <item.icon
-                              className={`w-5 h-5 ${item.destructive ? "text-destructive" : "text-muted-foreground"}`}
+                              className={`w-5 h-5 ${item.destructive ? "text-[#97011A]" : "text-black/70"}`}
                             />
                           </div>
 
                           <div className="space-y-1">
                             <div className="flex items-center space-x-2">
-                              <span className={`font-medium ${item.destructive ? "text-destructive" : ""}`}>
+                              <span className={`font-semibold text-black ${item.destructive ? "text-[#97011A]" : ""}`}>
                                 {item.label}
                               </span>
                               {item.badge && (
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge variant="secondary" className="text-xs font-semibold">
                                   {item.badge}
                                 </Badge>
                               )}
@@ -324,7 +324,7 @@ export function SettingsScreen({ onNavigate, onLogout, mode, onBack }: { onNavig
                                       <CheckCircle className="w-3.5 h-3.5 text-white" />
                                     </div>
                                   ) : (
-                                    <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                                    <div className="w-5 h-5 rounded-full bg-[#97011A] flex items-center justify-center">
                                       <AlertCircle className="w-3.5 h-3.5 text-white" />
                                     </div>
                                   )}
@@ -332,13 +332,13 @@ export function SettingsScreen({ onNavigate, onLogout, mode, onBack }: { onNavig
                               )}
                             </div>
                             {item.description && (
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-black/70">
                                 {item.description}
                                 {item.id === "verification" && verificationStatus === 'approved' && (
-                                  <span className="ml-2 text-green-500 text-xs font-medium">Verification completed</span>
+                                  <span className="ml-2 text-green-500 text-xs font-semibold">Verification completed</span>
                                 )}
                                 {item.id === "verification" && verificationStatus && verificationStatus !== 'approved' && (
-                                  <span className="ml-2 text-red-500 text-xs font-medium">Pending verification</span>
+                                  <span className="ml-2 text-[#97011A] text-xs font-semibold">Pending verification</span>
                                 )}
                               </p>
                             )}
@@ -346,11 +346,11 @@ export function SettingsScreen({ onNavigate, onLogout, mode, onBack }: { onNavig
                         </div>
 
                         <div className="flex items-center">
-                          {item.type === "navigation" && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
+                          {item.type === "navigation" && <ChevronRight className="w-5 h-5 text-black/70" />}
                         </div>
                       </div>
 
-                      {index < section.items.length - 1 && <Separator className="ml-16 mr-4" />}
+                      {index < section.items.length - 1 && <Separator className="ml-16 mr-4 bg-black/20" />}
                     </div>
                   ))}
                 </CardContent>

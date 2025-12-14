@@ -850,7 +850,7 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                 <div className="flex items-center space-x-2">
                   <h2 className="font-bold text-lg text-foreground">{chatUser.name}</h2>
                   {chatUser.isPremium && (
-                    <Badge className="bg-[#4A0E0E] text-white text-xs px-2 py-0">
+                    <Badge className="bg-[#97011A] text-white text-xs px-2 py-0">
                       Premium
                     </Badge>
                   )}

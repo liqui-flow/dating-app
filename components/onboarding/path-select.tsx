@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, Heart } from "lucide-react"
+import { Heart, HeartHandshake } from "lucide-react"
 import { useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { saveUserPath, upsertUserPath } from "@/lib/pathService"
@@ -63,27 +63,30 @@ export function PathSelect({ onSelect, onBack }: PathSelectProps) {
     }
   }
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
+    <div className="min-h-screen flex items-center justify-center p-4 relative bg-white">
       <StaticBackground />
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative z-10">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Choose Your Path</CardTitle>
-          <CardDescription>Select how you want to continue after verification</CardDescription>
+          <CardTitle className="text-2xl sm:text-3xl font-bold text-black">Choose Your Path</CardTitle>
+          <CardDescription className="text-base text-black/75 font-medium">Select how you want to continue after verification</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4">
           <Button
             variant="outline"
-            className="h-auto py-6 justify-start text-left group bg-white/10 text-white border-white/20 transition-all duration-200 hover:!bg-white hover:!text-black hover:!border-black"
+            className="h-auto py-6 px-6 justify-start text-left group bg-white text-black border-2 border-black/20 transition-all duration-300 hover:border-[#97011A] hover:shadow-lg hover:scale-[1.02] relative overflow-hidden"
             onClick={() => handlePathSelect("dating")}
             disabled={isLoading}
           >
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                <Heart className="w-5 h-5" />
+            {/* Gradient overlay on hover */}
+            <div className="absolute inset-0 bg-[#97011A]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            <div className="flex items-center space-x-4 relative z-10">
+              <div className="w-14 h-14 rounded-2xl bg-[#97011A] flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
+                <Heart className="w-7 h-7 text-white fill-white" strokeWidth={2} />
               </div>
               <div>
-                <div className="text-base font-medium">Dating</div>
-                <div className="text-xs text-white/70 group-hover:text-black/60 transition-colors">
+                <div className="text-lg font-bold text-black group-hover:text-[#97011A] transition-colors">Dating</div>
+                <div className="text-sm text-black/60 font-medium mt-0.5">
                   Swipe-based discovery with fun profiles
                 </div>
               </div>
@@ -92,17 +95,20 @@ export function PathSelect({ onSelect, onBack }: PathSelectProps) {
 
           <Button
             variant="outline"
-            className="h-auto py-6 justify-start text-left group bg-white/10 text-white border-white/20 transition-all duration-200 hover:!bg-white hover:!text-black hover:!border-black"
+            className="h-auto py-6 px-6 justify-start text-left group bg-white text-black border-2 border-black/20 transition-all duration-300 hover:border-[#97011A] hover:shadow-lg hover:scale-[1.02] relative overflow-hidden"
             onClick={() => handlePathSelect("matrimony")}
             disabled={isLoading}
           >
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                <Users className="w-5 h-5" />
+            {/* Gradient overlay on hover */}
+            <div className="absolute inset-0 bg-[#97011A]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            <div className="flex items-center space-x-4 relative z-10">
+              <div className="w-14 h-14 rounded-2xl bg-[#97011A] flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
+                <HeartHandshake className="w-7 h-7 text-white" strokeWidth={2} />
               </div>
               <div>
-                <div className="text-base font-medium">Matrimony</div>
-                <div className="text-xs text-white/70 group-hover:text-black/60 transition-colors">
+                <div className="text-lg font-bold text-black group-hover:text-[#97011A] transition-colors">Matrimony</div>
+                <div className="text-sm text-black/60 font-medium mt-0.5">
                   Serious profiles with detailed preferences
                 </div>
               </div>
@@ -111,9 +117,9 @@ export function PathSelect({ onSelect, onBack }: PathSelectProps) {
 
           {onBack && (
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={onBack}
-              className="bg-white/10 text-white border border-white/20 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
+              className="mt-2 bg-white text-[#97011A] border-2 border-[#97011A]/20 hover:bg-[#97011A]/5 hover:border-[#97011A] transition-all duration-200 font-semibold"
             >
               Back
             </Button>

@@ -2,16 +2,13 @@
 
 import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
-import { Progress } from "@/components/ui/progress"
-import { Sparkles, Zap, Heart } from "lucide-react"
+import { ArrowLeft, Heart, Palette, UtensilsCrossed, Film, Sparkles, Calendar, Zap, MapPin } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { completeQuestionnaire } from "@/lib/datingProfileService"
 import { useToast } from "@/hooks/use-toast"
-import { StaticBackground } from "@/components/discovery/static-background"
 
 interface InterestQuestionnaireProps {
   onComplete?: () => void
@@ -19,10 +16,26 @@ interface InterestQuestionnaireProps {
 
 // Data sets
 const interestCategories = {
-  Art: ["Painting", "Photography", "Digital Art"],
-  Food: ["Foodie", "Cooking", "Trying new restaurants"],
-  Entertainment: ["Binge-watching", "Podcasts", "Stand-up comedy", "Live music"],
+  Art: ["Painting", "Photography", "Digital Art", "Sculpture", "Sketching"],
+  Food: ["Foodie", "Cooking", "Trying new restaurants", "Baking", "Food photography"],
+  Entertainment: ["Netflix nights", "YouTube rabbit holes", "Podcasts", "Reels & TikTok", "Live shows"],
   Lifestyle: ["Thrifting", "DIY Projects", "Volunteering", "Wellness", "Homebody"],
+  "Weekend mood": ["Chill & recharge", "Spontaneous plans", "Friends & fun", "Solo reset", "Mix of everything"],
+  "Dating vibes": ["Quality time", "Deep conversations", "Casual coffee dates", "Slow burn", "Spontaneous plans"],
+  "Dating energy": ["Golden retriever energy", "Calm & grounded", "Introvert at first", "Extrovert energy", "Depends on the vibe"],
+  "Travel style": ["Road trips", "Beach person", "Mountains > beaches", "City explorer", "Staycations"],
+}
+
+// Icon mapping for each category
+const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  Art: Palette,
+  Food: UtensilsCrossed,
+  Entertainment: Film,
+  Lifestyle: Sparkles,
+  "Weekend mood": Calendar,
+  "Dating vibes": Heart,
+  "Dating energy": Zap,
+  "Travel style": MapPin,
 }
 
 const prompts = [
@@ -49,6 +62,10 @@ const intentions = [
 ]
 
 export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps) {
+  // Step management
+  const [currentStep, setCurrentStep] = useState<number>(1)
+  const totalSteps = 5
+  
   // Interests
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
 
@@ -72,15 +89,38 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
   const selectedCount = selectedInterests.length
   const answeredCount = useMemo(() => Object.values(answers).filter(Boolean).length, [answers])
 
-  const canProceed = selectedCount >= 5 && answeredCount >= 3 && !!goal
-
   const toggleInterest = (label: string) => {
-    setSelectedInterests((prev) => (prev.includes(label) ? prev.filter((i) => i !== label) : [...prev, label]))
+    setSelectedInterests((prev) => {
+      if (prev.includes(label)) {
+        return prev.filter((i) => i !== label)
+      } else {
+        // Enforce max limit of 10
+        if (prev.length >= 10) {
+          return prev
+        }
+        return [...prev, label]
+      }
+    })
+  }
+
+  const canProceedStep1 = selectedCount >= 5
+  const canProceedStep2 = answeredCount >= 3
+  const canProceedStep3 = Object.values(choices).filter(c => c !== null).length >= 2
+  const canProceedStep4 = !!goal
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const handleNext = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1)
+    }
   }
 
   const handleComplete = async () => {
-    if (!canProceed) return
-    
     setIsLoading(true)
     
     try {
@@ -167,191 +207,295 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
     }
   }
 
+  // Progress dots renderer
+  const renderProgressDots = () => {
+    return (
+      <div className="flex items-center justify-center gap-2">
+        {Array.from({ length: totalSteps }, (_, i) => i + 1).map((stepNum) => (
+          <div
+            key={stepNum}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              stepNum === currentStep
+                ? "w-8 bg-[#97011A]"
+                : stepNum < currentStep
+                ? "w-2 bg-[#97011A]"
+                : "w-2 bg-black/20"
+            }`}
+          />
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white relative">
-      <StaticBackground />
-      <Card className="w-full max-w-4xl bg-white/10 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl rounded-[32px]">
-        <CardHeader className="text-center space-y-3">
-          <CardTitle className="text-3xl font-bold text-white drop-shadow">What's your vibe?</CardTitle>
-          <p className="text-sm text-white/70">Pick interests, prompts, and preferences so we can curate better matches.</p>
-          <div className="mt-1">
-            <Progress value={(canProceed ? 100 : Math.min(100, (selectedCount/5)*40 + (answeredCount/3)*40 + (goal ? 20 : 0)))} />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-10">
-          {/* Interests */}
-          <section className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-primary">Pick at least 5 interests to help us find your perfect match.</h3>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-5">
-              {Object.entries(interestCategories).map(([category, items]) => (
-                <div key={category} className="p-4 rounded-2xl bg-white/5 border border-white/15 backdrop-blur-xl shadow-[0_12px_30px_rgba(0,0,0,0.35)]">
-                  <div className="mb-3 flex items-center gap-2 text-white font-medium">
-                    <Sparkles className="w-4 h-4 text-white/80" /> {category}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((label) => {
-                      const active = selectedInterests.includes(label)
-                      return (
-                        <button
-                          key={label}
-                          type="button"
-                          onClick={() => toggleInterest(label)}
-                          className={`px-3 py-1.5 rounded-full text-sm transition transform active:scale-95 border shadow-inner ${
-                            active
-                              ? "bg-white text-black border-black shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
-                              : "bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black"
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="text-center text-sm text-white/70 tracking-wide">Selected: {selectedCount}/10</div>
-          </section>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Header with back button and progress */}
+      <div className="px-6 py-4 flex items-center justify-between border-b border-black/10">
+        <button
+          onClick={handleBack}
+          disabled={isLoading}
+          className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors disabled:opacity-50"
+        >
+          <ArrowLeft className="w-6 h-6 text-black" />
+        </button>
+        {renderProgressDots()}
+        <div className="w-10" />
+      </div>
 
-          {/* Prompts */}
-          <section className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-primary">Answer a few fun prompts to show your vibe.</h3>
-              <p className="text-sm text-primary">Answer at least 3</p>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col px-6 py-8 overflow-y-auto">
+        <div className="flex-1 max-w-2xl w-full mx-auto">
+          {/* Step 1: Interests */}
+          {currentStep === 1 && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-[#111]">What are you into?</h1>
+                <p className="text-base text-black/60">Pick at least 5 interests to help us find your perfect match.</p>
+              </div>
+
+              <div className="space-y-4">
+                {Object.entries(interestCategories).map(([category, items]) => {
+                  const IconComponent = categoryIcons[category]
+                  return (
+                    <div key={category} className="space-y-3">
+                      <h3 className="text-sm font-semibold text-[#111] uppercase tracking-wide flex items-center gap-2">
+                        {IconComponent && <IconComponent className="w-4 h-4 text-black" />}
+                        {category}
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                      {items.map((label) => {
+                        const active = selectedInterests.includes(label)
+                        return (
+                          <button
+                            key={label}
+                            type="button"
+                            onClick={() => toggleInterest(label)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                              active
+                                ? "bg-[#97011A] text-white"
+                                : "bg-white text-[#111] border-2 border-black/20 hover:border-[#97011A]"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                  )
+                })}
+              </div>
+
+              <div className="text-center py-4">
+                <p className="text-sm text-black/60">Selected: {selectedCount}/10</p>
+                {selectedCount < 5 && (
+                  <p className="text-sm text-[#97011A] mt-1">Select at least 5 interests</p>
+                )}
+              </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {prompts.map((p) => (
-                <div key={p} className="p-4 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-lg shadow-[0_8px_24px_rgba(0,0,0,0.3)]">
-                  <Label className="text-white text-sm mb-2 block">{p}</Label>
-                  <Textarea
-                    placeholder="Type a short answer..."
-                    value={answers[p] || ""}
-                    onChange={(e) => setAnswers((prev) => ({ ...prev, [p]: e.target.value }))}
-                    className="min-h-20 resize-none text-white placeholder:text-white/40 bg-white/5 border-white/20"
-                    maxLength={140}
+          )}
+
+          {/* Step 2: Prompts */}
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-[#111]">Answer a few prompts</h1>
+                <p className="text-base text-black/60">Answer at least 3 to show your personality</p>
+              </div>
+
+              <div className="space-y-4">
+                {prompts.map((p) => (
+                  <div key={p} className="space-y-2 p-4 bg-black/5 rounded-xl">
+                    <Label className="text-sm font-semibold text-[#111]">{p}</Label>
+                    <Textarea
+                      placeholder="Type your answer..."
+                      value={answers[p] || ""}
+                      onChange={(e) => setAnswers((prev) => ({ ...prev, [p]: e.target.value }))}
+                      className="min-h-24 resize-none text-base text-[#111] placeholder:text-black/40 bg-white border-black/20 focus:border-[#97011A] rounded-lg"
+                      maxLength={140}
+                    />
+                    <div className="text-xs text-black/60 text-right">{(answers[p] || "").length}/140</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center py-4">
+                <p className="text-sm text-black/60">Answered: {answeredCount}/6</p>
+                {answeredCount < 3 && (
+                  <p className="text-sm text-[#97011A] mt-1">Answer at least 3 prompts</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: This or That */}
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-[#111]">This or that?</h1>
+                <p className="text-base text-black/60">Which one speaks to you more?</p>
+              </div>
+
+              <div className="space-y-4">
+                {thisOrThatPairs.map(([a, b], idx) => {
+                  const pick = choices[idx]
+                  return (
+                    <div key={idx} className="space-y-2">
+                      <div className="grid grid-cols-2 gap-3">
+                        {[a, b].map((label, i) => {
+                          const active = pick === i
+                          return (
+                            <button
+                              key={label}
+                              className={`p-4 text-left rounded-xl border-2 min-h-20 flex items-center gap-2 transition-all ${
+                                active
+                                  ? "border-[#97011A] bg-[#97011A]/5"
+                                  : "border-black/20 hover:border-black/40"
+                              }`}
+                              onClick={() =>
+                                setChoices((prev) => ({
+                                  ...prev,
+                                  [idx]: prev[idx] === (i as 0 | 1) ? null : (i as 0 | 1),
+                                }))
+                              }
+                            >
+                              <Heart className={`w-5 h-5 shrink-0 ${active ? "fill-[#97011A] text-[#97011A]" : "text-black/40"}`} />
+                              <span className="text-sm font-medium text-[#111]">{label}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Intentions */}
+          {currentStep === 4 && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-[#111]">What are you looking for?</h1>
+                <p className="text-base text-black/60">Be honest about your relationship intentions</p>
+              </div>
+
+              <div className="space-y-3">
+                {intentions.map((g) => (
+                  <button
+                    key={g}
+                    onClick={() => setGoal(g)}
+                    className={`w-full p-5 text-left rounded-xl border-2 transition-all ${
+                      goal === g
+                        ? "border-[#97011A] bg-[#97011A]/5"
+                        : "border-black/20 hover:border-black/40"
+                    }`}
+                  >
+                    <span className="text-base font-medium text-[#111]">{g}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Preferences */}
+          {currentStep === 5 && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-[#111]">Your preferences</h1>
+                <p className="text-base text-black/60">Help us show you the most relevant matches</p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-3 p-4 bg-black/5 rounded-xl">
+                  <Label className="text-sm font-semibold text-[#111]">
+                    Age range: {ageRange[0]} - {ageRange[1]} years
+                  </Label>
+                  <Slider
+                    value={ageRange as any}
+                    onValueChange={(val: number[]) => {
+                      const [min, max] = val as [number, number]
+                      const clampedMin = Math.max(18, Math.min(min, 60))
+                      const clampedMax = Math.max(18, Math.min(max, 60))
+                      if (clampedMin > clampedMax) return
+                      setAgeRange([clampedMin, clampedMax])
+                    }}
+                    min={18}
+                    max={60}
+                    step={1}
+                    className="w-full"
                   />
-                  <div className="mt-1 text-xs text-white/60 text-right">{(answers[p] || "").length}/140</div>
                 </div>
-              ))}
-            </div>
-          </section>
 
-          {/* This or That */}
-          <section className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-primary">Which one speaks to you more?</h3>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {thisOrThatPairs.map(([a, b], idx) => {
-                const pick = choices[idx]
-                return (
-                  <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
-                    {[a, b].map((label, i) => {
-                      const active = pick === i
-                      return (
-                        <Button
-                          key={label}
-                          variant="outline"
-                          className={`group h-auto p-4 text-left border whitespace-normal break-words leading-relaxed min-h-12 transition-all ${
-                            active
-                              ? "!bg-white !text-black !border-black shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
-                              : "bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black"
-                          }`}
-                          onClick={() =>
-                            setChoices((prev) => ({
-                              ...prev,
-                              [idx]: prev[idx] === (i as 0 | 1) ? null : (i as 0 | 1),
-                            }))
-                          }
-                        >
-                          <div className="flex items-center gap-2">
-                            <Heart className={`w-4 h-4 shrink-0 transition-colors ${active ? "text-black" : "text-white group-hover:text-black"}`} />
-                            <span>{label}</span>
-                          </div>
-                        </Button>
-                      )
-                    })}
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-
-          {/* Intentions */}
-          <section className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-primary">Be honest about your relationship intentions.</h3>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {intentions.map((g) => (
-                <Button
-                  key={g}
-                  variant="outline"
-                  onClick={() => setGoal(g)}
-                  className={`h-auto p-4 text-left border transition-all ${
-                    goal === g
-                      ? "!bg-white !text-black !border-black shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
-                      : "bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black"
-                  }`}
-                >
-                  {g}
-                </Button>
-              ))}
-            </div>
-          </section>
-
-          {/* Preferences */}
-          <section className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-primary">Help us show you the most relevant matches.</h3>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="text-primary">Age range: {ageRange[0]} - {ageRange[1]} years</Label>
-                <Slider
-                  value={ageRange as any}
-                  onValueChange={(val: number[]) => {
-                    const [min, max] = val as [number, number]
-                    // Enforce logical constraints and prevent cross-over
-                    const clampedMin = Math.max(18, Math.min(min, 60))
-                    const clampedMax = Math.max(18, Math.min(max, 60))
-                    if (clampedMin > clampedMax) return
-                    setAgeRange([clampedMin, clampedMax])
-                  }}
-                  min={18}
-                  max={60}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-primary">Maximum distance: {distance[0]} km</Label>
-                <Slider value={distance} onValueChange={setDistance} max={100} min={5} step={5} />
+                <div className="space-y-3 p-4 bg-black/5 rounded-xl">
+                  <Label className="text-sm font-semibold text-[#111]">
+                    Maximum distance: {distance[0]} km
+                  </Label>
+                  <Slider 
+                    value={distance} 
+                    onValueChange={setDistance} 
+                    max={100} 
+                    min={5} 
+                    step={5}
+                    className="w-full"
+                  />
+                </div>
               </div>
             </div>
-          </section>
+          )}
+        </div>
+      </div>
 
-          {/* Navigation */}
-          <div className="flex justify-between pt-2">
+      {/* Fixed Bottom Button */}
+      <div className="px-6 pb-8 border-t border-black/10">
+        <div className="pt-4 max-w-2xl w-full mx-auto">
+          {currentStep === 1 && (
             <Button 
-              variant="outline" 
-              className="bg-white/10 text-white border border-white/20 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
-              disabled={isLoading}
+              onClick={handleNext}
+              disabled={!canProceedStep1}
+              className="w-full h-14 text-base font-semibold bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Back
+              Next
             </Button>
+          )}
+          {currentStep === 2 && (
             <Button 
-              disabled={!canProceed || isLoading} 
-              onClick={handleComplete} 
-              className="px-6 py-2 rounded-full font-semibold bg-gradient-to-r from-white to-white text-black shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+              onClick={handleNext}
+              disabled={!canProceedStep2}
+              className="w-full h-14 text-base font-semibold bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next
+            </Button>
+          )}
+          {currentStep === 3 && (
+            <Button 
+              onClick={handleNext}
+              disabled={!canProceedStep3}
+              className="w-full h-14 text-base font-semibold bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next
+            </Button>
+          )}
+          {currentStep === 4 && (
+            <Button 
+              onClick={handleNext}
+              disabled={!canProceedStep4}
+              className="w-full h-14 text-base font-semibold bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next
+            </Button>
+          )}
+          {currentStep === 5 && (
+            <Button 
+              onClick={handleComplete}
+              disabled={isLoading}
+              className="w-full h-14 text-base font-semibold bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isLoading ? "Saving..." : "Complete"}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

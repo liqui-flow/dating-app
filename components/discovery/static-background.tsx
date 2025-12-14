@@ -13,7 +13,6 @@ export function StaticBackground() {
           backgroundAttachment: 'fixed',
         }}
       />
-      <div className="absolute inset-0 bg-black/70" />
     </div>
   )
 }

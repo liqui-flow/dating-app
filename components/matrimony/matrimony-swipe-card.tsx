@@ -507,14 +507,14 @@ export function MatrimonySwipeCard({
             {stackIndex > 0 && (
               <>
                 {/* Right edge highlight */}
-                <div className="absolute -right-1 top-2 bottom-2 w-2 bg-gradient-to-b from-blue-400/60 via-blue-500/70 to-blue-400/60 rounded-r-full shadow-lg" />
+                <div className="absolute -right-1 top-2 bottom-2 w-2 bg-gradient-to-b from-[#97011A]/60 via-[#97011A]/70 to-[#97011A]/60 rounded-r-full shadow-lg" />
                 {/* Bottom edge highlight */}
-                <div className="absolute -bottom-1 left-2 right-2 h-2 bg-gradient-to-r from-blue-400/40 via-blue-500/50 to-blue-400/40 rounded-b-full shadow-lg" />
+                <div className="absolute -bottom-1 left-2 right-2 h-2 bg-gradient-to-r from-[#97011A]/40 via-[#97011A]/50 to-[#97011A]/40 rounded-b-full shadow-lg" />
               </>
             )}
 
             {/* Dim overlay for behind cards to hide details */}
-            {stackIndex > 0 && <div className="absolute inset-0 bg-black/20" />}
+            {stackIndex > 0 && <div className="absolute inset-0 bg-white/30" />}
           </motion.div>
 
           {/* Back Side - Full Profile */}
@@ -906,7 +906,7 @@ export function MatrimonySwipeCard({
 
                         <Button
                           size="lg"
-                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white shadow-lg"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 bg-gradient-to-r from-[#97011A] to-[#7A0115] hover:from-[#7A0115] hover:to-[#97011A] text-white shadow-lg"
                           onClick={(e) => {
                             e.stopPropagation()
                             handleInfoClick(e)

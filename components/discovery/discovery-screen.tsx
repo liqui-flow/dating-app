@@ -568,12 +568,12 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 			)}
 			
 			{/* Floating header elements */}
-			<div className="fixed top-3 left-4 z-40 text-lg sm:text-xl font-semibold">For you</div>
+			<div className="fixed top-3 left-4 z-40 text-lg sm:text-xl font-bold text-black bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">For you</div>
 			<div className="fixed top-3 right-3 z-40">
 				<Button
 					variant="secondary"
 					size="sm"
-					className="rounded-full px-3 py-2 sm:px-4 sm:py-3 shadow-md bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+					className="rounded-full px-3 py-2 sm:px-4 sm:py-3 shadow-md bg-white/90 backdrop-blur-sm text-black border-2 border-black/20"
 					onClick={() => setShowFilters(true)}
 				>
 					<Filter className="w-4 h-4" />
@@ -583,9 +583,9 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 			<div className="flex-1 overflow-hidden flex items-center justify-center p-2 sm:p-4">
 				{loading ? (
 					<div className="flex items-center justify-center h-full w-full">
-						<div className="text-center space-y-4">
-							<div className="w-12 h-12 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
-							<p className="text-sm text-muted-foreground">Loading profiles...</p>
+						<div className="text-center space-y-4 bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg">
+							<div className="w-12 h-12 mx-auto border-4 border-[#97011A] border-t-transparent rounded-full animate-spin" />
+							<p className="text-sm text-black/75 font-medium">Loading profiles...</p>
 						</div>
 					</div>
 				) : viewMode === "cards" ? (
@@ -609,22 +609,22 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 										))}
 								</div>
 							) : (
-								<Card className="w-full max-w-xs sm:max-w-sm h-80 sm:h-96 flex items-center justify-center">
+								<Card className="w-full max-w-xs sm:max-w-sm h-80 sm:h-96 flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
 									<CardContent className="text-center space-y-4 p-4 sm:p-6">
-										<div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-											<Heart className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
+										<div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-black/10 rounded-full flex items-center justify-center">
+											<Heart className="w-6 h-6 sm:w-8 sm:h-8 text-black/70" />
 										</div>
 										<div className="space-y-2">
-											<h3 className="text-base sm:text-lg font-semibold">
+											<h3 className="text-base sm:text-lg font-bold text-black">
 												{error ? "Error loading profiles" : "No more profiles"}
 											</h3>
-											<p className="text-xs sm:text-sm text-muted-foreground">
+											<p className="text-xs sm:text-sm text-black/70">
 												{error || (profiles.length === 0 
 													? "No profiles available. Check back later!" 
 													: "Check back later for new matches or adjust your filters")}
 											</p>
 											{error && (
-												<p className="text-xs text-muted-foreground mt-2">
+												<p className="text-xs text-black/60 mt-2">
 													Check browser console (F12) for more details
 												</p>
 											)}

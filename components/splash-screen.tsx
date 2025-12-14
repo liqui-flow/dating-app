@@ -114,9 +114,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <div className="absolute inset-0 bg-black/70" />
         <h1 
-          className="text-[#E0E0E0] relative z-10 flex"
+          className="text-white relative z-10 flex"
           style={{
             fontFamily: 'var(--font-script)',
             fontSize: 'clamp(3rem, 8vw, 6rem)',
@@ -222,9 +221,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="absolute inset-0 bg-black/70" />
       <h1 
-        className="text-[#E0E0E0] relative z-10 flex"
+        className="text-white relative z-10 flex"
         style={{
           fontFamily: 'var(--font-script)',
           fontSize: 'clamp(3rem, 8vw, 6rem)',

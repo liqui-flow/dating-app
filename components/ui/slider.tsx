@@ -27,16 +27,16 @@ const Slider = React.forwardRef<
       step={1}
       {...props}
     >
-      <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-white/15">
+      <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-[#E5E7EB]">
         {/* Highlighted selected range */}
-        <SliderPrimitive.Range className="absolute h-full bg-white transition-[left,width] duration-300 ease-out" />
+        <SliderPrimitive.Range className="absolute h-full bg-[#97011A] transition-[left,width] duration-300 ease-out" />
       </SliderPrimitive.Track>
       {thumbs.map((_, idx) => (
         <SliderPrimitive.Thumb
           key={idx}
-          className="grid place-items-center h-5 w-5 rounded-full border-2 border-white bg-black/40 shadow-[0_4px_12px_rgba(0,0,0,0.4)] ring-offset-background transition-transform duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95 will-change-transform backdrop-blur"
+          className="grid place-items-center h-5 w-5 rounded-full border-2 border-[#97011A] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.15)] ring-offset-white transition-transform duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#97011A]/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95 will-change-transform"
         >
-          <span className="block h-2.5 w-2.5 rounded-full bg-white" />
+          <span className="block h-2 w-2 rounded-full bg-[#97011A]" />
         </SliderPrimitive.Thumb>
       ))}
     </SliderPrimitive.Root>

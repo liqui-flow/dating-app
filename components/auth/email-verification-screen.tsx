@@ -34,8 +34,8 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
         const { data: { session } } = await supabase.auth.getSession()
         
         // If no session and we haven't retried too many times, wait and retry
-        if (!session && retryCount < 3) {
-          console.log(`No session yet, retrying... (${retryCount + 1}/3)`)
+        if (!session && retryCount < 5) {
+          console.log(`No session yet, retrying... (${retryCount + 1}/5)`)
           setTimeout(() => {
             if (mounted) {
               checkEmailVerification(retryCount + 1)
@@ -48,14 +48,12 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
         if (!session) {
           const { data: { user } } = await supabase.auth.getUser()
           if (!user) {
+            // No user found - stay on page, don't redirect
+            // This allows users who just signed up to see the verification page
+            console.log("No user session found, but staying on verification page")
             if (mounted) {
+              setUserEmail(null)
               setIsLoading(false)
-              // Wait a bit before redirecting to give session time to establish
-              setTimeout(() => {
-                if (mounted) {
-                  router.push("/auth")
-                }
-              }, 2000)
             }
             return
           }
@@ -73,7 +71,7 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
                     router.push("/onboarding/verification")
                   }
                 }
-              }, 1000)
+              }, 1500)
             }
           }
           return
@@ -82,13 +80,10 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
         const user = session.user
         
         if (!user) {
+          // No user in session - stay on page
           if (mounted) {
+            setUserEmail(null)
             setIsLoading(false)
-            setTimeout(() => {
-              if (mounted) {
-                router.push("/auth")
-              }
-            }, 1000)
           }
           return
         }
@@ -109,7 +104,7 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
                   router.push("/onboarding/verification")
                 }
               }
-            }, 1000)
+            }, 1500)
             return
           }
         }
@@ -119,11 +114,15 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
           if (mounted && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED')) {
             if (newSession?.user?.email_confirmed_at) {
               setIsVerified(true)
-              if (onVerified) {
-                onVerified()
-              } else {
-                router.push("/onboarding/verification")
-              }
+              setTimeout(() => {
+                if (mounted) {
+                  if (onVerified) {
+                    onVerified()
+                  } else {
+                    router.push("/onboarding/verification")
+                  }
+                }
+              }, 1500)
             }
           }
         })
@@ -141,14 +140,25 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
     // Poll for email verification every 3 seconds
     interval = setInterval(async () => {
       if (mounted && !isVerified) {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user?.email_confirmed_at) {
-          setIsVerified(true)
-          if (onVerified) {
-            onVerified()
-          } else {
-            router.push("/onboarding/verification")
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user?.email_confirmed_at) {
+            setIsVerified(true)
+            setTimeout(() => {
+              if (mounted) {
+                if (onVerified) {
+                  onVerified()
+                } else {
+                  router.push("/onboarding/verification")
+                }
+              }
+            }, 1500)
+          } else if (user?.email) {
+            // Update email if we got it
+            setUserEmail(user.email)
           }
+        } catch (error) {
+          console.error("Error polling verification:", error)
         }
       }
     }, 3000)
@@ -205,7 +215,15 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
-        router.push("/auth")
+        toast({
+          title: "Session expired",
+          description: "Please sign in again to continue.",
+          variant: "destructive",
+        })
+        setIsChecking(false)
+        setTimeout(() => {
+          router.push("/auth")
+        }, 2000)
         return
       }
 
@@ -242,100 +260,106 @@ export function EmailVerificationScreen({ onVerified }: EmailVerificationScreenP
   // Show loading state while checking for user
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-3 sm:p-4 relative">
-        <StaticBackground />
-        <Card className="w-full max-w-md mx-auto">
-          <CardContent className="px-4 sm:px-6 pb-6 sm:pb-6 pt-6">
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="w-8 h-8 animate-spin text-white" />
-              <p className="text-white text-sm">Loading...</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+        <div className="w-full max-w-md mx-auto">
+          <div className="flex flex-col items-center justify-center space-y-4 py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-[#97011A]" />
+            <p className="text-black/70 text-sm font-medium">Loading...</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-3 sm:p-4 relative">
-      <StaticBackground />
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="text-center space-y-3 sm:space-y-4 px-4 sm:px-6 pt-6 sm:pt-6">
-          <div className="flex justify-center mb-4">
-            {isVerified ? (
-              <div className="rounded-full bg-green-500/20 p-4">
-                <CheckCircle className="w-12 h-12 text-green-500" />
-              </div>
-            ) : (
-              <div className="rounded-full bg-blue-500/20 p-4">
-                <Mail className="w-12 h-12 text-blue-500" />
-              </div>
-            )}
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-center px-4 py-6 border-b border-black/10">
+        <h2 className="text-lg font-bold text-black">Email Verification</h2>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 flex items-center justify-center px-6 py-8">
+        <div className="w-full max-w-md mx-auto space-y-8">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center mb-6">
+              {isVerified ? (
+                <div className="rounded-full bg-green-500/10 p-6">
+                  <CheckCircle className="w-16 h-16 text-green-500" />
+                </div>
+              ) : (
+                <div className="rounded-full bg-[#97011A]/10 p-6">
+                  <Mail className="w-16 h-16 text-[#97011A]" />
+                </div>
+              )}
+            </div>
+            
+            <h1 className="text-2xl sm:text-3xl font-bold text-black">
+              {isVerified ? "Email Verified!" : "Verify Your Email"}
+            </h1>
+            
+            <p className="text-base sm:text-lg text-black/70 leading-relaxed">
+              {isVerified 
+                ? "Your email has been verified successfully. Redirecting you to continue..." 
+                : userEmail 
+                  ? `We've sent a verification email to ${userEmail}. Please check your inbox and click the verification link.`
+                  : "We've sent a verification email. Please check your inbox and click the verification link to continue."}
+            </p>
           </div>
-          <CardTitle className="text-xl sm:text-2xl font-bold text-white">
-            {isVerified ? "Email Verified!" : "Verify Your Email"}
-          </CardTitle>
-          <CardDescription className="text-sm sm:text-base text-gray-300">
-            {isVerified 
-              ? "Your email has been verified. Redirecting..." 
-              : userEmail 
-                ? `We've sent a verification email to ${userEmail}. Please check your inbox and click the verification link.`
-                : "We've sent a verification email. Please check your inbox and click the verification link."}
-          </CardDescription>
-        </CardHeader>
 
-        <CardContent className="px-4 sm:px-6 pb-6 sm:pb-6 space-y-4">
           {!isVerified && (
-            <>
-              <div className="space-y-3">
-                <Button
-                  onClick={handleResendEmail}
-                  variant="outline"
-                  className="w-full h-11 font-medium bg-white/10 text-white border-white/20 hover:bg-white/20"
-                  disabled={isResending}
-                >
-                  {isResending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4 mr-2" />
-                      Resend Email
-                    </>
-                  )}
-                </Button>
+            <div className="space-y-4">
+              <Button
+                onClick={handleContinue}
+                className="w-full font-semibold"
+                size="lg"
+                disabled={isChecking}
+              >
+                {isChecking ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  "I've Verified My Email"
+                )}
+              </Button>
 
-                <Button
-                  onClick={handleContinue}
-                  className="w-full h-11 font-medium"
-                  disabled={isChecking}
-                >
-                  {isChecking ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Checking...
-                    </>
-                  ) : (
-                    "Continue"
-                  )}
-                </Button>
-              </div>
+              <Button
+                onClick={handleResendEmail}
+                variant="outline"
+                className="w-full font-semibold"
+                size="lg"
+                disabled={isResending || !userEmail}
+              >
+                {isResending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-5 h-5 mr-2" />
+                    Resend Verification Email
+                  </>
+                )}
+              </Button>
 
-              <div className="text-center text-xs text-gray-400 pt-2">
-                <p>Didn't receive the email? Check your spam folder or click "Resend Email" above.</p>
+              <div className="text-center pt-4">
+                <p className="text-sm text-black/60 leading-relaxed">
+                  Didn't receive the email? Check your spam folder or click "Resend" above.
+                </p>
               </div>
-            </>
+            </div>
           )}
 
           {isVerified && (
-            <div className="flex justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-green-500" />
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-8 h-8 animate-spin text-green-500" />
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

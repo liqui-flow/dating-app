@@ -459,26 +459,26 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
               {!isOwnProfile && (
                 <>
                   {isMatched ? (
-                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg flex items-center gap-1.5 px-4 py-2 text-sm font-semibold">
+                    <Badge className="bg-gradient-to-r from-[#97011A] to-[#7A0115] text-white border-0 shadow-lg flex items-center gap-1.5 px-4 py-2 text-sm font-semibold">
                       <CheckCircle2 className="w-4 h-4" />
                       Matched
                     </Badge>
                   ) : canLikeBack ? (
                     <Button 
-                      size="lg" 
+                      size="lg"
                       onClick={handleLike}
                       disabled={isLiking}
-                      className="rounded-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-lg border-0 px-6 h-12"
+                      className="rounded-full bg-gradient-to-r from-[#97011A] to-[#7A0115] hover:from-[#7A0115] hover:to-[#97011A] text-white shadow-lg border-0 px-6 h-12"
                     >
                       <Heart className="w-5 h-5 mr-2 fill-white" />
                       {isLiking ? "Liking..." : "Like Back"}
                     </Button>
                   ) : (
                     <Button 
-                      size="lg" 
+                      size="lg"
                       onClick={handleLike}
                       disabled={isLiking}
-                      className="rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-lg border-0 px-6 h-12"
+                      className="rounded-full bg-gradient-to-r from-[#97011A] to-[#7A0115] hover:from-[#7A0115] hover:to-[#97011A] text-white shadow-lg border-0 px-6 h-12"
                     >
                       <Heart className="w-5 h-5 mr-2 fill-white" />
                       {isLiking ? "Liking..." : "Like"}
@@ -513,9 +513,9 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
                   <h3 className="font-semibold text-white text-lg mb-3">Interests</h3>
                   <div className="flex flex-wrap gap-2">
                     {(datingProfile.interests as string[]).map((interest) => (
-                      <Badge 
-                        key={interest} 
-                        className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-black border-white/30 hover:from-purple-500/40 hover:to-pink-500/40 transition-all px-3 py-1.5"
+                      <Badge
+                        key={interest}
+                        className="bg-[#97011A]/10 text-[#97011A] border-[#97011A]/20 hover:bg-[#97011A]/20 transition-all px-3 py-1.5"
                       >
                         {interest}
                       </Badge>
@@ -553,8 +553,8 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
                         <Badge 
                           className={cn(
                             "px-4 py-2 text-sm transition-all",
-                            choice.selected === 0 
-                              ? "bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-black border-white/30 hover:from-purple-500/40 hover:to-pink-500/40 transition-all" 
+                            choice.selected === 0
+                              ? "bg-[#97011A] text-white border-[#97011A] hover:bg-[#7A0115] transition-all"
                               : "bg-white/10 text-white/60 border-white/20"
                           )}
                         >
@@ -564,8 +564,8 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
                         <Badge 
                           className={cn(
                             "px-4 py-2 text-sm transition-all",
-                            choice.selected === 1 
-                              ? "bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-black border-white/30 hover:from-purple-500/40 hover:to-pink-500/40 transition-all" 
+                            choice.selected === 1
+                              ? "bg-[#97011A] text-white border-[#97011A] hover:bg-[#7A0115] transition-all"
                               : "bg-white/10 text-white/60 border-white/20"
                           )}
                         >

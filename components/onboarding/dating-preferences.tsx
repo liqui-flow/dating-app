@@ -2,14 +2,12 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { User, Users, HeartHandshake } from "lucide-react"
+import { UserCircle, Users, HeartHandshake, ArrowLeft } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { saveDatingPreferences } from "@/lib/datingProfileService"
 import { useToast } from "@/hooks/use-toast"
-import { StaticBackground } from "@/components/discovery/static-background"
 
 interface DatingPreferencesProps {
   onComplete: () => void
@@ -22,7 +20,7 @@ const preferenceOptions = [
   {
     id: "men" as DatingPreference,
     label: "Men",
-    icon: User,
+    icon: UserCircle,
     description: "I'm interested in men"
   },
   {
@@ -97,95 +95,102 @@ export function DatingPreferences({ onComplete, onBack }: DatingPreferencesProps
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 [&_::selection]:bg-[#4A0E0E] [&_::selection]:text-white relative">
-      <StaticBackground />
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-primary">Who do you prefer to date?</CardTitle>
-        </CardHeader>
-        
-        <CardContent className="space-y-8">
-          {/* Main Question */}
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-primary mb-8">
-              I'd like to date...
-            </h2>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Header with back button and progress */}
+      <div className="px-6 py-4 flex items-center justify-between border-b border-black/10">
+        <button
+          onClick={onBack}
+          disabled={isLoading}
+          className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors disabled:opacity-50"
+        >
+          <ArrowLeft className="w-6 h-6 text-black" />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-[#97011A]" />
+          <div className="h-2 w-2 rounded-full bg-[#97011A]" />
+          <div className="h-2 w-8 rounded-full bg-[#97011A]" />
+          <div className="h-2 w-2 rounded-full bg-black/20" />
+        </div>
+        <div className="w-10" />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col px-6 py-8 max-w-2xl w-full mx-auto">
+        <div className="flex-1 space-y-8">
+          {/* Header */}
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-[#111]">Who do you want to date?</h1>
+            <p className="text-base text-black/60">
+              Select your dating preference
+            </p>
           </div>
 
           {/* Preference Options */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-3">
             {preferenceOptions.map((option) => {
               const Icon = option.icon
               const isSelected = selectedPreference === option.id
               
               return (
-                <Button
+                <button
                   key={option.id}
-                  variant="outline"
-                  className={`group h-auto p-6 flex flex-col items-center space-y-3 transition-all duration-200 ${
-                    isSelected
-                      ? "!bg-white !text-black !border-black shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
-                      : "bg-white/10 text-white border-white/20 hover:!bg-white hover:!text-black hover:!border-black"
-                  }`}
                   onClick={() => handlePreferenceSelect(option.id)}
+                  className={`w-full p-5 flex items-center gap-4 rounded-xl border-2 transition-all ${
+                    isSelected
+                      ? "border-[#97011A] bg-[#97011A]/5"
+                      : "border-black/20 hover:border-black/40"
+                  }`}
                 >
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                    isSelected ? "bg-black/10" : "bg-white/15 group-hover:bg-black/10"
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    isSelected ? "bg-[#97011A]" : "bg-black/10"
                   }`}>
                     <Icon
-                      className={`w-6 h-6 transition-colors ${
-                        isSelected ? "text-black" : "text-white group-hover:text-black"
+                      className={`w-6 h-6 ${
+                        isSelected ? "text-white" : "text-black"
                       }`}
                     />
                   </div>
-                  <div className="text-center">
-                    <div className="text-lg font-medium transition-colors">{option.label}</div>
-                    <div
-                      className={`text-sm transition-colors ${
-                        isSelected ? "text-black/70" : "text-white/70 group-hover:text-black/60"
-                      }`}
-                    >
-                      {option.description}
-                    </div>
+                  <div className="text-left flex-1">
+                    <div className="text-lg font-semibold text-[#111]">{option.label}</div>
+                    <div className="text-sm text-black/60">{option.description}</div>
                   </div>
-                </Button>
+                  {isSelected && (
+                    <div className="w-6 h-6 rounded-full bg-[#97011A] flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
               )
             })}
           </div>
 
           {/* Show on Profile Toggle */}
-          <div className="flex items-center space-x-3 justify-center">
+          <div className="flex items-center space-x-3 p-4 bg-black/5 rounded-xl">
             <Checkbox
               id="show-preference"
               checked={showOnProfile}
               onCheckedChange={(checked) => setShowOnProfile(checked as boolean)}
-              className="border-primary"
+              className="border-black/40 data-[state=checked]:bg-[#97011A] data-[state=checked]:border-[#97011A]"
             />
-            <Label htmlFor="show-preference" className="text-primary text-sm">
+            <Label htmlFor="show-preference" className="text-sm text-[#111] cursor-pointer">
               Show my preference on my profile
             </Label>
           </div>
+        </div>
+      </div>
 
-          {/* Navigation */}
-          <div className="flex justify-between pt-6">
-            <Button 
-              variant="ghost" 
-              onClick={onBack} 
-              className="bg-white/10 text-white border border-white/20 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
-              disabled={isLoading}
-            >
-              Back
-            </Button>
-            <Button 
-              onClick={handleNext}
-              disabled={!selectedPreference || isLoading}
-              className="px-6 py-2 rounded-full font-semibold bg-gradient-to-r from-white to-white text-black shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Saving..." : "Next"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Fixed Bottom Button */}
+      <div className="px-6 pb-8">
+        <Button 
+          onClick={handleNext}
+          disabled={!selectedPreference || isLoading}
+          className="w-full h-14 text-base font-semibold bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {isLoading ? "Saving..." : "Next"}
+        </Button>
+      </div>
     </div>
   )
 }

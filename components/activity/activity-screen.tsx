@@ -141,11 +141,11 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'match':
-        return <Sparkles className="w-4 h-4 text-violet-400" />
+        return <Sparkles className="w-4 h-4 text-[#97011A]" />
       case 'like':
         return <Heart className="w-4 h-4 text-red-500 fill-current" />
       case 'view':
-        return <Eye className="w-4 h-4 text-blue-500" />
+        return <Eye className="w-4 h-4 text-black" />
       default:
         return null
     }
@@ -294,7 +294,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                         {activity.age && <span className="text-white/70 ml-1">, {activity.age}</span>}
                       </h3>
                       {activity.isNew && (
-                        <Badge className="bg-violet-500/80 text-white text-xs px-1.5 py-0.5 border border-white/20">
+                        <Badge className="bg-[#97011A] text-white text-xs px-1.5 py-0.5 border border-white/20">
                           New
                         </Badge>
                       )}
@@ -329,7 +329,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                           }
                         }
                       }}
-                      className="bg-violet-500/80 hover:bg-violet-500/90 text-white"
+                      className="bg-[#97011A] hover:bg-[#7A0115] text-white"
                     >
                       Chat
                     </Button>

@@ -342,7 +342,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
       {/* Top-right status badges */}
       {stackIndex === 0 && (
         <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex flex-col space-y-1 sm:space-y-2 z-20">
-          {profile.premium && <Badge className="bg-[#4A0E0E] text-white text-xs px-2 py-1">Premium</Badge>}
+          {profile.premium && <Badge className="bg-[#97011A] text-white text-xs px-2 py-1">Premium</Badge>}
         </div>
       )}
 
@@ -373,15 +373,15 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
             className={cn(
               "absolute bottom-4 right-4 z-30",
               "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
-              "bg-white/20 backdrop-blur-md border border-white/30",
-              "hover:bg-white/30 hover:scale-110",
+              "bg-white/90 backdrop-blur-md border border-black/10",
+              "hover:bg-white hover:scale-110",
               "transition-all duration-200",
               "shadow-lg"
             )}
             onClick={handleInfoClick}
             aria-label="View full profile"
           >
-            <Info className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
+            <Info className="w-4 h-4 sm:w-5 sm:h-5 text-black drop-shadow-sm" />
           </Button>
         </div>
       )}
@@ -390,14 +390,14 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
             {stackIndex > 0 && (
               <>
                 {/* Right edge highlight */}
-                <div className="absolute -right-1 top-2 bottom-2 w-2 bg-gradient-to-b from-blue-400/60 via-blue-500/70 to-blue-400/60 rounded-r-full shadow-lg" />
+                <div className="absolute -right-1 top-2 bottom-2 w-2 bg-gradient-to-b from-[#97011A]/60 via-[#97011A]/70 to-[#97011A]/60 rounded-r-full shadow-lg" />
                 {/* Bottom edge highlight */}
-                <div className="absolute -bottom-1 left-2 right-2 h-2 bg-gradient-to-r from-blue-400/40 via-blue-500/50 to-blue-400/40 rounded-b-full shadow-lg" />
+                <div className="absolute -bottom-1 left-2 right-2 h-2 bg-gradient-to-r from-[#97011A]/40 via-[#97011A]/50 to-[#97011A]/40 rounded-b-full shadow-lg" />
               </>
             )}
 
             {/* Dim overlay for behind cards to hide details */}
-            {stackIndex > 0 && <div className="absolute inset-0 bg-black/20" />}
+            {stackIndex > 0 && <div className="absolute inset-0 bg-white/30" />}
           </motion.div>
 
           {/* Back Side - Full Profile */}
@@ -422,14 +422,14 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
               ) : (
                 <>
                   {/* Black Overlay Header with Name and Age */}
-                  <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-sm border-b border-white/10 rounded-t-2xl sm:rounded-t-3xl">
+                  <div className="sticky top-0 z-40 bg-white backdrop-blur-sm border-b border-black/10 rounded-t-2xl sm:rounded-t-3xl">
                     <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
                       <div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-white">
+                        <h1 className="text-xl sm:text-2xl font-bold text-black">
                           {(fullProfile?.name || profile.name)}, {profile.age}
                         </h1>
                         {profile.location && (
-                          <div className="flex items-center space-x-1 text-white/80 text-sm mt-1">
+                          <div className="flex items-center space-x-1 text-black/70 text-sm mt-1">
                             <MapPin className="w-3 h-3" />
                             <span>{profile.location}</span>
                           </div>
@@ -444,18 +444,18 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                               type="button"
                               className={cn(
                                 "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
-                                "bg-white/20 backdrop-blur-md border border-white/30",
-                                "hover:bg-red-500 hover:border-red-500 hover:scale-110",
+                                "bg-white border-2 border-black/10",
+                                "hover:bg-[#97011A] hover:border-[#97011A] hover:scale-110",
                                 "transition-all duration-200",
-                                "shadow-lg"
+                                "shadow-md group"
                               )}
                               onClick={handleReportClick}
                               aria-label="Report profile"
                             >
-                              <Flag className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
+                              <Flag className="w-4 h-4 sm:w-5 sm:h-5 text-black group-hover:text-white transition-colors" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="bg-red-500 text-white border-red-400">
+                          <TooltipContent side="bottom" className="bg-[#97011A] text-white border-[#97011A]">
                             <p>Report</p>
                           </TooltipContent>
                         </Tooltip>
@@ -465,22 +465,22 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                           type="button"
                           className={cn(
                             "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
-                            "bg-white/20 backdrop-blur-md border border-white/30",
-                            "hover:bg-white/30 hover:scale-110",
+                            "bg-white border-2 border-black/10",
+                            "hover:bg-black/5 hover:scale-110",
                             "transition-all duration-200",
-                            "shadow-lg"
+                            "shadow-md"
                           )}
                           onClick={handleInfoClick}
                           aria-label="Close profile"
                         >
-                          <X className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
+                          <X className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                         </Button>
                       </div>
                     </div>
                   </div>
 
                   {/* Scrollable Content */}
-                  <div className="relative bg-gradient-to-b from-black/95 via-black/90 to-black/95 overflow-hidden">
+                  <div className="relative bg-white overflow-hidden">
                     {(() => {
                       const photos = fullProfile?.photos || profile.photos
                       const photoPrompts = (fullProfile?.photo_prompts as string[]) || []
@@ -489,7 +489,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                         <>
                           {/* Profile Picture (1st photo) */}
                           {photos.length > 0 && (
-                            <div className="relative w-full bg-black px-4 sm:px-6 pt-6">
+                            <div className="relative w-full bg-white px-4 sm:px-6 pt-6">
                               <div className="relative w-full aspect-square mx-auto rounded-xl sm:rounded-2xl overflow-hidden">
                                 <img
                                   src={photos[0] || "/placeholder.svg"}
@@ -498,7 +498,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                                 />
                               </div>
                               {photoPrompts[0] && photoPrompts[0].trim() && (
-                                <p className="text-white/80 text-sm sm:text-base mt-3 text-center px-2">
+                                <p className="text-black/70 text-sm sm:text-base mt-3 text-center px-2">
                                   {photoPrompts[0]}
                                 </p>
                               )}
@@ -510,8 +510,8 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                             {/* Bio Section */}
                             {(fullProfile?.bio || profile.bio) && (
                               <div className="space-y-3">
-                                <h3 className="font-semibold text-white text-base sm:text-lg mb-2">About</h3>
-                                <p className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
+                                <h3 className="font-semibold text-black text-base sm:text-lg mb-2">About</h3>
+                                <p className="text-black/80 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
                                   {fullProfile?.bio || profile.bio}
                                 </p>
                               </div>
@@ -682,7 +682,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
 
                               <Button
                                 size="lg"
-                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white shadow-lg"
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 bg-gradient-to-r from-[#97011A] to-[#7A0115] hover:from-[#7A0115] hover:to-[#97011A] text-white shadow-lg"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleInfoClick(e)

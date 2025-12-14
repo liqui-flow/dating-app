@@ -564,7 +564,7 @@ export function MatrimonyChatList({ onChatClick, onBack }: MatrimonyChatListProp
                         <div className="flex items-center space-x-2">
                           <h3 className="font-semibold text-sm text-white truncate">{chat.name}</h3>
                           {chat.isPremium && (
-                            <Badge className="bg-[#4A0E0E] text-white text-xs px-1.5 py-0.5 border border-white/20">
+                            <Badge className="bg-[#97011A] text-white text-xs px-1.5 py-0.5 border border-white/20">
                               Premium
                             </Badge>
                           )}

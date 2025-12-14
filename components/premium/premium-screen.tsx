@@ -120,7 +120,7 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
 
       <div className="overflow-y-auto">
         {/* Hero Section */}
-        <div className="glass-apple bg-gradient-to-br from-purple-600/90 via-blue-600/90 to-indigo-700/90 text-white p-6">
+        <div className="glass-apple bg-gradient-to-br from-[#97011A] via-[#7A0115] to-[#97011A] text-white p-6">
           <div className="text-center space-y-4">
             <div className="flex justify-center">
               <Crown className="w-16 h-16 fill-current" />

@@ -29,7 +29,7 @@ export function MatchNotification({ match, onStartChat, onKeepSwiping, onClose }
       <Card className="w-full max-w-sm mx-auto overflow-hidden">
         <CardContent className="p-0">
           {/* Header */}
-          <div className="relative bg-gradient-to-br from-pink-500 to-rose-500 p-6 text-white text-center">
+          <div className="relative bg-gradient-to-br from-[#97011A] to-[#7A0115] p-6 text-white text-center">
             <Button
               variant="ghost"
               size="sm"
@@ -68,10 +68,10 @@ export function MatchNotification({ match, onStartChat, onKeepSwiping, onClose }
 
               {match.mutualInterests.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">You both like:</p>
+                  <p className="text-sm text-black/60">You both like:</p>
                   <div className="flex flex-wrap justify-center gap-2">
                     {match.mutualInterests.slice(0, 3).map((interest) => (
-                      <span key={interest} className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full">
+                      <span key={interest} className="px-3 py-1 bg-[#97011A]/10 text-[#97011A] text-xs rounded-full font-semibold">
                         {interest}
                       </span>
                     ))}

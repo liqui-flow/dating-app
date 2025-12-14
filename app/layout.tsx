@@ -34,9 +34,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${robotoMono.variable} ${dancingScript.variable} antialiased dark`}>
-      <body>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+    <html lang="en" className={`${inter.variable} ${robotoMono.variable} ${dancingScript.variable} antialiased bg-white`}>
+      <body className="bg-white text-black">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
           <SocketProvider>
             {children}
             <Toaster /> {/* ✅ Sonner toaster here */}
