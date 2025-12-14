@@ -102,10 +102,10 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-semibold">Welcome</h2>
-            <p className="text-muted-foreground">Tell us who you are to get started.</p>
+        <div className="flex-1 space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-[#111]">Welcome</h1>
+            <p className="text-base text-black/60">Tell us who you are to get started.</p>
           </div>
           
           <div className="flex items-center gap-3 sm:gap-4">
@@ -113,13 +113,13 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
               {photos[0] ? (
                 <AvatarImage src={photos[0]} />
               ) : (
-                <AvatarFallback>{form.watch("name")?.[0]?.toUpperCase() || "U"}</AvatarFallback>
+                <AvatarFallback className="bg-black/10 text-black">{form.watch("name")?.[0]?.toUpperCase() || "U"}</AvatarFallback>
               )}
             </Avatar>
             <Button
               type="button"
               variant="outline"
-              className="text-xs sm:text-sm bg-white/10 text-white border-white/20 rounded-full px-4 hover:!bg-white hover:!text-black hover:!border-black transition-all duration-200"
+              className="text-xs sm:text-sm bg-[#97011A] text-white border-[#97011A] rounded-full px-4 hover:bg-[#7A010E] hover:border-[#7A010E] transition-all duration-200"
               onClick={async () => {
                 const input = document.createElement("input")
                 input.type = "file"
@@ -160,16 +160,20 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
             </div>
           )}
 
-          <div className="text-xs text-muted-foreground">Add minimum 2, maximum 6 photos.</div>
+          <div className="text-xs text-black/60">Add minimum 2, maximum 6 photos.</div>
 
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel className="text-black">Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your full name" {...field} />
+                  <Input 
+                    placeholder="Your full name" 
+                    {...field} 
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -181,9 +185,16 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
             name="age"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Age</FormLabel>
+                <FormLabel className="text-black">Age</FormLabel>
                 <FormControl>
-                  <Input type="number" min={18} max={80} {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                  <Input 
+                    type="number" 
+                    min={18} 
+                    max={80} 
+                    {...field} 
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -195,13 +206,13 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
             name="gender"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Gender</FormLabel>
+                <FormLabel className="text-black">Gender</FormLabel>
                 <FormControl>
                   <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {(["Male", "Female", "Other"] as const).map((opt) => (
-                      <div key={opt} className="flex items-center space-x-2 border rounded-md p-2">
-                        <RadioGroupItem value={opt} id={`gender-${opt}`} />
-                        <label htmlFor={`gender-${opt}`} className="text-xs sm:text-sm">
+                      <div key={opt} className="flex items-center space-x-2 border-2 border-black/20 rounded-xl p-3 hover:border-[#97011A] transition-colors">
+                        <RadioGroupItem value={opt} id={`gender-${opt}`} className="border-black/40 data-[state=checked]:border-[#97011A] data-[state=checked]:bg-[#97011A]" />
+                        <label htmlFor={`gender-${opt}`} className="text-xs sm:text-sm text-black cursor-pointer">
                           {opt}
                         </label>
                       </div>
@@ -218,13 +229,13 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
             name="createdBy"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Profile created by</FormLabel>
+                <FormLabel className="text-black">Profile created by</FormLabel>
                 <FormControl>
                   <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {(["Self", "Parent", "Sibling", "Other"] as const).map((opt) => (
-                      <div key={opt} className="flex items-center space-x-2 border rounded-md p-2">
-                        <RadioGroupItem value={opt} id={`created-${opt}`} />
-                        <label htmlFor={`created-${opt}`} className="text-xs sm:text-sm">
+                      <div key={opt} className="flex items-center space-x-2 border-2 border-black/20 rounded-xl p-3 hover:border-[#97011A] transition-colors">
+                        <RadioGroupItem value={opt} id={`created-${opt}`} className="border-black/40 data-[state=checked]:border-[#97011A] data-[state=checked]:bg-[#97011A]" />
+                        <label htmlFor={`created-${opt}`} className="text-xs sm:text-sm text-black cursor-pointer">
                           {opt}
                         </label>
                       </div>
@@ -236,18 +247,30 @@ export function Step1WelcomeIdentity({ onNext }: { onNext: () => void }) {
             )}
           />
 
-          <div className="flex justify-between">
-            <Button type="button" variant="ghost" disabled={isLoading} onClick={() => {
-              // Navigate back to path selection by going to home and triggering path-select step
-              try {
-                localStorage.removeItem("onboardingCompleteMode")
-                localStorage.removeItem("onboardingShowComplete")
-                // Set a flag to show path selection immediately
-                localStorage.setItem("showPathSelect", "true")
-              } catch {}
-              router.push("/")
-            }}>Back</Button>
-            <Button type="submit" disabled={isLoading || photos.length < 2}>
+          <div className="flex justify-between pt-2">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              disabled={isLoading} 
+              onClick={() => {
+                // Navigate back to path selection by going to home and triggering path-select step
+                try {
+                  localStorage.removeItem("onboardingCompleteMode")
+                  localStorage.removeItem("onboardingShowComplete")
+                  // Set a flag to show path selection immediately
+                  localStorage.setItem("showPathSelect", "true")
+                } catch {}
+                router.push("/")
+              }}
+              className="text-black hover:text-[#97011A]"
+            >
+              Back
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading || photos.length < 2}
+              className="bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full px-6"
+            >
               {isLoading ? "Saving..." : "Next"}
             </Button>
           </div>

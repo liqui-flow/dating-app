@@ -64,26 +64,65 @@ export function Step6Bio({ onNext, onBack }: { onNext: () => void; onBack: () =>
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-semibold">A Few Words About You</h2>
-            <p className="text-muted-foreground">Write a short bio to introduce yourself.</p>
+        <div className="flex-1 space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-[#111]">A Few Words About You</h1>
+            <p className="text-base text-black/60">Write a short bio to introduce yourself.</p>
           </div>
           
           <FormField control={form.control} name="bio" render={({ field }) => (
             <FormItem>
-              <FormLabel>Bio (20–300 characters)</FormLabel>
+              <FormLabel className="text-black">Bio (20–300 characters)</FormLabel>
               <FormControl>
-                <Textarea rows={8} maxLength={300} placeholder="Describe your personality, passions, and what you're looking for in a life partner." {...field} />
+                <Textarea 
+                  rows={12} 
+                  maxLength={300} 
+                  placeholder="Describe your personality, passions, and what you're looking for in a life partner." 
+                  {...field}
+                  className="text-base text-[#111] placeholder:text-black/40 resize-none min-h-[250px] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                />
               </FormControl>
-              <div className="text-xs text-muted-foreground">{(field.value?.length || 0)}/300</div>
+              <div className="flex justify-between items-center">
+                <p className={`text-sm ${
+                  (field.value?.length || 0) > 0 && (field.value?.length || 0) < 20
+                    ? "text-[#97011A]"
+                    : "text-black/60"
+                }`}>
+                  {(field.value?.length || 0) > 0 && (field.value?.length || 0) < 20
+                    ? "At least 20 characters required"
+                    : "Tell us about yourself"}
+                </p>
+                <p className={`text-sm ${
+                  (field.value?.length || 0) === 300 
+                    ? "text-[#97011A]"
+                    : (field.value?.length || 0) < 20 && (field.value?.length || 0) > 0
+                    ? "text-[#97011A]"
+                    : "text-black/60"
+                }`}>
+                  {(field.value?.length || 0)}/300
+                </p>
+              </div>
               <FormMessage />
             </FormItem>
           )} />
 
           <div className="flex justify-between pt-2">
-            <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
-            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Complete"}</Button>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={onBack} 
+              disabled={isLoading}
+              className="text-black hover:text-[#97011A]"
+            >
+              Back
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full px-6"
+            >
+              {isLoading ? "Saving..." : "Complete"}
+            </Button>
           </div>
         </div>
       </form>

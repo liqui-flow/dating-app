@@ -147,25 +147,25 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-semibold">Family Information</h2>
-            <p className="text-muted-foreground">Tell us about your family.</p>
+        <div className="flex-1 space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-[#111]">Family Information</h1>
+            <p className="text-base text-black/60">Tell us about your family.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField control={form.control} name="familyType" render={({ field }) => (
               <FormItem>
-                <FormLabel>Family Type</FormLabel>
+                <FormLabel className="text-black">Family Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                    <SelectTrigger className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white">
                       <SelectValue placeholder="Select family type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                  <SelectContent position="popper" className="bg-white text-black border border-black/20 z-50">
                     {["Joint", "Nuclear", "Extended", "Single Parent"].map((option) => (
-                      <SelectItem key={option} value={option} className="text-foreground">
+                      <SelectItem key={option} value={option} className="text-black">
                         {option}
                       </SelectItem>
                     ))}
@@ -176,16 +176,16 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
             )} />
             <FormField control={form.control} name="familyValues" render={({ field }) => (
               <FormItem>
-                <FormLabel>Family Values</FormLabel>
+                <FormLabel className="text-black">Family Values</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                    <SelectTrigger className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white">
                       <SelectValue placeholder="Select values" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                  <SelectContent position="popper" className="bg-white text-black border border-black/20 z-50">
                     {["Traditional", "Moderate", "Modern", "Progressive"].map((option) => (
-                      <SelectItem key={option} value={option} className="text-foreground">
+                      <SelectItem key={option} value={option} className="text-black">
                         {option}
                       </SelectItem>
                     ))}
@@ -199,7 +199,7 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField control={form.control} name="fatherOccupation" render={({ field }) => (
               <FormItem>
-                <FormLabel>Father's Occupation</FormLabel>
+                <FormLabel className="text-black">Father's Occupation</FormLabel>
                 <FormControl>
                   <Select 
                     onValueChange={(value) => {
@@ -215,12 +215,12 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
                     }} 
                     value={field.value && OCCUPATION_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherFatherOccupation ? "Other" : undefined}
                   >
-                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                    <SelectTrigger className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white">
                       <SelectValue placeholder="Select occupation" />
                     </SelectTrigger>
-                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                    <SelectContent position="popper" className="bg-white text-black border border-black/20 z-50">
                       {OCCUPATION_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option} className="text-foreground">
+                        <SelectItem key={option} value={option} className="text-black">
                           {option}
                         </SelectItem>
                       ))}
@@ -236,7 +236,7 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
                       setOtherFatherOccupationValue(value)
                       field.onChange(value)
                     }}
-                    className="mt-2 h-10 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                    className="mt-2 h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white"
                   />
                 )}
                 <FormMessage />
@@ -244,14 +244,19 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
             )} />
             <FormField control={form.control} name="fatherCompany" render={({ field }) => (
               <FormItem>
-                <FormLabel>Father's Company</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormLabel className="text-black">Father's Company</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="motherOccupation" render={({ field }) => (
               <FormItem>
-                <FormLabel>Mother's Occupation</FormLabel>
+                <FormLabel className="text-black">Mother's Occupation</FormLabel>
                 <FormControl>
                   <Select 
                     onValueChange={(value) => {
@@ -267,12 +272,12 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
                     }} 
                     value={field.value && OCCUPATION_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherMotherOccupation ? "Other" : undefined}
                   >
-                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                    <SelectTrigger className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white">
                       <SelectValue placeholder="Select occupation" />
                     </SelectTrigger>
-                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                    <SelectContent position="popper" className="bg-white text-black border border-black/20 z-50">
                       {OCCUPATION_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option} className="text-foreground">
+                        <SelectItem key={option} value={option} className="text-black">
                           {option}
                         </SelectItem>
                       ))}
@@ -288,7 +293,7 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
                       setOtherMotherOccupationValue(value)
                       field.onChange(value)
                     }}
-                    className="mt-2 h-10 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                    className="mt-2 h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white"
                   />
                 )}
                 <FormMessage />
@@ -296,8 +301,13 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
             )} />
             <FormField control={form.control} name="motherCompany" render={({ field }) => (
               <FormItem>
-                <FormLabel>Mother's Company</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormLabel className="text-black">Mother's Company</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -306,30 +316,46 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField control={form.control} name="brothers" render={({ field }) => (
               <FormItem>
-                <FormLabel>Brothers</FormLabel>
-                <FormControl><Input type="number" min={0} {...field} onChange={(e)=>field.onChange(Number(e.target.value))} /></FormControl>
+                <FormLabel className="text-black">Brothers</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min={0} 
+                    {...field} 
+                    onChange={(e)=>field.onChange(Number(e.target.value))}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="sisters" render={({ field }) => (
               <FormItem>
-                <FormLabel>Sisters</FormLabel>
-                <FormControl><Input type="number" min={0} {...field} onChange={(e)=>field.onChange(Number(e.target.value))} /></FormControl>
+                <FormLabel className="text-black">Sisters</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min={0} 
+                    {...field} 
+                    onChange={(e)=>field.onChange(Number(e.target.value))}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="siblingsMarried" render={({ field }) => (
               <FormItem>
-                <FormLabel>Marital Status of Siblings</FormLabel>
+                <FormLabel className="text-black">Marital Status of Siblings</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                    <SelectTrigger className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                  <SelectContent position="popper" className="bg-white text-black border border-black/20 z-50">
                     {["None", "Some", "All", "Mostly Married", "Mostly Single"].map((option) => (
-                      <SelectItem key={option} value={option} className="text-foreground">
+                      <SelectItem key={option} value={option} className="text-black">
                         {option}
                       </SelectItem>
                     ))}
@@ -342,15 +368,15 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
 
           <FormField control={form.control} name="showOnProfile" render={({ field }) => (
             <FormItem>
-              <FormLabel>Show family information on profile</FormLabel>
+              <FormLabel className="text-black">Show family information on profile</FormLabel>
               <FormControl>
                 <button
                   type="button"
                   onClick={() => field.onChange(!field.value)}
                   className={`w-12 h-10 rounded-lg flex items-center justify-center transition-all ${
                     field.value
-                      ? "bg-black text-white border border-black"
-                      : "bg-white text-gray-700 border border-gray-300"
+                      ? "bg-[#97011A] text-white border border-[#97011A]"
+                      : "bg-white text-black border border-black/20"
                   }`}
                 >
                   {field.value && <Check className="w-5 h-5" />}
@@ -361,8 +387,22 @@ export function Step4Family({ onNext, onBack }: { onNext: () => void; onBack: ()
           )} />
 
           <div className="flex justify-between pt-2">
-            <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
-            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Next"}</Button>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={onBack} 
+              disabled={isLoading}
+              className="text-black hover:text-[#97011A]"
+            >
+              Back
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full px-6"
+            >
+              {isLoading ? "Saving..." : "Next"}
+            </Button>
           </div>
         </div>
       </form>

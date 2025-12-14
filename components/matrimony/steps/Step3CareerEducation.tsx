@@ -154,16 +154,16 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-semibold">Your Career & Education</h2>
-            <p className="text-muted-foreground">Share details about your professional and educational background.</p>
+        <div className="flex-1 space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-[#111]">Your Career & Education</h1>
+            <p className="text-base text-black/60">Share details about your professional and educational background.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField control={form.control} name="highestEducation" render={({ field }) => (
               <FormItem>
-                <FormLabel>Highest Education</FormLabel>
+                <FormLabel className="text-black">Highest Education</FormLabel>
                 <FormControl>
                   <Select 
                     onValueChange={(value) => {
@@ -179,12 +179,12 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
                     }} 
                     value={field.value && EDUCATION_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherEducation ? "Other" : undefined}
                   >
-                    <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/50 transition">
+                    <SelectTrigger className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white">
                       <SelectValue placeholder="Select highest education" />
                     </SelectTrigger>
-                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                    <SelectContent position="popper" className="bg-white text-black border border-black/20 z-50">
                       {EDUCATION_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option} className="text-foreground">
+                        <SelectItem key={option} value={option} className="text-black">
                           {option}
                         </SelectItem>
                       ))}
@@ -200,7 +200,7 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
                       setOtherEducationValue(value)
                       field.onChange(value)
                     }}
-                    className="mt-2 h-11 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                    className="mt-2 h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white"
                   />
                 )}
                 <FormMessage />
@@ -208,16 +208,20 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
             )} />
             <FormField control={form.control} name="college" render={({ field }) => (
               <FormItem>
-                <FormLabel>College / University</FormLabel>
+                <FormLabel className="text-black">College / University</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Stanford University" {...field} />
+                  <Input 
+                    placeholder="e.g., Stanford University" 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="jobTitle" render={({ field }) => (
               <FormItem>
-                <FormLabel>Current Profession / Job Title</FormLabel>
+                <FormLabel className="text-black">Current Profession / Job Title</FormLabel>
                 <FormControl>
                   <Select 
                     onValueChange={(value) => {
@@ -233,12 +237,12 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
                     }} 
                     value={field.value && JOB_TITLE_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherJobTitle ? "Other" : undefined}
                   >
-                    <SelectTrigger className="h-11 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/50 transition">
+                    <SelectTrigger className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white">
                       <SelectValue placeholder="Select job title" />
                     </SelectTrigger>
-                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                    <SelectContent position="popper" className="bg-white text-black border border-black/20 z-50">
                       {JOB_TITLE_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option} className="text-foreground">
+                        <SelectItem key={option} value={option} className="text-black">
                           {option}
                         </SelectItem>
                       ))}
@@ -254,7 +258,7 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
                       setOtherJobTitleValue(value)
                       field.onChange(value)
                     }}
-                    className="mt-2 h-11 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                    className="mt-2 h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white"
                   />
                 )}
                 <FormMessage />
@@ -262,18 +266,26 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
             )} />
             <FormField control={form.control} name="company" render={({ field }) => (
               <FormItem>
-                <FormLabel>Company Name</FormLabel>
+                <FormLabel className="text-black">Company Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Google" {...field} />
+                  <Input 
+                    placeholder="e.g., Google" 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="annualIncome" render={({ field }) => (
               <FormItem>
-                <FormLabel>Annual Income</FormLabel>
+                <FormLabel className="text-black">Annual Income</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., 10–15 LPA / Prefer not to say" {...field} />
+                  <Input 
+                    placeholder="e.g., 10–15 LPA / Prefer not to say" 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -283,27 +295,39 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField control={form.control} name="workLocation.city" render={({ field }) => (
               <FormItem>
-                <FormLabel>City</FormLabel>
+                <FormLabel className="text-black">City</FormLabel>
                 <FormControl>
-                  <Input placeholder="City" {...field} />
+                  <Input 
+                    placeholder="City" 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="workLocation.state" render={({ field }) => (
               <FormItem>
-                <FormLabel>State</FormLabel>
+                <FormLabel className="text-black">State</FormLabel>
                 <FormControl>
-                  <Input placeholder="State" {...field} />
+                  <Input 
+                    placeholder="State" 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="workLocation.country" render={({ field }) => (
               <FormItem>
-                <FormLabel>Country</FormLabel>
+                <FormLabel className="text-black">Country</FormLabel>
                 <FormControl>
-                  <Input placeholder="Country" {...field} />
+                  <Input 
+                    placeholder="Country" 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -311,8 +335,22 @@ export function Step3CareerEducation({ onNext, onBack }: { onNext: () => void; o
           </div>
 
           <div className="flex justify-between pt-2">
-            <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
-            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Next"}</Button>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={onBack} 
+              disabled={isLoading}
+              className="text-black hover:text-[#97011A]"
+            >
+              Back
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full px-6"
+            >
+              {isLoading ? "Saving..." : "Next"}
+            </Button>
           </div>
         </div>
       </form>

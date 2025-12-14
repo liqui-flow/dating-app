@@ -155,16 +155,16 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-semibold">Your Cultural Details</h2>
-            <p className="text-muted-foreground">Tell us about your cultural and religious background.</p>
+        <div className="flex-1 space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-[#111]">Your Cultural Details</h1>
+            <p className="text-base text-black/60">Tell us about your cultural and religious background.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField control={form.control} name="religion" render={({ field }) => (
               <FormItem>
-                <FormLabel>Religion</FormLabel>
+                <FormLabel className="text-black">Religion</FormLabel>
                 <FormControl>
                   <Select 
                     onValueChange={(value) => {
@@ -180,12 +180,12 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
                     }} 
                     value={field.value && RELIGION_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherReligion ? "Other" : undefined}
                   >
-                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                    <SelectTrigger className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white">
                       <SelectValue placeholder="Select religion" />
                     </SelectTrigger>
-                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                    <SelectContent position="popper" className="bg-white text-black border border-black/20 z-50">
                       {RELIGION_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option} className="text-foreground">
+                        <SelectItem key={option} value={option} className="text-black">
                           {option}
                         </SelectItem>
                       ))}
@@ -201,7 +201,7 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
                       setOtherReligionValue(value)
                       field.onChange(value)
                     }}
-                    className="mt-2 h-10 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                    className="mt-2 h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white"
                   />
                 )}
                 <FormMessage />
@@ -209,7 +209,7 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
             )} />
             <FormField control={form.control} name="motherTongue" render={({ field }) => (
               <FormItem>
-                <FormLabel>Mother Tongue</FormLabel>
+                <FormLabel className="text-black">Mother Tongue</FormLabel>
                 <FormControl>
                   <Select 
                     onValueChange={(value) => {
@@ -225,12 +225,12 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
                     }} 
                     value={field.value && MOTHER_TONGUE_OPTIONS.slice(0, -1).includes(field.value) ? field.value : isOtherMotherTongue ? "Other" : undefined}
                   >
-                    <SelectTrigger className="h-10 rounded-2xl bg-white/10 border-white/20 text-white focus:ring-2 focus:ring-white/40 focus:border-white/60 transition">
+                    <SelectTrigger className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white">
                       <SelectValue placeholder="Select mother tongue" />
                     </SelectTrigger>
-                    <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+                    <SelectContent position="popper" className="bg-white text-black border border-black/20 z-50">
                       {MOTHER_TONGUE_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option} className="text-foreground">
+                        <SelectItem key={option} value={option} className="text-black">
                           {option}
                         </SelectItem>
                       ))}
@@ -246,7 +246,7 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
                       setOtherMotherTongueValue(value)
                       field.onChange(value)
                     }}
-                    className="mt-2 h-10 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:border-white/50 transition"
+                    className="mt-2 h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl bg-white"
                   />
                 )}
                 <FormMessage />
@@ -254,15 +254,25 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
             )} />
             <FormField control={form.control} name="community" render={({ field }) => (
               <FormItem>
-                <FormLabel>Community / Caste</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormLabel className="text-black">Community / Caste</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="subCaste" render={({ field }) => (
               <FormItem>
-                <FormLabel>Sub-caste (optional)</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormLabel className="text-black">Sub-caste (optional)</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -271,22 +281,40 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField control={form.control} name="dob" render={({ field }) => (
               <FormItem>
-                <FormLabel>Date of Birth</FormLabel>
-                <FormControl><Input type="date" {...field} /></FormControl>
+                <FormLabel className="text-black">Date of Birth</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="date" 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="tob" render={({ field }) => (
               <FormItem>
-                <FormLabel>Time of Birth</FormLabel>
-                <FormControl><Input type="time" {...field} /></FormControl>
+                <FormLabel className="text-black">Time of Birth</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="time" 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="pob" render={({ field }) => (
               <FormItem>
-                <FormLabel>Place of Birth</FormLabel>
-                <FormControl><Input placeholder="City, Country" {...field} /></FormControl>
+                <FormLabel className="text-black">Place of Birth</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="City, Country" 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -295,23 +323,47 @@ export function Step5CulturalAstro({ onNext, onBack }: { onNext: () => void; onB
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField control={form.control} name="star" render={({ field }) => (
               <FormItem>
-                <FormLabel>Star / Raashi (optional)</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormLabel className="text-black">Star / Raashi (optional)</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="gotra" render={({ field }) => (
               <FormItem>
-                <FormLabel>Gotra (optional)</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormLabel className="text-black">Gotra (optional)</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field}
+                    className="h-12 text-base text-[#111] border-black/20 focus:border-[#97011A] focus:ring-2 focus:ring-[#97011A]/20 rounded-xl"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
           </div>
 
           <div className="flex justify-between pt-2">
-            <Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>Back</Button>
-            <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Next"}</Button>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={onBack} 
+              disabled={isLoading}
+              className="text-black hover:text-[#97011A]"
+            >
+              Back
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="bg-[#97011A] hover:bg-[#7A010E] text-white rounded-full px-6"
+            >
+              {isLoading ? "Saving..." : "Next"}
+            </Button>
           </div>
         </div>
       </form>
