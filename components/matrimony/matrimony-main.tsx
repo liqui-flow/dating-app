@@ -996,6 +996,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
           onDiscover={handleOpenDiscover}
           onOpenShortlist={handleOpenShortlist}
           showShortlist
+          mode="matrimony"
         />
       )}
 

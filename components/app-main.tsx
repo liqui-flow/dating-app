@@ -20,6 +20,7 @@ import { PremiumFeatures } from "./premium/premium-features"
 import { ProfileView } from "@/components/profile/profile-view"
 import { EditProfile } from "@/components/profile/edit-profile"
 import { ActivityScreen } from "@/components/activity/activity-screen"
+import { EventsScreen } from "@/components/events/events-screen"
 import { handleLogout } from "@/lib/logout"
 import { GlobalMessageListener } from "@/components/chat/global-message-listener"
 
@@ -29,6 +30,7 @@ type Screen =
   | "explore"
   | "messages"
   | "activity"
+  | "events"
   | "profile"
   | "chat"
   | "premium"
@@ -144,6 +146,16 @@ export function AppMain() {
             onMatchClick={(matchId) => {
               handleNavigation("chat", { chatMatchId: matchId })
             }}
+            onBack={() => setAppState(prev => ({
+              ...prev,
+              currentScreen: "discover",
+              activeTab: "discover"
+            }))}
+          />
+        )
+      case "events":
+        return (
+          <EventsScreen
             onBack={() => setAppState(prev => ({
               ...prev,
               currentScreen: "discover",
@@ -301,6 +313,9 @@ export function AppMain() {
           }
           onOpenActivity={() =>
             setAppState((prev) => ({ ...prev, currentScreen: "activity", activeTab: "activity" }))
+          }
+          onOpenEvents={() =>
+            setAppState((prev) => ({ ...prev, currentScreen: "events", activeTab: "events" }))
           }
           onOpenProfile={() =>
             setAppState((prev) => ({ ...prev, currentScreen: "profile", activeTab: "profile" }))

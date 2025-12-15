@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { Heart, Search, MessageCircle, User, Compass, Bell } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Heart, Search, MessageCircle, User, Compass, Bell, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUnreadMessageCount } from "@/hooks/useUnreadMessageCount"
 import { useUnreadActivityCount } from "@/hooks/useUnreadActivityCount"
@@ -14,9 +14,10 @@ interface TabItem {
   icon: React.ComponentType<{ className?: string }>
 }
 
-const tabs: TabItem[] = [
+const allTabs: TabItem[] = [
   { id: "messages", label: "Messages", icon: MessageCircle },
   { id: "activity", label: "Activity", icon: Bell },
+  { id: "events", label: "Events", icon: Calendar },
   { id: "profile", label: "Profile", icon: User },
 ]
 
@@ -31,10 +32,23 @@ export function BottomTabs({ activeTab = "discover", onTabChange, mode = 'dating
   const unreadCount = useUnreadMessageCount()
   const { unreadCount: activityUnreadCount } = useUnreadActivityCount(mode)
 
+  // Sync currentTab with activeTab prop
+  useEffect(() => {
+    setCurrentTab(activeTab)
+  }, [activeTab])
+
   const handleTabClick = (tabId: string) => {
     setCurrentTab(tabId)
     onTabChange?.(tabId)
   }
+
+  // Filter tabs based on mode: Events only shows in Dating mode
+  const tabs = allTabs.filter(tab => {
+    if (tab.id === "events" && mode !== 'dating') {
+      return false
+    }
+    return true
+  })
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-black/12 z-50 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
