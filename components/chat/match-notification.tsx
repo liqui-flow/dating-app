@@ -68,7 +68,7 @@ export function MatchNotification({ match, onStartChat, onKeepSwiping, onClose }
 
               {match.mutualInterests.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm text-black/60">You both like:</p>
+                  <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>You both like:</p>
                   <div className="flex flex-wrap justify-center gap-2">
                     {match.mutualInterests.slice(0, 3).map((interest) => (
                       <span key={interest} className="px-3 py-1 bg-[#97011A]/10 text-[#97011A] text-xs rounded-full font-semibold">

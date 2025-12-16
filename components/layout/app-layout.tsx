@@ -30,12 +30,12 @@ export function AppLayout({
   const isDiscoverScreen = currentScreen === "discover"
   
   return (
-    <div className={cn("min-h-screen", isDiscoverScreen && "h-screen overflow-hidden")}>
+    <div className={cn("min-h-screen bg-[#0E0F12]", isDiscoverScreen && "h-screen overflow-hidden")}>
       {/* Settings Icon - Only show on profile page */}
       {showSettingsButton && onSettingsClick && currentScreen === "profile" && (
         <div className="fixed top-4 right-4 z-40">
           <Settings 
-            className="w-6 h-6 cursor-pointer text-foreground" 
+            className="w-6 h-6 cursor-pointer text-white" 
             onClick={onSettingsClick}
           />
         </div>

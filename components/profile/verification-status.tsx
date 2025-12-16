@@ -203,7 +203,7 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
         {checkingStatus ? (
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-sm text-muted-foreground">Checking verification status...</p>
+              <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Checking verification status...</p>
             </CardContent>
           </Card>
         ) : isVerified ? (
@@ -215,7 +215,7 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Government ID and selfie have been verified.</p>
+              <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Government ID and selfie have been verified.</p>
             </CardContent>
           </Card>
         ) : (
@@ -233,7 +233,7 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
                     <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-destructive">Verification Pending</p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs mt-1" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                         Your verification is currently under review. You can update your documents if needed.
                       </p>
                     </div>
@@ -249,7 +249,7 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
                 </div>
               )}
 
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 Upload a government ID and a selfie to verify your profile.
               </p>
               <Separator />
@@ -305,7 +305,7 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
                         <p className="text-xs font-medium truncate">
                           {uploadedFile.name}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[10px]" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
                           {(uploadedFile.size / 1024).toFixed(1)} KB
                         </p>
                       </div>
@@ -345,7 +345,7 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
                         <p className="text-xs font-medium truncate">
                           {capturedFacePhoto.name}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[10px]" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
                           {(capturedFacePhoto.size / 1024).toFixed(1)} KB
                         </p>
                       </div>

@@ -33,8 +33,8 @@ export function MatrimonyShortlistView({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-muted-foreground text-sm">Loading your shortlist...</p>
+        <Loader2 className="w-8 h-8 animate-spin text-[#97011A]" />
+        <p className="text-white text-sm">Loading your shortlist...</p>
       </div>
     )
   }
@@ -42,10 +42,10 @@ export function MatrimonyShortlistView({
   if (!profiles || profiles.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-        <Star className="w-10 h-10 text-muted-foreground" />
+        <Star className="w-10 h-10 text-white/60" />
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold">No shortlisted profiles yet</h3>
-          <p className="text-sm text-muted-foreground max-w-sm">
+          <h3 className="text-lg font-semibold text-white">No shortlisted profiles yet</h3>
+          <p className="text-sm text-white/70 max-w-sm">
             Tap the star icon on profiles you like to add them to your shortlist and revisit them anytime.
           </p>
         </div>
@@ -58,7 +58,7 @@ export function MatrimonyShortlistView({
       {profiles.map((profile) => (
         <div
           key={profile.id}
-          className="bg-white/15 border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/20 transition-all duration-200 cursor-pointer"
+          className="bg-[#14161B] border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/10 transition-all duration-200 cursor-pointer"
           onClick={() => onOpenProfile?.(profile)}
           role="button"
           tabIndex={0}

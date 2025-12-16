@@ -95,9 +95,9 @@ export function ReportDialog({
               <SelectTrigger className="bg-background border-border">
                 <SelectValue placeholder="Select a reason" />
               </SelectTrigger>
-              <SelectContent position="popper" className="bg-background/80 backdrop-blur-sm border-border text-foreground z-50">
+              <SelectContent position="popper" className="bg-[#14161B]/95 backdrop-blur-xl border-white/20 z-50" style={{ color: '#FFFFFF' }}>
                 {REPORT_REASONS[matchType].map((reportReason) => (
-                  <SelectItem key={reportReason} value={reportReason} className="text-foreground">
+                  <SelectItem key={reportReason} value={reportReason} style={{ color: '#FFFFFF' }}>
                     {reportReason}
                   </SelectItem>
                 ))}
@@ -115,7 +115,7 @@ export function ReportDialog({
               rows={3}
               maxLength={500}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
               {description.length}/500 characters
             </p>
           </div>

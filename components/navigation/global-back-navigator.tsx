@@ -124,13 +124,14 @@ export function GlobalBackNavigator() {
   return (
     <div className="fixed top-3 left-3 z-50">
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
         aria-label="Back"
         onClick={goBackSafe}
+        className="bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/20 rounded-full"
         style={{ borderRadius: 9999 }}
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
       </Button>
     </div>
   )

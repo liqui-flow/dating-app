@@ -229,21 +229,21 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[500px] overflow-y-auto">
+      <SheetContent side="right" className="w-full sm:w-[500px] overflow-y-auto flex flex-col">
         <SheetHeader className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pr-12">
             <SheetTitle>Filters</SheetTitle>
-            <Button variant="ghost" size="sm" onClick={handleReset}>
+            <Button variant="ghost" size="sm" onClick={handleReset} className="bg-white/10 hover:bg-white/20 border border-white/20" style={{ color: '#FFFFFF' }}>
               Reset
             </Button>
           </div>
           <SheetDescription>Customize your discovery preferences to find better matches</SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-6 py-6">
+        <div className="space-y-6 px-6 pb-6">
           {/* Age Range */}
-          <div className="space-y-3">
-            <Label>
+          <div className="space-y-4">
+            <Label style={{ color: '#FFFFFF' }}>
               Age range: {filters.ageRange[0]} - {filters.ageRange[1]} years
             </Label>
             <Slider
@@ -256,11 +256,11 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
             />
           </div>
 
-          <Separator />
+          <Separator className="bg-white/10" />
 
           {/* Distance */}
-          <div className="space-y-3">
-            <Label>Maximum distance: {filters.distance[0]} km</Label>
+          <div className="space-y-4">
+            <Label style={{ color: '#FFFFFF' }}>Maximum distance: {filters.distance[0]} km</Label>
             <Slider
               value={filters.distance}
               onValueChange={(value) => setFilters((prev) => ({ ...prev, distance: value as [number] }))}
@@ -269,20 +269,20 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
               step={1}
               className="w-full"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
               Distance filtering requires location access. Enable location in the discovery screen to apply this setting.
             </p>
           </div>
 
-          <Separator />
+          <Separator className="bg-white/10" />
 
           {/* Show Me */}
-          <div className="space-y-3">
-            <Label className="flex items-center space-x-2">
-              <Users className="w-4 h-4" />
+          <div className="space-y-4">
+            <Label className="flex items-center space-x-2" style={{ color: '#FFFFFF' }}>
+              <Users className="w-4 h-4" style={{ color: '#FFFFFF' }} />
               <span>Show Me</span>
             </Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               {[
                 { value: "women", label: "Women" },
                 { value: "men", label: "Men" },
@@ -293,6 +293,10 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
                   variant={filters.showMe === option.value ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilters((prev) => ({ ...prev, showMe: option.value as any }))}
+                  className={filters.showMe === option.value 
+                    ? "bg-[#97011A] hover:bg-[#7A0115] border-0" 
+                    : "bg-white/10 border-white/20 hover:bg-white/20"}
+                  style={{ color: '#FFFFFF' }}
                 >
                   {option.label}
                 </Button>
@@ -300,25 +304,27 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
             </div>
           </div>
 
-          <Separator />
+          <Separator className="bg-white/10" />
 
           {/* Interests */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Interests</h3>
-              <span className="text-sm text-muted-foreground">{filters.interests.length} selected</span>
+              <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>Interests</h3>
+              <span className="text-sm" style={{ color: '#A1A1AA' }}>{filters.interests.length} selected</span>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {Object.entries(interestCategories).map(([category, items]) => (
-                <div key={category} className="space-y-2">
-                  <Label className="text-sm font-medium">{category}</Label>
-                  <div className="flex flex-wrap gap-2">
+                <div key={category} className="space-y-4">
+                  <Label className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{category}</Label>
+                  <div className="flex flex-wrap gap-2.5">
                     {items.map((interest) => (
                       <Badge
                         key={interest}
                         variant={filters.interests.includes(interest) ? "default" : "outline"}
-                        className="cursor-pointer"
+                        className={filters.interests.includes(interest) 
+                          ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
+                          : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
                         onClick={() => handleInterestToggle(interest)}
                       >
                         {interest}
@@ -331,26 +337,28 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
             </div>
           </div>
 
-          <Separator />
+          <Separator className="bg-white/10" />
 
           {/* Relationship Goals */}
-          <div className="space-y-3">
-            <Label className="text-black text-sm tracking-wide font-medium">Relationship Goal</Label>
+          <div className="space-y-4">
+            <Label className="text-sm tracking-wide font-medium" style={{ color: '#FFFFFF' }}>Relationship Goal</Label>
             <Select 
               value={filters.relationshipGoal}
               onValueChange={(value) => setFilters((prev) => ({ ...prev, relationshipGoal: value }))}
             >
-              <SelectTrigger className="h-11">
+              <SelectTrigger className="h-11 bg-white/10 border-white/20 [&_svg]:text-white/60 [&[data-placeholder]]:!text-white/60 [&_*[data-slot='select-value']]:!text-white" style={{ color: '#FFFFFF' }}>
                 <SelectValue placeholder="Any relationship goal" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">
+              <SelectContent className="bg-[#14161B] border-white/20" style={{ color: '#FFFFFF' }}>
+                <SelectItem value="any" className="hover:bg-white/10 focus:bg-white/10" style={{ color: '#FFFFFF' }}>
                   Any relationship goal
                 </SelectItem>
                 {relationshipGoals.map((goal) => (
                   <SelectItem
                     key={goal}
                     value={goal}
+                    className="hover:bg-white/10 focus:bg-white/10"
+                    style={{ color: '#FFFFFF' }}
                   >
                     {goal}
                   </SelectItem>
@@ -359,16 +367,16 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
             </Select>
           </div>
 
-          <Separator />
+          <Separator className="bg-white/10" />
 
           {/* Basic Filters */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Basic Filters</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="only-photos">Only show profiles with photos</Label>
-                  <p className="text-xs text-muted-foreground">Hide profiles without photos</p>
+            <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>Basic Filters</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between py-1">
+                <div className="space-y-1">
+                  <Label htmlFor="only-photos" style={{ color: '#FFFFFF' }}>Only show profiles with photos</Label>
+                  <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Hide profiles without photos</p>
                 </div>
                 <Switch
                   id="only-photos"
@@ -377,10 +385,10 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="recently-active">Recently active</Label>
-                  <p className="text-xs text-muted-foreground">Active in the last 7 days</p>
+              <div className="flex items-center justify-between py-1">
+                <div className="space-y-1">
+                  <Label htmlFor="recently-active" style={{ color: '#FFFFFF' }}>Recently active</Label>
+                  <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Active in the last 7 days</p>
                 </div>
                 <Switch
                   id="recently-active"
@@ -389,8 +397,8 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="verified-only">Verified profiles only</Label>
+              <div className="flex items-center justify-between py-1">
+                <Label htmlFor="verified-only" style={{ color: '#FFFFFF' }}>Verified profiles only</Label>
                 <Switch
                   id="verified-only"
                   checked={filters.verifiedOnly}
@@ -398,8 +406,8 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="premium-only">Premium members only</Label>
+              <div className="flex items-center justify-between py-1">
+                <Label htmlFor="premium-only" style={{ color: '#FFFFFF' }}>Premium members only</Label>
                 <Switch
                   id="premium-only"
                   checked={filters.premiumOnly}
@@ -409,24 +417,26 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
             </div>
           </div>
 
-          <Separator />
+          <Separator className="bg-white/10" />
 
           {/* Advanced Filters */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Advanced Filters</h3>
-              <Badge variant="secondary" className="text-xs">Premium</Badge>
+              <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>Advanced Filters</h3>
+              <Badge variant="secondary" className="text-xs bg-white/20 text-white border-white/30">Premium</Badge>
             </div>
 
             {/* Education */}
-            <div className="space-y-3">
-              <Label className="font-medium">Education</Label>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-4">
+              <Label className="font-medium" style={{ color: '#FFFFFF' }}>Education</Label>
+              <div className="flex flex-wrap gap-2.5">
                 {educationOptions.map((option) => (
                   <Badge
                     key={option}
                     variant={filters.education.includes(option) ? "default" : "outline"}
-                    className="cursor-pointer"
+                    className={filters.education.includes(option) 
+                      ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
+                      : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
                     onClick={() => handleArrayToggle("education", option)}
                   >
                     {option}
@@ -436,17 +446,19 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
               </div>
             </div>
 
-            <Separator />
+            <Separator className="bg-white/10" />
 
             {/* Religion */}
-            <div className="space-y-3">
-              <Label className="font-medium">Religion</Label>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-4">
+              <Label className="font-medium" style={{ color: '#FFFFFF' }}>Religion</Label>
+              <div className="flex flex-wrap gap-2.5">
                 {religionOptions.map((option) => (
                   <Badge
                     key={option}
                     variant={filters.religion.includes(option) ? "default" : "outline"}
-                    className="cursor-pointer"
+                    className={filters.religion.includes(option) 
+                      ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
+                      : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
                     onClick={() => handleArrayToggle("religion", option)}
                   >
                     {option}
@@ -456,17 +468,19 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
               </div>
             </div>
 
-            <Separator />
+            <Separator className="bg-white/10" />
 
             {/* Lifestyle */}
-            <div className="space-y-3">
-              <Label className="font-medium">Lifestyle</Label>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-4">
+              <Label className="font-medium" style={{ color: '#FFFFFF' }}>Lifestyle</Label>
+              <div className="flex flex-wrap gap-2.5">
                 {lifestyleOptions.map((option) => (
                   <Badge
                     key={option}
                     variant={filters.lifestyle.includes(option) ? "default" : "outline"}
-                    className="cursor-pointer"
+                    className={filters.lifestyle.includes(option) 
+                      ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
+                      : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
                     onClick={() => handleArrayToggle("lifestyle", option)}
                   >
                     {option}
@@ -480,8 +494,8 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
         </div>
 
         {/* Save Button */}
-        <div className="sticky bottom-0 bg-white border-t border-black/12 p-4">
-          <Button onClick={handleSave} className="w-full" size="lg" disabled={saving || loading}>
+        <div className="sticky bottom-0 bg-[#14161B] border-t border-white/20 px-6 py-5">
+          <Button onClick={handleSave} className="w-full bg-[#97011A] hover:bg-[#7A0115] text-white" size="lg" disabled={saving || loading}>
             {saving ? "Saving..." : loading ? "Loading..." : "Save Preferences"}
           </Button>
         </div>

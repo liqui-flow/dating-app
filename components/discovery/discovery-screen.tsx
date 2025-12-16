@@ -550,7 +550,7 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 	const currentProfileImage = currentProfile?.photos?.[0] || null
 
 	return (
-		<div className="fixed inset-0 h-screen w-screen overflow-hidden flex flex-col relative">
+		<div className="fixed inset-0 h-screen w-screen overflow-hidden flex flex-col relative bg-[#0E0F12]">
 			{/* Dynamic Background */}
 			<DynamicBackground imageUrl={currentProfileImage} />
 
@@ -568,24 +568,27 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 			)}
 			
 			{/* Floating header elements */}
-			<div className="fixed top-3 left-4 z-40 text-lg sm:text-xl font-bold text-black bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">For you</div>
+			<div className="fixed top-3 left-4 z-40 text-lg sm:text-xl font-bold bg-white/10 backdrop-blur-xl border border-white/20 px-3 py-1.5 rounded-lg shadow-lg">
+				<span style={{ color: '#FFFFFF' }}>For you</span>
+			</div>
 			<div className="fixed top-3 right-3 z-40">
 				<Button
 					variant="secondary"
 					size="sm"
-					className="rounded-full px-3 py-2 sm:px-4 sm:py-3 shadow-md bg-white/90 backdrop-blur-sm text-black border-2 border-black/20"
+					className="rounded-full px-3 py-2 sm:px-4 sm:py-3 shadow-md bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/20"
 					onClick={() => setShowFilters(true)}
+					style={{ color: '#FFFFFF' }}
 				>
-					<Filter className="w-4 h-4" />
+					<Filter className="w-4 h-4" style={{ color: '#FFFFFF' }} />
 				</Button>
 			</div>
 
 			<div className="flex-1 overflow-hidden flex items-center justify-center p-2 sm:p-4">
 				{loading ? (
 					<div className="flex items-center justify-center h-full w-full">
-						<div className="text-center space-y-4 bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg">
+						<div className="text-center space-y-4 bg-[#14161B] backdrop-blur-sm p-6 rounded-xl shadow-lg">
 							<div className="w-12 h-12 mx-auto border-4 border-[#97011A] border-t-transparent rounded-full animate-spin" />
-							<p className="text-sm text-black/75 font-medium">Loading profiles...</p>
+							<p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>Loading profiles...</p>
 						</div>
 					</div>
 				) : viewMode === "cards" ? (
@@ -609,32 +612,32 @@ export function DiscoveryScreen({ openFiltersOnMount = false, onBackToProfile, o
 										))}
 								</div>
 							) : (
-								<Card className="w-full max-w-xs sm:max-w-sm h-80 sm:h-96 flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
-									<CardContent className="text-center space-y-4 p-4 sm:p-6">
-										<div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-black/10 rounded-full flex items-center justify-center">
-											<Heart className="w-6 h-6 sm:w-8 sm:h-8 text-black/70" />
+								<Card className="w-full max-w-xs sm:max-w-sm h-80 sm:h-96 flex items-center justify-center bg-[#14161B] shadow-[0_8px_32px_rgba(0,0,0,0.12)]" style={{ color: '#FFFFFF' }}>
+									<CardContent className="text-center space-y-4 p-4 sm:p-6" style={{ color: '#FFFFFF' }}>
+										<div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center">
+											<Heart className="w-6 h-6 sm:w-8 sm:h-8 text-[#97011A]" />
 										</div>
 										<div className="space-y-2">
-											<h3 className="text-base sm:text-lg font-bold text-black">
+											<h3 className="text-base sm:text-lg font-bold" style={{ color: '#FFFFFF' }}>
 												{error ? "Error loading profiles" : "No more profiles"}
 											</h3>
-											<p className="text-xs sm:text-sm text-black/70">
+											<p className="text-xs sm:text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
 												{error || (profiles.length === 0 
 													? "No profiles available. Check back later!" 
 													: "Check back later for new matches or adjust your filters")}
 											</p>
 											{error && (
-												<p className="text-xs text-black/60 mt-2">
+												<p className="text-xs mt-2" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
 													Check browser console (F12) for more details
 												</p>
 											)}
 										</div>
 										<div className="flex gap-2 justify-center">
 											{profiles.length > 0 && (
-												<Button onClick={() => setCurrentCardIndex(0)} className="text-sm">Start Over</Button>
+												<Button onClick={() => setCurrentCardIndex(0)} className="text-sm bg-[#97011A] hover:bg-[#7A0115]" style={{ color: '#FFFFFF' }}>Start Over</Button>
 											)}
 											{error && (
-												<Button onClick={fetchProfiles} className="text-sm">Retry</Button>
+												<Button onClick={fetchProfiles} className="text-sm bg-[#97011A] hover:bg-[#7A0115]" style={{ color: '#FFFFFF' }}>Retry</Button>
 											)}
 										</div>
 									</CardContent>

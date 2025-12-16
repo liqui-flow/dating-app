@@ -386,12 +386,12 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full relative">
+      <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
         <StaticBackground />
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
-            <div className="w-12 h-12 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-muted-foreground">Loading matches...</p>
+            <div className="w-12 h-12 mx-auto border-4 border-[#97011A] border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm" style={{ color: '#FFFFFF' }}>Loading matches...</p>
           </div>
         </div>
       </div>
@@ -399,25 +399,25 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
   }
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
       {/* Static Background */}
       <StaticBackground />
       
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
+      <div className="flex-shrink-0 p-4 border-b border-white/20 bg-[#14161B]/50 backdrop-blur-xl shadow-lg">
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             {onBack && (
-              <Button 
+                <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-2 hover:bg-muted/50 rounded-full" 
+                className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20" 
                 onClick={onBack}
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
               </Button>
             )}
-            <h1 className="text-2xl font-bold">Messages</h1>
+            <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>Messages</h1>
             <div className="flex-1" />
             <div className="flex items-center gap-2">
               {isSelectMode && (
@@ -454,7 +454,7 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
                     onClick={() => setIsHeaderMenuOpen(!isHeaderMenuOpen)}
                     className="text-white"
                   >
-                    <MoreVertical className="w-5 h-5" />
+                    <MoreVertical className="w-5 h-5" style={{ color: '#FFFFFF' }} />
                   </Button>
 
                   {/* Header Menu */}
@@ -481,12 +481,13 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#A1A1AA' }} />
             <Input
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-[#14161B] border-white/20 backdrop-blur-sm"
+              style={{ color: '#FFFFFF' }}
             />
           </div>
         </div>
@@ -496,11 +497,11 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
       <div className="flex-1 overflow-y-auto p-4">
         {filteredChats.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Search className="w-8 h-8 text-muted-foreground" />
+            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4">
+              <Search className="w-8 h-8" style={{ color: '#A1A1AA' }} />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No conversations found</h3>
-            <p className="text-muted-foreground text-sm">Start matching with people to begin conversations</p>
+            <h3 className="text-lg font-semibold mb-2" style={{ color: '#FFFFFF' }}>No conversations found</h3>
+            <p className="text-sm" style={{ color: '#A1A1AA' }}>Start matching with people to begin conversations</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -511,8 +512,8 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
                 <div
                   key={chat.matchId}
                   className={cn(
-                    "bg-white/15 border backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-200 relative",
-                    isSelected ? "border-primary bg-primary/20" : "border-white/20 hover:bg-white/20",
+                    "bg-[#14161B] border backdrop-blur-xl rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-200 relative",
+                    isSelected ? "border-[#97011A] bg-[#97011A]/20" : "border-white/20 hover:bg-white/10",
                     isSelectMode ? "cursor-pointer" : "cursor-pointer"
                   )}
                   onClick={(e) => {
@@ -541,16 +542,16 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
                           )}
                         >
                           {isSelected ? (
-                            <CheckSquare className="w-6 h-6 text-white" />
+                            <CheckSquare className="w-6 h-6" style={{ color: '#FFFFFF' }} />
                           ) : (
-                            <Square className="w-6 h-6 text-white/60" />
+                            <Square className="w-6 h-6" style={{ color: '#A1A1AA' }} />
                           )}
                         </button>
                       ) : (
                         <>
                           <Avatar className="w-12 h-12 border-2 border-white/30">
                             <AvatarImage src={chat.avatar || "/placeholder.svg"} alt={chat.name} />
-                            <AvatarFallback className="bg-white/20 text-white">{chat.name[0]}</AvatarFallback>
+                            <AvatarFallback className="bg-white/20" style={{ color: '#FFFFFF' }}>{chat.name[0]}</AvatarFallback>
                           </Avatar>
                           {chat.isOnline && (
                             <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-white/30 rounded-full" />
@@ -563,7 +564,7 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold text-sm text-white truncate">{chat.name}</h3>
+                          <h3 className="font-semibold text-sm truncate" style={{ color: '#FFFFFF' }}>{chat.name}</h3>
                           {chat.isPremium && (
                             <Badge className="bg-[#97011A] text-white text-xs px-1.5 py-0.5 border border-white/20">
                               Premium
@@ -574,9 +575,9 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
                         <div className="flex items-center space-x-2 flex-shrink-0">
                           {!isSelectMode && (
                             <>
-                              <span className="text-xs text-white/60">{formatRelativeTime(chat.timestamp)}</span>
+                              <span className="text-xs" style={{ color: '#A1A1AA' }}>{formatRelativeTime(chat.timestamp)}</span>
                               {chat.unreadCount > 0 && (
-                                <Badge className="w-5 h-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white border border-white/30">
+                                <Badge className="w-5 h-5 rounded-full p-0 flex items-center justify-center text-xs bg-[#97011A] text-white border border-[#97011A]/50">
                                   {chat.unreadCount}
                                 </Badge>
                               )}
@@ -588,8 +589,9 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
                         <p
                           className={cn(
                             "text-sm truncate",
-                            chat.unreadCount > 0 ? "font-medium text-white/90" : "text-white/70",
+                            chat.unreadCount > 0 ? "font-medium" : "",
                           )}
+                          style={{ color: chat.unreadCount > 0 ? '#FFFFFF' : '#A1A1AA' }}
                         >
                           {chat.lastMessage}
                         </p>

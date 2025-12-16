@@ -27,7 +27,7 @@ const Slider = React.forwardRef<
       step={1}
       {...props}
     >
-      <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-[#E5E7EB]">
+      <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-white/20">
         {/* Highlighted selected range */}
         <SliderPrimitive.Range className="absolute h-full bg-[#97011A] transition-[left,width] duration-300 ease-out" />
       </SliderPrimitive.Track>

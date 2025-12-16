@@ -208,7 +208,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
       <div className="min-h-screen relative">
         <StaticBackground />
         <div className="flex items-center justify-center h-screen">
-          <p className="text-muted-foreground">Loading profile...</p>
+          <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Loading profile...</p>
         </div>
       </div>
     )
@@ -293,20 +293,20 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
   }
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative bg-[#0E0F12]">
       <StaticBackground />
       {/* Header */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-black/60 via-black/40 to-transparent border-b border-white/10">
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-[#14161B]/80 via-[#14161B]/60 to-transparent border-b border-white/10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-4">
             {!isOwnProfile && onBack && (
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-2 hover:bg-white/20 rounded-full" 
+                className="p-2 hover:bg-white/20 rounded-full bg-white/10 backdrop-blur-xl border border-white/20" 
                 onClick={onBack}
               >
-                <ArrowLeft className="w-5 h-5 text-white" />
+                <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
               </Button>
             )}
             <h1 className="text-xl font-bold text-white">{isOwnProfile ? "My Profile" : name}</h1>
@@ -418,7 +418,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
         )}
 
         {/* Basic Info */}
-        <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+        <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
           <CardContent className="p-6 space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
@@ -508,7 +508,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
           <>
             {/* Interests */}
             {datingProfile.interests && (datingProfile.interests as string[]).length > 0 && (
-              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
                 <CardContent className="p-6 space-y-4">
                   <h3 className="font-semibold text-white text-lg mb-3">Interests</h3>
                   <div className="flex flex-wrap gap-2">
@@ -527,7 +527,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Prompts */}
             {datingProfile.prompts && (datingProfile.prompts as Array<{ prompt: string; answer: string }>).length > 0 && (
-              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
                 <CardContent className="p-6 space-y-5">
                   <h3 className="font-semibold text-white text-lg mb-4">Prompts</h3>
                   <div className="space-y-5">
@@ -544,7 +544,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* This or That */}
             {datingProfile.this_or_that_choices && (datingProfile.this_or_that_choices as Array<{ option_a: string; option_b: string; selected: 0 | 1 }>).length > 0 && (
-              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
                 <CardContent className="p-6 space-y-4">
                   <h3 className="font-semibold text-white text-lg mb-4">This or That</h3>
                   <div className="space-y-3">
@@ -580,7 +580,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Video */}
             {datingProfile.video_url && (
-              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
                 <CardContent className="p-6 space-y-4">
                   <h3 className="font-semibold text-white text-lg flex items-center space-x-2 mb-4">
                     <Video className="w-5 h-5 text-red-400" />
@@ -600,7 +600,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
           <>
             {/* Career & Education */}
             {matrimonyProfile.career && (
-              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
                 <CardContent className="p-6 space-y-4">
                   <h3 className="font-semibold text-white text-lg flex items-center space-x-2 mb-4">
                     <Briefcase className="w-5 h-5 text-blue-400" />
@@ -644,7 +644,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Personal Details */}
             {matrimonyProfile.personal && (
-              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
                 <CardContent className="p-6 space-y-4">
                   <h3 className="font-semibold text-white text-lg mb-4">Personal Details</h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -679,7 +679,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Family Information */}
             {matrimonyProfile.family && matrimonyProfile.family.show_on_profile && (
-              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
                 <CardContent className="p-6 space-y-4">
                   <h3 className="font-semibold text-white text-lg flex items-center space-x-2 mb-4">
                     <Home className="w-5 h-5 text-orange-400" />
@@ -728,7 +728,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Cultural Background */}
             {matrimonyProfile.cultural && (
-              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
                 <CardContent className="p-6 space-y-4">
                   <h3 className="font-semibold text-white text-lg flex items-center space-x-2 mb-4">
                     <Users className="w-5 h-5 text-green-400" />

@@ -145,7 +145,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
       case 'like':
         return <Heart className="w-4 h-4 text-red-500 fill-current" />
       case 'view':
-        return <Eye className="w-4 h-4 text-black" />
+        return <Eye className="w-4 h-4 text-white/60" />
       default:
         return null
     }
@@ -172,25 +172,25 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
   ]
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
       {/* Static Background */}
       <StaticBackground />
       
       {/* Header with Back Button */}
-      <div className="flex-shrink-0 p-4 border-b border-border glass-apple">
+      <div className="flex-shrink-0 p-4 border-b border-white/20 bg-[#14161B]/50 backdrop-blur-xl shadow-lg">
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             {onBack && (
-              <Button 
+                <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-2 hover:bg-muted/50 rounded-full" 
+                className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20" 
                 onClick={onBack}
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
               </Button>
             )}
-            <h1 className="text-2xl font-bold">Activity</h1>
+            <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>Activity</h1>
           </div>
 
           {/* Tabs */}
@@ -202,13 +202,14 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
                   activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    ? "bg-[#97011A]"
+                    : "bg-white/10 hover:bg-white/20"
                 )}
+                style={{ color: activeTab === tab.id ? '#FFFFFF' : '#A1A1AA' }}
               >
                 {tab.label}
                 {tab.count > 0 && (
-                  <Badge className="ml-2 bg-background/50 text-xs">
+                  <Badge className="ml-2 bg-white/20 text-white text-xs">
                     {tab.count}
                   </Badge>
                 )}
@@ -222,16 +223,16 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
       <div className="flex-1 overflow-y-auto p-4">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <Loader2 className="w-8 h-8 text-muted-foreground animate-spin mb-4" />
-            <p className="text-muted-foreground text-sm">Loading activity...</p>
+            <Loader2 className="w-8 h-8 text-white animate-spin mb-4" />
+            <p className="text-sm" style={{ color: '#FFFFFF' }}>Loading activity...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Heart className="w-8 h-8 text-muted-foreground" />
+            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4">
+              <Heart className="w-8 h-8" style={{ color: '#A1A1AA' }} />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Error loading activity</h3>
-            <p className="text-muted-foreground text-sm mb-4">{error}</p>
+            <h3 className="text-lg font-semibold mb-2" style={{ color: '#FFFFFF' }}>Error loading activity</h3>
+            <p className="text-sm mb-4" style={{ color: '#A1A1AA' }}>{error}</p>
             <Button
               onClick={async () => {
                 setError(null)
@@ -257,11 +258,11 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
           </div>
         ) : filteredActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Heart className="w-8 h-8 text-muted-foreground" />
+            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4">
+              <Heart className="w-8 h-8" style={{ color: '#A1A1AA' }} />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No activity yet</h3>
-            <p className="text-muted-foreground text-sm">
+            <h3 className="text-lg font-semibold mb-2" style={{ color: '#FFFFFF' }}>No activity yet</h3>
+            <p className="text-sm" style={{ color: '#A1A1AA' }}>
               Start swiping to see matches, likes, and views here!
             </p>
           </div>
@@ -270,7 +271,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
             {filteredActivities.map((activity) => (
               <div
                 key={activity.id}
-                className="bg-white/15 border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/20 transition-all duration-200 cursor-pointer"
+                className="bg-[#14161B] border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/10 transition-all duration-200 cursor-pointer"
                 onClick={() => {
                   // Always open profile when clicking on the card
                   onProfileClick?.(activity.userId)
@@ -281,7 +282,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                   <div className="relative flex-shrink-0">
                     <Avatar className="w-12 h-12 border-2 border-white/30">
                       <AvatarImage src={activity.avatar || "/placeholder.svg"} alt={activity.name} />
-                      <AvatarFallback className="bg-white/20 text-white">{activity.name[0]}</AvatarFallback>
+                      <AvatarFallback className="bg-white/20" style={{ color: '#FFFFFF' }}>{activity.name[0]}</AvatarFallback>
                     </Avatar>
                   </div>
 
@@ -289,9 +290,9 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       {getActivityIcon(activity.type)}
-                      <h3 className="font-semibold text-sm text-white truncate">
+                      <h3 className="font-semibold text-sm truncate" style={{ color: '#FFFFFF' }}>
                         {activity.name}
-                        {activity.age && <span className="text-white/70 ml-1">, {activity.age}</span>}
+                        {activity.age && <span className="ml-1" style={{ color: '#A1A1AA' }}>, {activity.age}</span>}
                       </h3>
                       {activity.isNew && (
                         <Badge className="bg-[#97011A] text-white text-xs px-1.5 py-0.5 border border-white/20">
@@ -299,10 +300,10 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-white/70">
+                    <p className="text-sm" style={{ color: '#A1A1AA' }}>
                       {getActivityText(activity)}
                     </p>
-                    <p className="text-xs text-white/50 mt-1">
+                    <p className="text-xs mt-1" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
                       {activity.timestamp}
                     </p>
                   </div>
@@ -355,7 +356,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                               "w-4 h-4 transition-all duration-200",
                               likedBack.has(activity.id)
                                 ? "text-red-500 fill-red-500"
-                                : "text-black fill-black stroke-white stroke-[2.5]"
+                                : "text-white fill-white"
                             )}
                           />
                         )}
