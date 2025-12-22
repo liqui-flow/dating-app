@@ -443,6 +443,89 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
+
+  /* Force-style Slider Tracks - Always Visible */
+  /* Radix UI Slider Track Styling */
+  [data-radix-slider-track] {
+    background-color: #e5e7eb !important;
+    height: 6px !important;
+    border-radius: 9999px !important;
+  }
+
+  [data-radix-slider-range] {
+    background-color: #97011A !important;
+    height: 100% !important;
+  }
+
+  [data-radix-slider-thumb] {
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    border: 2px solid #97011A !important;
+    background-color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  /* Native Range Input Styling - WebKit (Chrome, Safari, Edge) */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: transparent;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #FFFFFF;
+    border: 2px solid #97011A;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    margin-top: -7px;
+  }
+
+  input[type="range"]:focus::-webkit-slider-runnable-track {
+    background-color: #e5e7eb;
+  }
+
+  /* Native Range Input Styling - Firefox */
+  input[type="range"]::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    cursor: pointer;
+    border: none;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #FFFFFF;
+    border: 2px solid #97011A;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+  }
+
+  input[type="range"]::-moz-range-progress {
+    background-color: #97011A;
+    height: 6px;
+    border-radius: 9999px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

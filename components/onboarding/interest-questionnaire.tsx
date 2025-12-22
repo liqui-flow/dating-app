@@ -21,7 +21,7 @@ const interestCategories = {
   Entertainment: ["Netflix nights", "YouTube rabbit holes", "Podcasts", "Reels & TikTok", "Live shows"],
   Lifestyle: ["Thrifting", "DIY Projects", "Volunteering", "Wellness", "Homebody"],
   "Weekend mood": ["Chill & recharge", "Spontaneous plans", "Friends & fun", "Solo reset", "Mix of everything"],
-  "Dating vibes": ["Quality time", "Deep conversations", "Casual coffee dates", "Slow burn", "Spontaneous plans"],
+  "Dating vibes": ["Quality time", "Deep conversations", "Casual coffee dates", "Slow burn", "Romantic dates"],
   "Dating energy": ["Golden retriever energy", "Calm & grounded", "Introvert at first", "Extrovert energy", "Depends on the vibe"],
   "Travel style": ["Road trips", "Beach person", "Mountains > beaches", "City explorer", "Staycations"],
 }
