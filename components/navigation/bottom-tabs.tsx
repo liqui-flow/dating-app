@@ -55,7 +55,16 @@ export function BottomTabs({ activeTab = "discover", onTabChange, mode = 'dating
     <>
       <style dangerouslySetInnerHTML={{__html: `
         nav[data-bottom-nav] svg,
-        nav[data-bottom-nav] svg path {
+        nav[data-bottom-nav] svg path,
+        nav[data-bottom-nav] svg circle,
+        nav[data-bottom-nav] svg line,
+        nav[data-bottom-nav] svg polyline,
+        nav[data-bottom-nav] svg polygon {
+          stroke: #FFFFFF !important;
+          fill: none !important;
+          color: #FFFFFF !important;
+        }
+        nav[data-bottom-nav] button svg {
           stroke: #FFFFFF !important;
           fill: none !important;
           color: #FFFFFF !important;
@@ -81,8 +90,13 @@ export function BottomTabs({ activeTab = "discover", onTabChange, mode = 'dating
                 <Icon 
                   className={cn("w-5 h-5 sm:w-6 sm:h-6 mb-1 transition-all", isActive && "stroke-[2.5]")} 
                   stroke="#FFFFFF"
+                  strokeWidth={isActive ? 2.5 : 2}
                   fill="none"
-                  style={{ color: '#FFFFFF' }}
+                  style={{ 
+                    color: '#FFFFFF',
+                    stroke: '#FFFFFF',
+                    fill: 'none'
+                  }}
                 />
                 {/* Unread message badge for messages icon */}
                 {tab.id === "messages" && unreadCount > 0 && (

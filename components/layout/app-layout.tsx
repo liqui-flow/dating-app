@@ -35,8 +35,10 @@ export function AppLayout({
       {showSettingsButton && onSettingsClick && currentScreen === "profile" && (
         <div className="fixed top-4 right-4 z-40">
           <Settings 
-            className="w-6 h-6 cursor-pointer text-white" 
+            className="w-6 h-6 cursor-pointer" 
             onClick={onSettingsClick}
+            style={{ color: '#FFFFFF', stroke: '#FFFFFF', fill: 'none' }}
+            strokeWidth={2}
           />
         </div>
       )}

@@ -249,22 +249,22 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
   }
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
       <StaticBackground />
       {/* Header */}
-      <div className="flex-shrink-0 p-6 border-b border-border glass-apple">
+      <div className="flex-shrink-0 p-4 border-b border-white/20 bg-[#14161B]/50 backdrop-blur-xl shadow-lg">
         <div className="flex items-center space-x-4">
           {onBack && (
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-2 hover:bg-muted/50 rounded-full" 
+              className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20" 
               onClick={onBack}
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
             </Button>
           )}
-          <h1 className="text-xl font-bold">Settings</h1>
+          <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>Settings</h1>
         </div>
       </div>
 
@@ -273,15 +273,15 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
         <div className="p-6 space-y-6">
           {settingsSections.map((section) => (
             <div key={section.title} className="space-y-3">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{section.title}</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#FFFFFF' }}>{section.title}</h2>
 
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden bg-[#14161B]/50 border border-white/20">
                 <CardContent className="p-0">
                   {section.items.map((item, index) => (
                     <div key={item.id}>
                       <div
                         className={`flex items-center justify-between p-4 ${
-                          item.type !== "toggle" ? "cursor-pointer hover:bg-muted/50" : ""
+                          item.type !== "toggle" ? "cursor-pointer hover:bg-white/10" : ""
                         } transition-colors`}
                         onClick={() => {
                           if (item.type === "navigation") handleNavigation(item.id)
@@ -291,17 +291,25 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
                         <div className="flex items-center space-x-3">
                           <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              item.destructive ? "bg-destructive/10" : "bg-muted"
+                              item.destructive ? "bg-[#97011A]/10" : "bg-white/10"
                             }`}
                           >
                             <item.icon
-                              className={`w-5 h-5 ${item.destructive ? "text-destructive" : "text-muted-foreground"}`}
+                              className="w-5 h-5"
+                              style={{ 
+                                color: item.destructive ? '#97011A' : '#FFFFFF' 
+                              }}
                             />
                           </div>
 
                           <div className="space-y-1">
                             <div className="flex items-center space-x-2">
-                              <span className={`font-medium ${item.destructive ? "text-destructive" : ""}`}>
+                              <span 
+                                className="font-medium"
+                                style={{ 
+                                  color: item.destructive ? '#97011A' : '#FFFFFF' 
+                                }}
+                              >
                                 {item.label}
                               </span>
                               {item.badge && (
@@ -310,7 +318,11 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
                                 </Badge>
                               )}
                             </div>
-                            {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
+                            {item.description && (
+                              <p className="text-sm" style={{ color: '#A1A1AA' }}>
+                                {item.description}
+                              </p>
+                            )}
                           </div>
                         </div>
 
@@ -321,11 +333,18 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
                               onCheckedChange={() => handleToggle(item.id)}
                             />
                           )}
-                          {item.type === "navigation" && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
+                          {item.type === "navigation" && (
+                            <ChevronRight 
+                              className="w-5 h-5" 
+                              style={{ color: '#FFFFFF' }} 
+                            />
+                          )}
                         </div>
                       </div>
 
-                      {index < section.items.length - 1 && <Separator className="ml-16 mr-4" />}
+                      {index < section.items.length - 1 && (
+                        <Separator className="ml-16 mr-4 bg-white/20" />
+                      )}
                     </div>
                   ))}
                 </CardContent>

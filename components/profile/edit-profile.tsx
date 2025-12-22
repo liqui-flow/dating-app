@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Camera, X, Save, ArrowLeft, Plus, Trash2, Video } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { supabase } from "@/lib/supabaseClient"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { useToast } from "@/hooks/use-toast"
@@ -450,10 +451,10 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative">
+      <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
         <StaticBackground />
         <div className="flex items-center justify-center h-screen">
-          <p className="text-muted-foreground">Loading...</p>
+          <p style={{ color: '#A1A1AA' }}>Loading...</p>
         </div>
       </div>
     )
@@ -462,34 +463,81 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
   const currentPhotos = userPath === 'dating' ? datingPhotos : matrimonyPhotos
 
   return (
-    <div className="min-h-screen relative">
+    <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
       <StaticBackground />
-      <div className="sticky top-0 backdrop-blur-sm border-b border-border z-10">
-        <div className="flex items-center justify-between p-4">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+      <style dangerouslySetInnerHTML={{__html: `
+        button[class*="bg-white/10"][class*="border-white/20"] {
+          color: #FFFFFF !important;
+        }
+        button[class*="bg-white/10"][class*="border-white/20"] * {
+          color: #FFFFFF !important;
+        }
+        span[data-slot="badge"][class*="bg-white/10"] {
+          color: #FFFFFF !important;
+        }
+        span[data-slot="badge"][class*="bg-white/10"] * {
+          color: #FFFFFF !important;
+        }
+      `}} />
+      <div className="flex-shrink-0 p-4 border-b border-white/20 bg-[#14161B]/50 backdrop-blur-xl shadow-lg">
+        <div className="flex items-center justify-between">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20"
+            onClick={onBack}
+          >
+            <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
           </Button>
-          <h1 className="text-xl font-semibold">Edit Profile</h1>
-          <Button variant="default" size="sm" onClick={handleSave} disabled={saving}>
+          <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>Edit Profile</h1>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="bg-[#97011A] hover:bg-[#7A0115]"
+            onClick={handleSave} 
+            disabled={saving}
+            style={{ color: '#FFFFFF' }}
+          >
             <Save className="w-4 h-4 mr-2" />
             {saving ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
 
-      <div className="p-4 pb-20">
+      <div className="flex-1 overflow-y-auto p-4 pb-20">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="photos">Edit Photos</TabsTrigger>
-            <TabsTrigger value="about">Edit About Myself</TabsTrigger>
-          </TabsList>
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={() => setActiveTab("photos")}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-1",
+                activeTab === "photos"
+                  ? "bg-[#97011A]"
+                  : "bg-white/10 hover:bg-white/20"
+              )}
+              style={{ color: activeTab === "photos" ? '#FFFFFF' : '#A1A1AA' }}
+            >
+              Edit Photos
+            </button>
+            <button
+              onClick={() => setActiveTab("about")}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-1",
+                activeTab === "about"
+                  ? "bg-[#97011A]"
+                  : "bg-white/10 hover:bg-white/20"
+              )}
+              style={{ color: activeTab === "about" ? '#FFFFFF' : '#A1A1AA' }}
+            >
+              Edit About Myself
+            </button>
+          </div>
 
           <TabsContent value="photos" className="space-y-6">
             <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-semibold mb-1">Your Photos</h2>
-                <p className="text-sm text-muted-foreground">
+                <h2 className="text-lg font-semibold mb-1" style={{ color: '#FFFFFF' }}>Your Photos</h2>
+                <p className="text-sm" style={{ color: '#A1A1AA' }}>
                   Add up to 6 photos to showcase yourself ({currentPhotos.length}/6)
                 </p>
               </div>
@@ -497,7 +545,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {currentPhotos.map((photo, index) => (
                   <div key={index} className="relative group">
-                    <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-border bg-muted">
+                    <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-white/20 bg-[#14161B]">
                       <img
                         src={photo.url}
                         alt={`Photo ${index + 1}`}
@@ -506,11 +554,10 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                       <Button
                         size="sm"
-                        variant="destructive"
-                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg bg-[#97011A] hover:bg-[#7A0115]"
                         onClick={() => removePhoto(index)}
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-4 h-4" style={{ color: '#FFFFFF' }} />
                       </Button>
                       <div className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
                         {index + 1}
@@ -521,7 +568,8 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                         placeholder={photoPrompts[index] || "Caption (optional)"}
                         value={photo.caption || ""}
                         onChange={(e) => updatePhotoCaption(index, e.target.value)}
-                        className="text-xs mt-2"
+                        className="text-xs mt-2 bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                        style={{ color: '#FFFFFF' }}
                       />
                     )}
                   </div>
@@ -530,12 +578,12 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 {currentPhotos.length < 6 && (
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed border-border bg-muted/50 hover:bg-muted transition-colors flex flex-col items-center justify-center gap-2 group"
+                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed border-white/20 bg-[#14161B] hover:bg-white/5 transition-colors flex flex-col items-center justify-center gap-2 group"
                   >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <Plus className="w-5 h-5 text-primary" />
+                    <div className="w-10 h-10 rounded-full bg-[#97011A]/20 flex items-center justify-center group-hover:bg-[#97011A]/30 transition-colors">
+                      <Plus className="w-5 h-5" style={{ color: '#97011A' }} />
                     </div>
-                    <span className="text-xs text-muted-foreground font-medium">Add Photo</span>
+                    <span className="text-xs font-medium" style={{ color: '#A1A1AA' }}>Add Photo</span>
                   </button>
                 )}
               </div>
@@ -551,10 +599,10 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
 
               {/* Video Section - Only for dating profile */}
               {userPath === 'dating' && (
-                <div className="space-y-4 mt-6 pt-6 border-t border-border">
+                <div className="space-y-4 mt-6 pt-6 border-t border-white/20">
                   <div>
-                    <h2 className="text-base font-semibold mb-1 sm:text-lg">Profile Video</h2>
-                    <p className="text-xs text-muted-foreground sm:text-sm">
+                    <h2 className="text-base font-semibold mb-1 sm:text-lg" style={{ color: '#FFFFFF' }}>Profile Video</h2>
+                    <p className="text-xs sm:text-sm" style={{ color: '#A1A1AA' }}>
                       Add a 15-second video to bring your profile to life (optional)
                     </p>
                   </div>
@@ -562,7 +610,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                   <div className="space-y-3">
                     {existingVideoUrl && !datingVideo && (
                       <div className="relative">
-                        <div className="aspect-video bg-muted rounded-xl overflow-hidden border-2 border-border max-h-48 sm:max-h-56 md:max-h-64 lg:max-h-72">
+                        <div className="aspect-video bg-[#14161B] rounded-xl overflow-hidden border-2 border-white/20 max-h-48 sm:max-h-56 md:max-h-64 lg:max-h-72">
                           <video
                             src={existingVideoUrl}
                             controls
@@ -570,12 +618,12 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                           />
                         </div>
                         <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <p className="text-xs text-muted-foreground sm:text-sm">Current video</p>
+                          <p className="text-xs sm:text-sm" style={{ color: '#A1A1AA' }}>Current video</p>
                           <Button
                             size="sm"
-                            variant="outline"
+                            className="w-full sm:w-auto h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4 bg-white/10 border-white/20 hover:bg-white/20"
                             onClick={() => videoInputRef.current?.click()}
-                            className="w-full sm:w-auto h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4"
+                            style={{ color: '#FFFFFF' }}
                           >
                             <Video className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                             Replace Video
@@ -586,7 +634,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                     
                     {datingVideo && (
                       <div className="relative">
-                        <div className="aspect-video bg-muted rounded-xl overflow-hidden border-2 border-border max-h-48 sm:max-h-56 md:max-h-64 lg:max-h-72">
+                        <div className="aspect-video bg-[#14161B] rounded-xl overflow-hidden border-2 border-white/20 max-h-48 sm:max-h-56 md:max-h-64 lg:max-h-72">
                           <video
                             src={URL.createObjectURL(datingVideo)}
                             controls
@@ -594,12 +642,12 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                           />
                         </div>
                         <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <p className="text-xs text-muted-foreground truncate sm:text-sm">{datingVideo.name}</p>
+                          <p className="text-xs truncate sm:text-sm" style={{ color: '#A1A1AA' }}>{datingVideo.name}</p>
                           <Button
                             size="sm"
-                            variant="destructive"
+                            className="w-full sm:w-auto h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4 bg-[#97011A] hover:bg-[#7A0115]"
                             onClick={() => setDatingVideo(null)}
-                            className="w-full sm:w-auto h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4"
+                            style={{ color: '#FFFFFF' }}
                           >
                             <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                             Remove
@@ -611,13 +659,13 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                     {!existingVideoUrl && !datingVideo && (
                       <button
                         onClick={() => videoInputRef.current?.click()}
-                        className="w-full aspect-video bg-muted/50 rounded-xl border-2 border-dashed border-border hover:bg-muted transition-colors flex flex-col items-center justify-center gap-2 sm:gap-3 group max-h-48 sm:max-h-56 md:max-h-64 lg:max-h-72"
+                        className="w-full aspect-video bg-[#14161B] rounded-xl border-2 border-dashed border-white/20 hover:bg-white/5 transition-colors flex flex-col items-center justify-center gap-2 sm:gap-3 group max-h-48 sm:max-h-56 md:max-h-64 lg:max-h-72"
                       >
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                          <Video className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#97011A]/20 flex items-center justify-center group-hover:bg-[#97011A]/30 transition-colors">
+                          <Video className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: '#97011A' }} />
                         </div>
-                        <span className="text-xs sm:text-sm text-muted-foreground font-medium">Add Video</span>
-                        <span className="text-xs text-muted-foreground">MP4, MOV (Max 15 seconds)</span>
+                        <span className="text-xs sm:text-sm font-medium" style={{ color: '#A1A1AA' }}>Add Video</span>
+                        <span className="text-xs" style={{ color: '#A1A1AA' }}>MP4, MOV (Max 15 seconds)</span>
                       </button>
                     )}
                   </div>
@@ -638,9 +686,9 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
             {userPath === 'dating' ? (
               <>
                 {/* Bio */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>About Me</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>About Me</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Textarea
@@ -648,16 +696,23 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                       value={datingBio}
                       onChange={(e) => setDatingBio(e.target.value)}
                       rows={4}
+                      className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                      style={{ color: '#FFFFFF' }}
                     />
                   </CardContent>
                 </Card>
 
                 {/* Prompts */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle>Prompts</CardTitle>
-                      <Button size="sm" variant="outline" onClick={addPrompt}>
+                      <CardTitle style={{ color: '#FFFFFF' }}>Prompts</CardTitle>
+                      <Button 
+                        size="sm" 
+                        className="bg-white/10 border-white/20 hover:bg-white/20"
+                        onClick={addPrompt}
+                        style={{ color: '#FFFFFF' }}
+                      >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Prompt
                       </Button>
@@ -672,22 +727,23 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                       const availablePrompts = datingPrompts.filter(p => !usedPrompts.includes(p))
                       
                       return (
-                        <div key={index} className="space-y-2 p-4 border rounded-lg">
+                        <div key={index} className="space-y-2 p-4 border border-white/20 rounded-lg bg-[#14161B]/30">
                           <div className="flex items-center justify-between">
-                            <Label>Prompt {index + 1}</Label>
+                            <Label style={{ color: '#FFFFFF' }}>Prompt {index + 1}</Label>
                             <Button
                               size="sm"
-                              variant="ghost"
+                              className="bg-white/10 border-white/20 hover:bg-white/20"
                               onClick={() => removePrompt(index)}
+                              style={{ color: '#FFFFFF' }}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs text-muted-foreground">Prompt Question:</Label>
+                            <Label className="text-xs" style={{ color: '#A1A1AA' }}>Prompt Question:</Label>
                             {prompt.prompt ? (
                               // Display selected prompt as read-only text
-                              <div className="p-2.5 bg-muted rounded-md text-sm font-medium border">
+                              <div className="p-2.5 bg-[#14161B] rounded-md text-sm font-medium border border-white/20" style={{ color: '#FFFFFF' }}>
                                 {prompt.prompt}
                               </div>
                             ) : (
@@ -696,12 +752,12 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                                 value=""
                                 onValueChange={(value) => updatePrompt(index, 'prompt', value)}
                               >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a prompt..." />
+                                <SelectTrigger className="bg-[#14161B] border-white/20 text-white">
+                                  <SelectValue placeholder="Select a prompt..." style={{ color: '#A1A1AA' }} />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="bg-[#14161B] border-white/20">
                                   {availablePrompts.map((p) => (
-                                    <SelectItem key={p} value={p}>
+                                    <SelectItem key={p} value={p} className="text-white hover:bg-white/10 focus:bg-white/10">
                                       {p}
                                     </SelectItem>
                                   ))}
@@ -715,13 +771,15 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                               value={prompt.answer}
                               onChange={(e) => updatePrompt(index, 'answer', e.target.value)}
                               rows={2}
+                              className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                              style={{ color: '#FFFFFF' }}
                             />
                           )}
                         </div>
                       )
                     })}
                     {datingPromptsData.length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-4">
+                      <p className="text-sm text-center py-4" style={{ color: '#A1A1AA' }}>
                         No prompts yet. Click "Add Prompt" to add one.
                       </p>
                     )}
@@ -729,23 +787,28 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Interests */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>Interests</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>Interests</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {Object.entries(interestCategories).map(([category, items]) => (
                       <div key={category} className="space-y-2">
-                        <Label className="text-sm font-medium">{category}</Label>
+                        <Label className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{category}</Label>
                         <div className="flex flex-wrap gap-2">
                           {items.map((interest) => (
                             <Badge
                               key={interest}
-                              variant={datingInterests.includes(interest) ? "default" : "outline"}
-                              className="cursor-pointer"
+                              className={cn(
+                                "cursor-pointer",
+                                datingInterests.includes(interest)
+                                  ? "bg-[#97011A] text-white"
+                                  : "bg-white/10 border-white/20 !text-white"
+                              )}
                               onClick={() => toggleInterest(interest)}
+                              style={{ color: '#FFFFFF !important' } as React.CSSProperties & { color: string }}
                             >
-                              {interest}
+                              <span style={{ color: '#FFFFFF' }}>{interest}</span>
                             </Badge>
                           ))}
                         </div>
@@ -755,9 +818,9 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* This or That */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>This or That</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>This or That</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {thisOrThatPairs.map(([optionA, optionB], index) => {
@@ -765,18 +828,28 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                       return (
                         <div key={index} className="grid grid-cols-2 gap-3">
                           <Button
-                            variant={selected === 0 ? "default" : "outline"}
+                            className={cn(
+                              "h-auto p-4 text-left border-2",
+                              selected === 0
+                                ? "bg-[#97011A] hover:bg-[#7A0115] border-[#97011A] !text-white"
+                                : "bg-white/10 border-white/20 hover:bg-white/20 !text-white"
+                            )}
                             onClick={() => toggleThisOrThat(index, 0)}
-                            className="h-auto p-4 text-left"
+                            style={{ color: '#FFFFFF !important' } as React.CSSProperties & { color: string }}
                           >
-                            {optionA}
+                            <span style={{ color: '#FFFFFF' }}>{optionA}</span>
                           </Button>
                           <Button
-                            variant={selected === 1 ? "default" : "outline"}
+                            className={cn(
+                              "h-auto p-4 text-left border-2",
+                              selected === 1
+                                ? "bg-[#97011A] hover:bg-[#7A0115] border-[#97011A] !text-white"
+                                : "bg-white/10 border-white/20 hover:bg-white/20 !text-white"
+                            )}
                             onClick={() => toggleThisOrThat(index, 1)}
-                            className="h-auto p-4 text-left"
+                            style={{ color: '#FFFFFF !important' } as React.CSSProperties & { color: string }}
                           >
-                            {optionB}
+                            <span style={{ color: '#FFFFFF' }}>{optionB}</span>
                           </Button>
                         </div>
                       )
@@ -785,20 +858,26 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Relationship Goals */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>Relationship Goals</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>Relationship Goals</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 gap-2">
                       {intentions.map((intention) => (
                         <Button
                           key={intention}
-                          variant={datingRelationshipGoal === intention ? "default" : "outline"}
+                          variant="ghost"
+                          className={cn(
+                            "justify-start h-auto p-4 border-2",
+                            datingRelationshipGoal === intention
+                              ? "bg-[#97011A] hover:bg-[#7A0115] border-[#97011A] !text-white"
+                              : "bg-white/10 border-white/20 hover:bg-white/20 !text-white"
+                          )}
                           onClick={() => setDatingRelationshipGoal(intention)}
-                          className="justify-start h-auto p-4"
+                          style={{ color: '#FFFFFF !important' } as React.CSSProperties & { color: string }}
                         >
-                          {intention}
+                          <span style={{ color: '#FFFFFF' }}>{intention}</span>
                         </Button>
                       ))}
                     </div>
@@ -806,47 +885,75 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Preferences */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>Dating Preferences</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>Dating Preferences</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
-                      <Label>Looking for</Label>
+                      <Label style={{ color: '#FFFFFF' }}>Looking for</Label>
                       <div className="grid grid-cols-3 gap-2">
                         <Button
-                          variant={datingLookingFor === 'men' ? "default" : "outline"}
+                          variant="ghost"
+                          className={cn(
+                            "border-2",
+                            datingLookingFor === 'men'
+                              ? "bg-[#97011A] hover:bg-[#7A0115] border-[#97011A] !text-white"
+                              : "bg-white/10 border-white/20 hover:bg-white/20 !text-white"
+                          )}
                           onClick={() => setDatingLookingFor('men')}
+                          style={{ color: '#FFFFFF !important' } as React.CSSProperties & { color: string }}
                         >
-                          Men
+                          <span style={{ color: '#FFFFFF' }}>Men</span>
                         </Button>
                         <Button
-                          variant={datingLookingFor === 'women' ? "default" : "outline"}
+                          variant="ghost"
+                          className={cn(
+                            "border-2",
+                            datingLookingFor === 'women'
+                              ? "bg-[#97011A] hover:bg-[#7A0115] border-[#97011A] !text-white"
+                              : "bg-white/10 border-white/20 hover:bg-white/20 !text-white"
+                          )}
                           onClick={() => setDatingLookingFor('women')}
+                          style={{ color: '#FFFFFF !important' } as React.CSSProperties & { color: string }}
                         >
-                          Women
+                          <span style={{ color: '#FFFFFF' }}>Women</span>
                         </Button>
                         <Button
-                          variant={datingLookingFor === 'everyone' ? "default" : "outline"}
+                          variant="ghost"
+                          className={cn(
+                            "border-2",
+                            datingLookingFor === 'everyone'
+                              ? "bg-[#97011A] hover:bg-[#7A0115] border-[#97011A] !text-white"
+                              : "bg-white/10 border-white/20 hover:bg-white/20 !text-white"
+                          )}
                           onClick={() => setDatingLookingFor('everyone')}
+                          style={{ color: '#FFFFFF !important' } as React.CSSProperties & { color: string }}
                         >
-                          Everyone
+                          <span style={{ color: '#FFFFFF' }}>Everyone</span>
                         </Button>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Show on profile</Label>
+                      <Label style={{ color: '#FFFFFF' }}>Show on profile</Label>
                       <Button
-                        variant={datingShowOnProfile ? "default" : "outline"}
+                        variant="ghost"
+                        className={cn(
+                          "border-2",
+                          datingShowOnProfile
+                            ? "bg-[#97011A] hover:bg-[#7A0115] border-[#97011A] !text-white"
+                            : "bg-white/10 border-white/20 hover:bg-white/20 !text-white"
+                        )}
                         onClick={() => setDatingShowOnProfile(!datingShowOnProfile)}
+                        style={{ color: '#FFFFFF !important' } as React.CSSProperties & { color: string }}
                       >
-                        {datingShowOnProfile ? "Yes" : "No"}
+                        <span style={{ color: '#FFFFFF' }}>{datingShowOnProfile ? "Yes" : "No"}</span>
                       </Button>
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Age range: {datingAgeRange[0]} - {datingAgeRange[1]} years</Label>
+                      <Label style={{ color: '#FFFFFF' }}>Age range: {datingAgeRange[0]} - {datingAgeRange[1]} years</Label>
                       <Slider
                         value={datingAgeRange as any}
                         onValueChange={(val: number[]) => {
@@ -860,17 +967,19 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                         min={18}
                         max={60}
                         step={1}
+                        className="[&_[role=slider]]:bg-[#97011A]"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Maximum distance: {datingDistance[0]} km</Label>
+                      <Label style={{ color: '#FFFFFF' }}>Maximum distance: {datingDistance[0]} km</Label>
                       <Slider
                         value={datingDistance}
                         onValueChange={setDatingDistance}
                         max={100}
                         min={5}
                         step={5}
+                        className="[&_[role=slider]]:bg-[#97011A]"
                       />
                     </div>
                   </CardContent>
@@ -879,9 +988,9 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
             ) : (
               <>
                 {/* Bio */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>About Me</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>About Me</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Textarea
@@ -889,44 +998,54 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                       value={matrimonyBio}
                       onChange={(e) => setMatrimonyBio(e.target.value)}
                       rows={4}
+                      className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                      style={{ color: '#FFFFFF' }}
                     />
                   </CardContent>
                 </Card>
 
                 {/* Personal Details */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>Personal Details</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>Personal Details</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Height (cm)</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Height (cm)</Label>
                         <Input
                           type="number"
                           value={matrimonyPersonal.height_cm || ""}
                           onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, height_cm: parseInt(e.target.value) || 0 })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Complexion</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Complexion</Label>
                         <Input
                           value={matrimonyPersonal.complexion || ""}
                           onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, complexion: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Diet</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Diet</Label>
                         <Input
                           value={matrimonyPersonal.diet || ""}
                           onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, diet: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Body Type</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Body Type</Label>
                         <Input
                           value={matrimonyPersonal.body_type || ""}
                           onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, body_type: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                     </div>
@@ -934,38 +1053,46 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Career */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>Career & Education</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>Career & Education</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Highest Education</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Highest Education</Label>
                         <Input
                           value={matrimonyCareer.highest_education || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, highest_education: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Job Title</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Job Title</Label>
                         <Input
                           value={matrimonyCareer.job_title || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, job_title: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Company</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Company</Label>
                         <Input
                           value={matrimonyCareer.company || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, company: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Annual Income</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Annual Income</Label>
                         <Input
                           value={matrimonyCareer.annual_income || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, annual_income: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                     </div>
@@ -973,47 +1100,57 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Family */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>Family Information</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>Family Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Family Type</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Family Type</Label>
                         <Input
                           value={matrimonyFamily.family_type || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, family_type: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Father's Occupation</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Father's Occupation</Label>
                         <Input
                           value={matrimonyFamily.father_occupation || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, father_occupation: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Mother's Occupation</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Mother's Occupation</Label>
                         <Input
                           value={matrimonyFamily.mother_occupation || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, mother_occupation: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Brothers</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Brothers</Label>
                         <Input
                           type="number"
                           value={matrimonyFamily.brothers || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, brothers: parseInt(e.target.value) || 0 })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Sisters</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Sisters</Label>
                         <Input
                           type="number"
                           value={matrimonyFamily.sisters || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, sisters: parseInt(e.target.value) || 0 })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                     </div>
@@ -1021,38 +1158,46 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Cultural */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>Cultural Background</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>Cultural Background</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Religion</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Religion</Label>
                         <Input
                           value={matrimonyCultural.religion || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, religion: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Mother Tongue</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Mother Tongue</Label>
                         <Input
                           value={matrimonyCultural.mother_tongue || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, mother_tongue: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Community</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Community</Label>
                         <Input
                           value={matrimonyCultural.community || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, community: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Gotra</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Gotra</Label>
                         <Input
                           value={matrimonyCultural.gotra || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, gotra: e.target.value })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                     </div>
@@ -1060,42 +1205,50 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Partner Preferences */}
-                <Card>
+                <Card className="bg-[#14161B]/50 border border-white/20">
                   <CardHeader>
-                    <CardTitle>Partner Preferences</CardTitle>
+                    <CardTitle style={{ color: '#FFFFFF' }}>Partner Preferences</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Min Age</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Min Age</Label>
                         <Input
                           type="number"
                           value={matrimonyPreferences.min_age || ""}
                           onChange={(e) => setMatrimonyPreferences({ ...matrimonyPreferences, min_age: parseInt(e.target.value) || 0 })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Max Age</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Max Age</Label>
                         <Input
                           type="number"
                           value={matrimonyPreferences.max_age || ""}
                           onChange={(e) => setMatrimonyPreferences({ ...matrimonyPreferences, max_age: parseInt(e.target.value) || 0 })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Min Height (cm)</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Min Height (cm)</Label>
                         <Input
                           type="number"
                           value={matrimonyPreferences.min_height_cm || ""}
                           onChange={(e) => setMatrimonyPreferences({ ...matrimonyPreferences, min_height_cm: parseInt(e.target.value) || 0 })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Max Height (cm)</Label>
+                        <Label style={{ color: '#FFFFFF' }}>Max Height (cm)</Label>
                         <Input
                           type="number"
                           value={matrimonyPreferences.max_height_cm || ""}
                           onChange={(e) => setMatrimonyPreferences({ ...matrimonyPreferences, max_height_cm: parseInt(e.target.value) || 0 })}
+                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                          style={{ color: '#FFFFFF' }}
                         />
                       </div>
                     </div>

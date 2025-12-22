@@ -180,18 +180,26 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
   const needsVerification = !verificationStatus || isRejected
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative bg-[#0E0F12]">
       <StaticBackground />
-      <div className="sticky top-0 backdrop-blur-sm border-b border-border z-10">
+      <div className="sticky top-0 backdrop-blur-xl border-b border-white/20 bg-[#14161B]/50 shadow-lg z-10">
         <div className="flex items-center justify-between p-4">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-xl font-semibold">Profile Verification</h1>
+          {onBack && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20"
+              onClick={onBack}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" style={{ color: '#FFFFFF' }} />
+              <span style={{ color: '#FFFFFF' }}>Back</span>
+            </Button>
+          )}
+          {!onBack && <div className="w-16"></div>}
+          <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>Profile Verification</h1>
           {isPending && (
-            <div className="flex items-center space-x-2 text-destructive">
-              <AlertCircle className="w-4 h-4" />
+            <div className="flex items-center space-x-2" style={{ color: '#97011A' }}>
+              <AlertCircle className="w-4 h-4" style={{ color: '#97011A' }} />
               <span className="text-xs font-semibold">Pending</span>
             </div>
           )}
@@ -201,39 +209,39 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
       <div className="p-6 space-y-6">
 
         {checkingStatus ? (
-          <Card>
+          <Card className="bg-[#14161B]/50 border border-white/20">
             <CardContent className="p-6 text-center">
-              <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Checking verification status...</p>
+              <p className="text-sm" style={{ color: '#A1A1AA' }}>Checking verification status...</p>
             </CardContent>
           </Card>
         ) : isVerified ? (
-          <Card>
+          <Card className="bg-[#14161B]/50 border border-white/20">
             <CardHeader>
               <div className="flex items-center space-x-2">
-                <CheckCircle className="w-6 h-6 text-green-500" />
-                <CardTitle>You're Verified</CardTitle>
+                <CheckCircle className="w-6 h-6" style={{ color: '#10B981' }} />
+                <CardTitle style={{ color: '#FFFFFF' }}>You're Verified</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Government ID and selfie have been verified.</p>
+              <p className="text-sm" style={{ color: '#A1A1AA' }}>Government ID and selfie have been verified.</p>
             </CardContent>
           </Card>
         ) : (
-          <Card>
+          <Card className="bg-[#14161B]/50 border border-white/20">
             <CardHeader>
               <div className="flex items-center space-x-2">
-                {isPending && <AlertCircle className="w-6 h-6 text-destructive" />}
-                <CardTitle>Verification {isPending ? 'Pending' : isRejected ? 'Rejected' : 'Required'}</CardTitle>
+                {isPending && <AlertCircle className="w-6 h-6" style={{ color: '#97011A' }} />}
+                <CardTitle style={{ color: '#FFFFFF' }}>Verification {isPending ? 'Pending' : isRejected ? 'Rejected' : 'Required'}</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {isPending && (
-                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <div className="p-3 bg-[#97011A]/10 border border-[#97011A]/20 rounded-lg">
                   <div className="flex items-start space-x-2">
-                    <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#97011A' }} />
                     <div>
-                      <p className="text-sm font-medium text-destructive">Verification Pending</p>
-                      <p className="text-xs mt-1" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      <p className="text-sm font-medium" style={{ color: '#97011A' }}>Verification Pending</p>
+                      <p className="text-xs mt-1" style={{ color: '#A1A1AA' }}>
                         Your verification is currently under review. You can update your documents if needed.
                       </p>
                     </div>
@@ -242,17 +250,17 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
               )}
               
               {isRejected && (
-                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <p className="text-sm text-destructive">
+                <div className="p-3 bg-[#97011A]/10 border border-[#97011A]/20 rounded-lg">
+                  <p className="text-sm" style={{ color: '#97011A' }}>
                     Your verification was rejected. Please upload new documents to try again.
                   </p>
                 </div>
               )}
 
-              <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+              <p className="text-sm" style={{ color: '#A1A1AA' }}>
                 Upload a government ID and a selfie to verify your profile.
               </p>
-              <Separator />
+              <Separator className="bg-white/20" />
               
               {/* Hidden input for file picking */}
               <input
@@ -274,22 +282,22 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
                   <Button 
                     onClick={handleUploadId} 
                     variant="outline" 
-                    className="h-auto p-4 flex flex-col space-y-2"
+                    className="h-auto p-4 flex flex-col space-y-2 bg-[#14161B] border-white/20 hover:bg-white/10 hover:border-[#97011A]/50"
                   >
-                    <Upload className="w-6 h-6" />
-                    <span className="text-sm">Upload ID</span>
+                    <Upload className="w-6 h-6" style={{ color: '#FFFFFF' }} />
+                    <span className="text-sm" style={{ color: '#FFFFFF' }}>Upload ID</span>
                   </Button>
                 ) : (
-                  <div className="relative p-3 border border-border rounded-lg bg-muted/50">
+                  <div className="relative p-3 border border-white/20 rounded-lg bg-[#14161B]">
                     <button
                       onClick={handleRemoveFile}
-                      className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-destructive/90 hover:bg-destructive text-white flex items-center justify-center"
+                      className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-[#97011A] hover:bg-[#7A0115] text-white flex items-center justify-center"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                     <div className="flex flex-col items-center space-y-2">
                       {filePreview ? (
-                        <div className="w-full h-20 rounded-md overflow-hidden border border-border/50">
+                        <div className="w-full h-20 rounded-md overflow-hidden border border-white/20">
                           <img 
                             src={filePreview} 
                             alt="ID Preview" 
@@ -297,15 +305,15 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
                           />
                         </div>
                       ) : (
-                        <div className="w-full h-20 rounded-md bg-primary/10 flex items-center justify-center border border-border/50">
-                          <FileText className="w-10 h-10 text-primary" />
+                        <div className="w-full h-20 rounded-md bg-[#97011A]/10 flex items-center justify-center border border-white/20">
+                          <FileText className="w-10 h-10" style={{ color: '#97011A' }} />
                         </div>
                       )}
                       <div className="w-full space-y-0.5 pr-4">
-                        <p className="text-xs font-medium truncate">
+                        <p className="text-xs font-medium truncate" style={{ color: '#FFFFFF' }}>
                           {uploadedFile.name}
                         </p>
-                        <p className="text-[10px]" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                        <p className="text-[10px]" style={{ color: '#A1A1AA' }}>
                           {(uploadedFile.size / 1024).toFixed(1)} KB
                         </p>
                       </div>
@@ -318,22 +326,22 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
                   <Button 
                     onClick={handleTakePhoto} 
                     variant="outline" 
-                    className="h-auto p-4 flex flex-col space-y-2"
+                    className="h-auto p-4 flex flex-col space-y-2 bg-[#14161B] border-white/20 hover:bg-white/10 hover:border-[#97011A]/50"
                   >
-                    <Camera className="w-6 h-6" />
-                    <span className="text-sm">Face Scanner</span>
+                    <Camera className="w-6 h-6" style={{ color: '#FFFFFF' }} />
+                    <span className="text-sm" style={{ color: '#FFFFFF' }}>Face Scanner</span>
                   </Button>
                 ) : (
-                  <div className="relative p-3 border border-border rounded-lg bg-muted/50">
+                  <div className="relative p-3 border border-white/20 rounded-lg bg-[#14161B]">
                     <button
                       onClick={handleRemoveFacePhoto}
-                      className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-destructive/90 hover:bg-destructive text-white flex items-center justify-center"
+                      className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-[#97011A] hover:bg-[#7A0115] text-white flex items-center justify-center"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                     <div className="flex flex-col items-center space-y-2">
                       {facePhotoPreview && (
-                        <div className="w-full h-20 rounded-md overflow-hidden border border-border/50">
+                        <div className="w-full h-20 rounded-md overflow-hidden border border-white/20">
                           <img 
                             src={facePhotoPreview} 
                             alt="Face Scan" 
@@ -342,10 +350,10 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
                         </div>
                       )}
                       <div className="w-full space-y-0.5 pr-4">
-                        <p className="text-xs font-medium truncate">
+                        <p className="text-xs font-medium truncate" style={{ color: '#FFFFFF' }}>
                           {capturedFacePhoto.name}
                         </p>
-                        <p className="text-[10px]" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                        <p className="text-[10px]" style={{ color: '#A1A1AA' }}>
                           {(capturedFacePhoto.size / 1024).toFixed(1)} KB
                         </p>
                       </div>
@@ -357,7 +365,7 @@ export function VerificationStatus({ onBack }: { onBack?: () => void }) {
               <Button 
                 onClick={handleSubmit} 
                 disabled={!uploadedFile || !capturedFacePhoto || loading}
-                className="w-full"
+                className="w-full bg-[#97011A] hover:bg-[#7A0115] text-white border-[#97011A]"
               >
                 {loading ? "Uploading..." : "Submit for Verification"}
               </Button>

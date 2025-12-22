@@ -84,29 +84,26 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
       if (result.success) {
         setLikedBack(prev => new Set(prev).add(activity.id))
         
-        // If it's a match, update the activity type and refresh
         if (result.isMatch) {
-          // Update the activity to be a match
-          setActivities(prev => prev.map(a => 
-            a.id === activity.id 
-              ? { ...a, type: 'match' as const }
-              : a
-          ))
-          
-          // Optionally navigate to chat
+          // Match created - navigate to chat immediately
+          setError(null) // Clear any errors
           if (result.matchId && onMatchClick) {
-            setTimeout(() => {
-              onMatchClick(result.matchId!)
-            }, 500)
+            onMatchClick(result.matchId) // Navigate immediately, no delay
           }
+          // Don't refresh activity - let navigation happen
         } else {
-          // Refresh activity list to remove the like (since user liked back)
-          const { data: { user: currentUser } } = await supabase.auth.getUser()
-          if (currentUser) {
-            const updatedActivity = mode === 'matrimony'
-              ? await getMatrimonyActivity(currentUser.id)
-              : await getDatingActivity(currentUser.id)
-            setActivities(updatedActivity)
+          // Not a match - refresh activity list (but don't let errors block UI)
+          try {
+            const { data: { user: currentUser } } = await supabase.auth.getUser()
+            if (currentUser) {
+              const updatedActivity = mode === 'matrimony'
+                ? await getMatrimonyActivity(currentUser.id)
+                : await getDatingActivity(currentUser.id)
+              setActivities(updatedActivity)
+            }
+          } catch (refreshError) {
+            // Log but don't show error - the like was successful
+            console.error("Error refreshing activity:", refreshError)
           }
         }
       } else {

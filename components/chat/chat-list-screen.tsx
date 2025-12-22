@@ -481,13 +481,23 @@ export function ChatListScreen({ onChatClick, onBack }: ChatListScreenProps) {
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#A1A1AA' }} />
+            <Search 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 z-10 pointer-events-none" 
+              style={{ 
+                color: '#A1A1AA',
+                stroke: '#A1A1AA',
+                fill: 'none'
+              }}
+              strokeWidth={2}
+            />
             <Input
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-[#14161B] border-white/20 backdrop-blur-sm"
-              style={{ color: '#FFFFFF' }}
+              className="pl-10 bg-[#14161B] border-white/20 backdrop-blur-sm placeholder:text-[#A1A1AA]"
+              style={{ 
+                color: '#FFFFFF',
+              }}
             />
           </div>
         </div>

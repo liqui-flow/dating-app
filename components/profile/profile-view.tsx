@@ -205,10 +205,10 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
   if (loading) {
     return (
-      <div className="min-h-screen relative">
+      <div className="min-h-screen relative bg-[#0E0F12]">
         <StaticBackground />
         <div className="flex items-center justify-center h-screen">
-          <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Loading profile...</p>
+          <p style={{ color: '#FFFFFF' }}>Loading profile...</p>
         </div>
       </div>
     )
@@ -409,7 +409,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
             {/* Photo Prompt - minimal */}
             {userPath === 'dating' && photoPrompts[currentPhotoIndex] && photoPrompts[currentPhotoIndex].trim() && (
               <div className="bg-white/5 backdrop-blur-sm border-t border-white/10 p-3">
-                <p className="text-xs text-white/80 text-center">
+                <p className="text-xs text-center" style={{ color: '#FFFFFF' }}>
                   {photoPrompts[currentPhotoIndex]}
                 </p>
               </div>
@@ -418,38 +418,38 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
         )}
 
         {/* Basic Info */}
-        <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
+        <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
           <CardContent className="p-6 space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-3xl font-bold text-white">
+                  <h2 className="text-3xl font-bold" style={{ color: '#FFFFFF' }}>
                     {name}{age ? `, ${age}` : ''}
                   </h2>
                   {verified && (
-                    <CheckCircle2 className="w-5 h-5 text-blue-400" />
+                    <CheckCircle2 className="w-5 h-5" style={{ color: '#3B82F6' }} />
                   )}
                 </div>
                 
                 {/* Quick Info Pills */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {userPath === 'dating' && datingProfile?.gender && (
-                    <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                    <Badge variant="secondary" className="bg-[#14161B] text-white border-white/20">
                       {datingProfile.gender}
                     </Badge>
                   )}
                   {userPath === 'dating' && datingProfile?.relationship_goals && (
-                    <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                    <Badge variant="secondary" className="bg-[#14161B] text-white border-white/20">
                       {datingProfile.relationship_goals}
                     </Badge>
                   )}
                   {userPath === 'matrimony' && matrimonyProfile?.gender && (
-                    <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                    <Badge variant="secondary" className="bg-[#14161B] text-white border-white/20">
                       {matrimonyProfile.gender}
                     </Badge>
                   )}
                   {userPath === 'matrimony' && matrimonyProfile?.personal?.height_cm && (
-                    <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                    <Badge variant="secondary" className="bg-[#14161B] text-white border-white/20">
                       {matrimonyProfile.personal.height_cm} cm
                     </Badge>
                   )}
@@ -492,11 +492,11 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
               <>
                 <Separator className="bg-white/10" />
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-white flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-yellow-400" />
+                  <h3 className="font-semibold flex items-center gap-2" style={{ color: '#FFFFFF' }}>
+                    <Sparkles className="w-4 h-4" style={{ color: '#97011A' }} />
                     About Me
                   </h3>
-                  <p className="text-sm text-white/80 leading-relaxed">{bio}</p>
+                  <p className="text-sm leading-relaxed" style={{ color: '#FFFFFF' }}>{bio}</p>
                 </div>
               </>
             )}
@@ -508,9 +508,9 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
           <>
             {/* Interests */}
             {datingProfile.interests && (datingProfile.interests as string[]).length > 0 && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-white text-lg mb-3">Interests</h3>
+                  <h3 className="font-semibold text-lg mb-3" style={{ color: '#FFFFFF' }}>Interests</h3>
                   <div className="flex flex-wrap gap-2">
                     {(datingProfile.interests as string[]).map((interest) => (
                       <Badge
@@ -527,14 +527,14 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Prompts */}
             {datingProfile.prompts && (datingProfile.prompts as Array<{ prompt: string; answer: string }>).length > 0 && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
                 <CardContent className="p-6 space-y-5">
-                  <h3 className="font-semibold text-white text-lg mb-4">Prompts</h3>
+                  <h3 className="font-semibold text-lg mb-4" style={{ color: '#FFFFFF' }}>Prompts</h3>
                   <div className="space-y-5">
                     {(datingProfile.prompts as Array<{ prompt: string; answer: string }>).map((prompt, index) => (
                       <div key={index} className="space-y-2 pb-4 border-b border-white/10 last:border-0 last:pb-0">
-                        <p className="text-sm font-semibold text-white/90">{prompt.prompt}</p>
-                        <p className="text-sm text-white/70 leading-relaxed">{prompt.answer}</p>
+                        <p className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>{prompt.prompt}</p>
+                        <p className="text-sm leading-relaxed" style={{ color: '#FFFFFF' }}>{prompt.answer}</p>
                       </div>
                     ))}
                   </div>
@@ -544,33 +544,39 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* This or That */}
             {datingProfile.this_or_that_choices && (datingProfile.this_or_that_choices as Array<{ option_a: string; option_b: string; selected: 0 | 1 }>).length > 0 && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-white text-lg mb-4">This or That</h3>
+                  <h3 className="font-semibold text-lg mb-4" style={{ color: '#FFFFFF' }}>This or That</h3>
                   <div className="space-y-3">
                     {(datingProfile.this_or_that_choices as Array<{ option_a: string; option_b: string; selected: 0 | 1 }>).map((choice, index) => (
-                      <div key={index} className="flex items-center justify-center gap-3">
-                        <Badge 
-                          className={cn(
-                            "px-4 py-2 text-sm transition-all",
-                            choice.selected === 0
-                              ? "bg-[#97011A] text-white border-[#97011A] hover:bg-[#7A0115] transition-all"
-                              : "bg-white/10 text-white/60 border-white/20"
-                          )}
-                        >
-                          {choice.option_a}
-                        </Badge>
-                        <span className="text-sm text-white/50 font-medium">or</span>
-                        <Badge 
-                          className={cn(
-                            "px-4 py-2 text-sm transition-all",
-                            choice.selected === 1
-                              ? "bg-[#97011A] text-white border-[#97011A] hover:bg-[#7A0115] transition-all"
-                              : "bg-white/10 text-white/60 border-white/20"
-                          )}
-                        >
-                          {choice.option_b}
-                        </Badge>
+                      <div key={index} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                        <div className="flex justify-end">
+                          <Badge 
+                            className={cn(
+                              "px-4 py-2 text-sm transition-all !text-white",
+                              choice.selected === 0
+                                ? "bg-[#97011A] border-[#97011A] hover:bg-[#7A0115] transition-all"
+                                : "bg-white/10 border-white/20"
+                            )}
+                            style={{ color: '#FFFFFF' }}
+                          >
+                            {choice.option_a}
+                          </Badge>
+                        </div>
+                        <span className="text-sm font-medium px-2 flex-shrink-0" style={{ color: '#FFFFFF' }}>or</span>
+                        <div className="flex justify-start">
+                          <Badge 
+                            className={cn(
+                              "px-4 py-2 text-sm transition-all !text-white",
+                              choice.selected === 1
+                                ? "bg-[#97011A] border-[#97011A] hover:bg-[#7A0115] transition-all"
+                                : "bg-white/10 border-white/20"
+                            )}
+                            style={{ color: '#FFFFFF' }}
+                          >
+                            {choice.option_b}
+                          </Badge>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -580,10 +586,10 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Video */}
             {datingProfile.video_url && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-white text-lg flex items-center space-x-2 mb-4">
-                    <Video className="w-5 h-5 text-red-400" />
+                  <h3 className="font-semibold text-lg flex items-center space-x-2 mb-4" style={{ color: '#FFFFFF' }}>
+                    <Video className="w-5 h-5" style={{ color: '#97011A' }} />
                     <span>Video</span>
                   </h3>
                   <div className="aspect-video bg-black/30 rounded-xl overflow-hidden border border-white/10 shadow-inner">
@@ -600,35 +606,35 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
           <>
             {/* Career & Education */}
             {matrimonyProfile.career && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-white text-lg flex items-center space-x-2 mb-4">
-                    <Briefcase className="w-5 h-5 text-blue-400" />
+                  <h3 className="font-semibold text-lg flex items-center space-x-2 mb-4" style={{ color: '#FFFFFF' }}>
+                    <Briefcase className="w-5 h-5" style={{ color: '#97011A' }} />
                     <span>Career & Education</span>
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {matrimonyProfile.career.highest_education && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Education</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.career.highest_education}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Education</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.career.highest_education}</p>
                       </div>
                     )}
                     {matrimonyProfile.career.job_title && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Profession</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.career.job_title}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Profession</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.career.job_title}</p>
                       </div>
                     )}
                     {matrimonyProfile.career.company && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Company</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.career.company}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Company</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.career.company}</p>
                       </div>
                     )}
                     {matrimonyProfile.career.work_location && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Location</p>
-                        <p className="text-sm text-white font-medium">
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Location</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>
                           {[
                             matrimonyProfile.career.work_location.city,
                             matrimonyProfile.career.work_location.state,
@@ -644,32 +650,32 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Personal Details */}
             {matrimonyProfile.personal && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-white text-lg mb-4">Personal Details</h3>
+                  <h3 className="font-semibold text-lg mb-4" style={{ color: '#FFFFFF' }}>Personal Details</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {matrimonyProfile.personal.diet && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Diet</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.personal.diet}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Diet</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.personal.diet}</p>
                       </div>
                     )}
                     {matrimonyProfile.personal.smoker !== undefined && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Smoking</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.personal.smoker ? "Yes" : "No"}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Smoking</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.personal.smoker ? "Yes" : "No"}</p>
                       </div>
                     )}
                     {matrimonyProfile.personal.drinker !== undefined && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Drinking</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.personal.drinker ? "Yes" : "No"}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Drinking</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.personal.drinker ? "Yes" : "No"}</p>
                       </div>
                     )}
                     {matrimonyProfile.personal.complexion && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Complexion</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.personal.complexion}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Complexion</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.personal.complexion}</p>
                       </div>
                     )}
                   </div>
@@ -679,41 +685,41 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Family Information */}
             {matrimonyProfile.family && matrimonyProfile.family.show_on_profile && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-white text-lg flex items-center space-x-2 mb-4">
-                    <Home className="w-5 h-5 text-orange-400" />
+                  <h3 className="font-semibold text-lg flex items-center space-x-2 mb-4" style={{ color: '#FFFFFF' }}>
+                    <Home className="w-5 h-5" style={{ color: '#97011A' }} />
                     <span>Family Information</span>
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {matrimonyProfile.family.family_type && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Family Type</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.family.family_type}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Family Type</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.family.family_type}</p>
                       </div>
                     )}
                     {matrimonyProfile.family.family_values && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Family Values</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.family.family_values}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Family Values</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.family.family_values}</p>
                       </div>
                     )}
                     {matrimonyProfile.family.father_occupation && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Father's Occupation</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.family.father_occupation}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Father's Occupation</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.family.father_occupation}</p>
                       </div>
                     )}
                     {matrimonyProfile.family.mother_occupation && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Mother's Occupation</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.family.mother_occupation}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Mother's Occupation</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.family.mother_occupation}</p>
                       </div>
                     )}
                     {(matrimonyProfile.family.brothers !== undefined || matrimonyProfile.family.sisters !== undefined) && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Siblings</p>
-                        <p className="text-sm text-white font-medium">
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Siblings</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>
                           {[
                             matrimonyProfile.family.brothers ? `${matrimonyProfile.family.brothers} brother(s)` : null,
                             matrimonyProfile.family.sisters ? `${matrimonyProfile.family.sisters} sister(s)` : null
@@ -728,41 +734,41 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Cultural Background */}
             {matrimonyProfile.cultural && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl">
+              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-white text-lg flex items-center space-x-2 mb-4">
-                    <Users className="w-5 h-5 text-green-400" />
+                  <h3 className="font-semibold text-lg flex items-center space-x-2 mb-4" style={{ color: '#FFFFFF' }}>
+                    <Users className="w-5 h-5" style={{ color: '#97011A' }} />
                     <span>Cultural Background</span>
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {matrimonyProfile.cultural.religion && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Religion</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.cultural.religion}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Religion</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.religion}</p>
                       </div>
                     )}
                     {matrimonyProfile.cultural.mother_tongue && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Mother Tongue</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.cultural.mother_tongue}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Mother Tongue</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.mother_tongue}</p>
                       </div>
                     )}
                     {matrimonyProfile.cultural.community && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Community</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.cultural.community}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Community</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.community}</p>
                       </div>
                     )}
                     {matrimonyProfile.cultural.star_raashi && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Star/Raashi</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.cultural.star_raashi}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Star/Raashi</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.star_raashi}</p>
                       </div>
                     )}
                     {matrimonyProfile.cultural.gotra && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-white/70">Gotra</p>
-                        <p className="text-sm text-white font-medium">{matrimonyProfile.cultural.gotra}</p>
+                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Gotra</p>
+                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.gotra}</p>
                       </div>
                     )}
                   </div>
@@ -773,9 +779,9 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
         )}
 
         {!profile && (
-          <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-xl">
+          <Card className="bg-[#14161B]/50 backdrop-blur-xl border-white/20 shadow-xl !text-white">
             <CardContent className="p-6">
-              <p className="text-white/70 text-center">No profile data available</p>
+              <p className="text-center" style={{ color: '#FFFFFF' }}>No profile data available</p>
             </CardContent>
           </Card>
         )}

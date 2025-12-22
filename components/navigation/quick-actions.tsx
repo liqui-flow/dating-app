@@ -77,8 +77,14 @@ export function QuickActions({
                   "w-5 h-5",
                   "text-white"
                 )} 
-                strokeWidth={isActive ? 2.5 : 2} 
-                style={{ color: '#FFFFFF' }}
+                stroke="#FFFFFF"
+                strokeWidth={isActive ? 2.5 : 2}
+                fill="none"
+                style={{ 
+                  color: '#FFFFFF',
+                  stroke: '#FFFFFF',
+                  fill: 'none'
+                }}
               />
               {isActive && (
                 <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white" />

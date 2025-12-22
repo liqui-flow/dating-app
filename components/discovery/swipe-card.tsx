@@ -349,18 +349,29 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
       {/* Bottom profile information overlay - Simplified design */}
       {stackIndex === 0 && (
         <div className="absolute bottom-0 left-0 right-0 z-20">
-          {/* Dark gradient overlay */}
-          <div className="bg-gradient-to-t from-black/80 via-black/60 to-transparent h-32 rounded-b-2xl sm:rounded-b-3xl" />
+          {/* Subtle dark gradient overlay for text readability */}
+          <div 
+            className="h-32 rounded-b-2xl sm:rounded-b-3xl"
+            style={{
+              background: 'linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.4) 30%, rgba(0, 0, 0, 0.2) 60%, transparent 100%)'
+            }}
+          />
           
           {/* Profile information */}
           <div className="absolute bottom-4 left-4 right-16 z-10">
-            <h2 className="text-white text-xl sm:text-2xl font-bold drop-shadow-lg mb-1">
+            <h2 
+              className="text-xl sm:text-2xl font-bold drop-shadow-lg mb-1"
+              style={{ color: '#FFFFFF' }}
+            >
               {cardInitial}, {profile.age}
             </h2>
             {profile.location && (
-              <div className="flex items-center space-x-1 text-white/90">
-                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-sm sm:text-base">{profile.location}</span>
+              <div 
+                className="flex items-center space-x-1"
+                style={{ color: '#FFFFFF' }}
+              >
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" style={{ color: '#FFFFFF' }} />
+                <span className="text-sm sm:text-base" style={{ color: '#FFFFFF' }}>{profile.location}</span>
               </div>
             )}
           </div>

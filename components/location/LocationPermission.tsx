@@ -66,8 +66,8 @@ export function LocationPermission({ className, initiallyEnabled = false, onEnab
         </div>
         <div className="flex-1 space-y-2">
           <div>
-            <p className="text-sm font-semibold">Enable Location</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>Enable Location</p>
+            <p className="text-xs" style={{ color: '#E5E7EB' }}>
               Turn on location services to filter matches by distance and see how far they are.
             </p>
           </div>
