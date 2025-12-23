@@ -526,6 +526,19 @@
     height: 6px;
     border-radius: 9999px;
   }
+
+  /* Select Item Selected State Styling */
+  /* Style SelectItem when it contains the ItemIndicator (selected item) */
+  [data-slot="select-item"]:has([data-radix-select-item-indicator]) {
+    background-color: #97011A !important;
+    color: #FFFFFF !important;
+  }
+
+  /* When selected item is highlighted (hovered/focused) */
+  [data-slot="select-item"]:has([data-radix-select-item-indicator])[data-highlighted] {
+    background-color: #7A010E !important;
+    color: #FFFFFF !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

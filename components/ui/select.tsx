@@ -107,14 +107,23 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "focus:bg-white/10 relative flex w-full cursor-default items-center gap-2 rounded-md py-2 pr-8 pl-3 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex w-full cursor-pointer items-center gap-2 rounded-md py-2 pr-8 pl-3 text-sm outline-hidden select-none transition-all duration-150 ease-in-out",
+        // Hover and focus states (keyboard navigation) - soft rose/light red tint
+        // Note: Selected state styling is handled in globals.css for better browser compatibility
+        "data-[highlighted]:bg-[rgba(151,1,26,0.08)] data-[highlighted]:text-[#111]",
+        // Disabled state
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        // Icon styling
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        // Text wrapper styling
+        "*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className,
       )}
       {...props}
     >
       <span className="absolute right-2 flex size-3.5 items-center justify-center">
-        <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="size-4 text-[#97011A]" />
+        <SelectPrimitive.ItemIndicator data-radix-select-item-indicator>
+          <CheckIcon className="size-4 text-white" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText className="[&]:text-inherit">{children}</SelectPrimitive.ItemText>
