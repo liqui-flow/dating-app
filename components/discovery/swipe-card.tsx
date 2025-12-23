@@ -267,8 +267,8 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
           // 3D perspective container
           "perspective-[1200px]",
           // Enhanced shadows for realistic depth
-          // Full-view shadow for Dating: soft white glow when flipped
-          stackIndex === 0 && isFlipped && "shadow-[0_0_30px_rgba(255,255,255,0.25)]",
+          // Full-view shadow for Dating: soft white glow when flipped (elevated card appearance)
+          stackIndex === 0 && isFlipped && "shadow-[0_8px_32px_rgba(255,255,255,0.15),0_4px_16px_rgba(255,255,255,0.1)]",
           // Regular stack shadows when not flipped
           stackIndex === 0 && !isFlipped && "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)]",
           stackIndex === 1 && "shadow-[0_15px_45px_-12px_rgba(0,0,0,0.35),0_8px_25px_-8px_rgba(0,0,0,0.25)]",
@@ -336,12 +336,15 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
         )}
       />
 
-      {/* Frosted glass overlay with gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/60" />
-      
-      {/* Subtle frosted glass effect on top portion */}
-      {stackIndex === 0 && (
-        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] via-transparent to-transparent backdrop-blur-[0.5px]" />
+      {/* Frosted glass overlay with gradient - hidden when flipped */}
+      {!isFlipped && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/60" />
+          {/* Subtle frosted glass effect on top portion */}
+          {stackIndex === 0 && (
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] via-transparent to-transparent backdrop-blur-[0.5px]" />
+          )}
+        </>
       )}
 
       {/* Top-right status badges */}
@@ -351,8 +354,8 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
         </div>
       )}
 
-      {/* Bottom profile information overlay - Simplified design */}
-      {stackIndex === 0 && (
+      {/* Bottom profile information overlay - Simplified design - hidden when flipped */}
+      {stackIndex === 0 && !isFlipped && (
         <div className="absolute bottom-0 left-0 right-0 z-20">
           {/* Subtle dark gradient overlay for text readability */}
           <div 
@@ -439,19 +442,19 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                 <>
                   {/* Black Overlay Header with Name and Age */}
                   <div className="sticky top-0 z-40 bg-white backdrop-blur-sm border-b border-black/10 rounded-t-2xl sm:rounded-t-3xl">
-                    <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
-                      <div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-black">
+                    <div className="px-4 sm:px-6 py-4 flex items-center justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h1 className="text-xl sm:text-2xl font-bold text-black break-words">
                           {(fullProfile?.name || profile.name)}, {profile.age}
                         </h1>
                         {profile.location && (
                           <div className="flex items-center space-x-1 text-black/70 text-sm mt-1">
-                            <MapPin className="w-3 h-3" />
-                            <span>{profile.location}</span>
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="break-words">{profile.location}</span>
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 flex-shrink-0">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -496,7 +499,7 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                   </div>
 
                   {/* Scrollable Content */}
-                  <div className="relative bg-white overflow-hidden">
+                  <div className="relative bg-white overflow-hidden overflow-y-auto">
                     {(() => {
                       const photos = fullProfile?.photos || profile.photos
                       const photoPrompts = (fullProfile?.photo_prompts as string[]) || []
@@ -561,9 +564,9 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                                     {interests.map((interest, idx) => (
                                       <Badge
                                         key={idx}
-                                        className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white/90"
+                                        className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white/90 break-words max-w-full"
                                       >
-                                        {interest}
+                                        <span className="break-words">{interest}</span>
                                       </Badge>
                                     ))}
                                   </div>
@@ -596,10 +599,10 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
                                 {fullProfile.prompts.map((promptItem, idx) => (
                                   <div
                                     key={idx}
-                                    className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 space-y-2"
+                                    className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 space-y-2 overflow-hidden"
                                   >
-                                    <p className="text-white/80 text-sm font-medium">{promptItem.prompt}</p>
-                                    <p className="text-white text-base">{promptItem.answer}</p>
+                                    <p className="text-white/80 text-sm font-medium break-words">{promptItem.prompt}</p>
+                                    <p className="text-white text-base break-words whitespace-pre-wrap overflow-wrap-anywhere">{promptItem.answer}</p>
                                   </div>
                                 ))}
                               </div>

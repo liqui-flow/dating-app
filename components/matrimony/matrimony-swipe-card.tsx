@@ -310,8 +310,8 @@ export function MatrimonySwipeCard({
           // Base height for card expansion calculation
           stackIndex === 0 && isFlipped ? "h-[77vh] sm:h-[84vh] md:h-[672px]" : "h-[60vh] md:h-[480px]",
           // Enhanced shadows for realistic depth
-          // Full-view shadow for Matrimony: soft black shadow when flipped
-          stackIndex === 0 && isFlipped && "shadow-[0_12px_40px_rgba(0,0,0,0.25)]",
+          // Full-view shadow for Matrimony: soft grey shadow when flipped (elevated card appearance)
+          stackIndex === 0 && isFlipped && "shadow-[0_8px_32px_rgba(0,0,0,0.15),0_4px_16px_rgba(0,0,0,0.1)]",
           // Regular stack shadows when not flipped
           stackIndex === 0 && !isFlipped && "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)]",
           stackIndex === 1 && "shadow-[0_15px_45px_-12px_rgba(0,0,0,0.35),0_8px_25px_-8px_rgba(0,0,0,0.25)]",
@@ -422,8 +422,8 @@ export function MatrimonySwipeCard({
         </div>
       )}
 
-      {/* Bottom profile information overlay - Simplified design */}
-      {stackIndex === 0 && (
+      {/* Bottom profile information overlay - Simplified design - hidden when flipped */}
+      {stackIndex === 0 && !isFlipped && (
         <div className="absolute bottom-0 left-0 right-0 z-20">
           {/* Dark gradient overlay - strengthened for better text readability */}
           <div 
