@@ -19,20 +19,6 @@ interface FilterSheetProps {
   onFiltersSaved?: () => void
 }
 
-const educationOptions = ["High School", "Bachelor's Degree", "Master's Degree", "PhD", "Trade School", "Some College"]
-
-const religionOptions = ["Hindu", "Muslim", "Christian", "Sikh", "Buddhist", "Jain", "Other", "Prefer not to say"]
-
-const lifestyleOptions = [
-  "Non-smoker",
-  "Social drinker",
-  "Non-drinker",
-  "Vegetarian",
-  "Vegan",
-  "Fitness enthusiast",
-  "Pet lover",
-]
-
 type FilterState = {
   ageRange: [number, number]
   distance: [number]
@@ -43,9 +29,6 @@ type FilterState = {
   premiumOnly: boolean
   onlyWithPhotos: boolean
   recentlyActive: boolean
-  education: string[]
-  religion: string[]
-  lifestyle: string[]
 }
 
 const getDefaultFilters = (): FilterState => ({
@@ -58,9 +41,6 @@ const getDefaultFilters = (): FilterState => ({
   premiumOnly: false,
   onlyWithPhotos: true,
   recentlyActive: false,
-  education: [],
-  religion: [],
-  lifestyle: [],
 })
 
 const mapFiltersToPreferences = (state: FilterState) => ({
@@ -72,9 +52,6 @@ const mapFiltersToPreferences = (state: FilterState) => ({
   recently_active: state.recentlyActive,
   verified_only: state.verifiedOnly,
   premium_only: state.premiumOnly,
-  education: state.education,
-  religion: state.religion,
-  lifestyle: state.lifestyle,
   interests: state.interests,
   relationship_goal: state.relationshipGoal,
 })
@@ -115,9 +92,6 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
           premiumOnly: prefs.premium_only || false,
           onlyWithPhotos: prefs.only_with_photos !== undefined ? prefs.only_with_photos : true,
           recentlyActive: prefs.recently_active || false,
-          education: prefs.education || [],
-          religion: prefs.religion || [],
-          lifestyle: prefs.lifestyle || [],
         })
       }
     } catch (error) {
@@ -172,10 +146,14 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
   }
 
   const interestCategories = {
-    Art: ["Painting", "Photography", "Digital Art"],
-    Food: ["Foodie", "Cooking", "Trying new restaurants"],
-    Entertainment: ["Binge-watching", "Podcasts", "Stand-up comedy", "Live music"],
+    Art: ["Painting", "Photography", "Digital Art", "Sculpture", "Sketching"],
+    Food: ["Foodie", "Cooking", "Trying new restaurants", "Baking", "Food photography"],
+    Entertainment: ["Netflix nights", "YouTube rabbit holes", "Podcasts", "Reels & TikTok", "Live shows"],
     Lifestyle: ["Thrifting", "DIY Projects", "Volunteering", "Wellness", "Homebody"],
+    "Weekend mood": ["Chill & recharge", "Spontaneous plans", "Friends & fun", "Solo reset", "Mix of everything"],
+    "Dating vibes": ["Quality time", "Deep conversations", "Casual coffee dates", "Slow burn", "Romantic dates"],
+    "Dating energy": ["Golden retriever energy", "Calm & grounded", "Introvert at first", "Extrovert energy", "Depends on the vibe"],
+    "Travel style": ["Road trips", "Beach person", "Mountains > beaches", "City explorer", "Staycations"],
   }
 
   const relationshipGoals = [
@@ -217,19 +195,10 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
     }
   }
 
-  const handleArrayToggle = (key: "education" | "religion" | "lifestyle", value: string) => {
-    const currentArray = filters[key]
-    setFilters((prev) => ({
-      ...prev,
-      [key]: currentArray.includes(value)
-        ? currentArray.filter((item) => item !== value)
-        : [...currentArray, value],
-    }))
-  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[500px] overflow-y-auto flex flex-col">
+      <SheetContent side="right" className="dating-theme w-full sm:w-[500px] overflow-y-auto flex flex-col">
         <SheetHeader className="space-y-3">
           <div className="flex items-center justify-between pr-12">
             <SheetTitle>Filters</SheetTitle>
@@ -346,10 +315,14 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
               value={filters.relationshipGoal}
               onValueChange={(value) => setFilters((prev) => ({ ...prev, relationshipGoal: value }))}
             >
-              <SelectTrigger className="h-11 bg-white/10 border-white/20 [&_svg]:text-white/60 [&[data-placeholder]]:!text-white/60 [&_*[data-slot='select-value']]:!text-white" style={{ color: '#FFFFFF' }}>
+              <SelectTrigger className="h-11 bg-white/10 border-white/20 [&_svg]:text-white/60 [&[data-placeholder]]:!text-white/60 [&_*[data-slot='select-value']]:!text-white w-full" style={{ color: '#FFFFFF' }}>
                 <SelectValue placeholder="Any relationship goal" />
               </SelectTrigger>
-              <SelectContent className="bg-[#14161B] border-white/20" style={{ color: '#FFFFFF' }}>
+              <SelectContent 
+                position="popper" 
+                className="bg-[#14161B] border-white/20 z-[100]" 
+                style={{ color: '#FFFFFF' }}
+              >
                 <SelectItem value="any" className="hover:bg-white/10 focus:bg-white/10" style={{ color: '#FFFFFF' }}>
                   Any relationship goal
                 </SelectItem>
@@ -382,6 +355,7 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
                   id="only-photos"
                   checked={filters.onlyWithPhotos}
                   onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, onlyWithPhotos: checked }))}
+                  mode="dating"
                 />
               </div>
 
@@ -394,6 +368,7 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
                   id="recently-active"
                   checked={filters.recentlyActive}
                   onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, recentlyActive: checked }))}
+                  mode="dating"
                 />
               </div>
 
@@ -403,6 +378,7 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
                   id="verified-only"
                   checked={filters.verifiedOnly}
                   onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, verifiedOnly: checked }))}
+                  mode="dating"
                 />
               </div>
 
@@ -412,81 +388,8 @@ export function FilterSheet({ open, onOpenChange, onFiltersSaved }: FilterSheetP
                   id="premium-only"
                   checked={filters.premiumOnly}
                   onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, premiumOnly: checked }))}
+                  mode="dating"
                 />
-              </div>
-            </div>
-          </div>
-
-          <Separator className="bg-white/10" />
-
-          {/* Advanced Filters */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>Advanced Filters</h3>
-              <Badge variant="secondary" className="text-xs bg-white/20 text-white border-white/30">Premium</Badge>
-            </div>
-
-            {/* Education */}
-            <div className="space-y-4">
-              <Label className="font-medium" style={{ color: '#FFFFFF' }}>Education</Label>
-              <div className="flex flex-wrap gap-2.5">
-                {educationOptions.map((option) => (
-                  <Badge
-                    key={option}
-                    variant={filters.education.includes(option) ? "default" : "outline"}
-                    className={filters.education.includes(option) 
-                      ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                      : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
-                    onClick={() => handleArrayToggle("education", option)}
-                  >
-                    {option}
-                    {filters.education.includes(option) && <X className="w-3 h-3 ml-1" />}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <Separator className="bg-white/10" />
-
-            {/* Religion */}
-            <div className="space-y-4">
-              <Label className="font-medium" style={{ color: '#FFFFFF' }}>Religion</Label>
-              <div className="flex flex-wrap gap-2.5">
-                {religionOptions.map((option) => (
-                  <Badge
-                    key={option}
-                    variant={filters.religion.includes(option) ? "default" : "outline"}
-                    className={filters.religion.includes(option) 
-                      ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                      : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
-                    onClick={() => handleArrayToggle("religion", option)}
-                  >
-                    {option}
-                    {filters.religion.includes(option) && <X className="w-3 h-3 ml-1" />}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <Separator className="bg-white/10" />
-
-            {/* Lifestyle */}
-            <div className="space-y-4">
-              <Label className="font-medium" style={{ color: '#FFFFFF' }}>Lifestyle</Label>
-              <div className="flex flex-wrap gap-2.5">
-                {lifestyleOptions.map((option) => (
-                  <Badge
-                    key={option}
-                    variant={filters.lifestyle.includes(option) ? "default" : "outline"}
-                    className={filters.lifestyle.includes(option) 
-                      ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                      : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
-                    onClick={() => handleArrayToggle("lifestyle", option)}
-                  >
-                    {option}
-                    {filters.lifestyle.includes(option) && <X className="w-3 h-3 ml-1" />}
-                  </Badge>
-                ))}
               </div>
             </div>
           </div>

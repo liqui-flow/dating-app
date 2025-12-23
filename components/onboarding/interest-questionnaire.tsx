@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, Heart, Palette, UtensilsCrossed, Film, Sparkles, Calendar, Zap, MapPin } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
-import { completeQuestionnaire } from "@/lib/datingProfileService"
+import { completeQuestionnaire, saveInterests } from "@/lib/datingProfileService"
 import { useToast } from "@/hooks/use-toast"
 
 interface InterestQuestionnaireProps {
@@ -114,7 +114,37 @@ export function InterestQuestionnaire({ onComplete }: InterestQuestionnaireProps
     }
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    // Save interests when moving from step 1 to step 2
+    if (currentStep === 1 && selectedInterests.length > 0) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          // Prepare interests data with categories
+          const interestsData = selectedInterests.map(interestName => {
+            // Find the category for this interest
+            let category = ''
+            for (const [cat, items] of Object.entries(interestCategories)) {
+              if (items.includes(interestName)) {
+                category = cat
+                break
+              }
+            }
+            return {
+              category,
+              name: interestName
+            }
+          })
+          
+          // Save interests immediately
+          await saveInterests(user.id, interestsData)
+        }
+      } catch (error) {
+        // Silently handle errors - don't interrupt the flow
+        console.error('Error saving interests:', error)
+      }
+    }
+    
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1)
     }
