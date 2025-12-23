@@ -783,14 +783,16 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
     }
   }, [isHeaderMenuOpen])
 
+  const isMatrimony = matchType === 'matrimony'
+
   if (loading) {
     return (
-      <div className="flex flex-col h-screen relative bg-[#0E0F12]">
+      <div className={cn("flex flex-col h-screen relative", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
         <StaticBackground />
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
             <div className="w-12 h-12 mx-auto border-4 border-[#97011A] border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm" style={{ color: '#FFFFFF' }}>Loading chat...</p>
+            <p className={cn("text-sm", isMatrimony ? "text-black" : "text-white")}>Loading chat...</p>
           </div>
         </div>
       </div>
@@ -799,13 +801,17 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
 
   if (!matchId || !chatUser) {
     return (
-      <div className="flex flex-col h-screen relative bg-[#0E0F12]">
+      <div className={cn("flex flex-col h-screen relative", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
         <StaticBackground />
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
-            <p className="text-sm" style={{ color: '#FFFFFF' }}>Chat not found</p>
+            <p className={cn("text-sm", isMatrimony ? "text-black" : "text-white")}>Chat not found</p>
             {onBack && (
-              <Button onClick={onBack} variant="outline" className="bg-[#14161B] border-white/20 text-white">
+              <Button 
+                onClick={onBack} 
+                variant="outline" 
+                className={isMatrimony ? "bg-white border-[#E5E5E5] text-black" : "bg-[#14161B] border-white/20 text-white"}
+              >
                 Go Back
               </Button>
             )}
@@ -816,39 +822,47 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
   }
 
   return (
-    <div className="flex flex-col h-screen relative bg-[#0E0F12]">
+    <div className={cn("flex flex-col h-screen relative", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
       {/* Static Background */}
       <StaticBackground />
       
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-white/20 bg-[#14161B]/50 backdrop-blur-xl relative z-[40] shadow-lg">
+      <div className={cn(
+        "flex-shrink-0 p-4 border-b backdrop-blur-xl relative z-[40] shadow-lg",
+        isMatrimony ? "border-[#E5E5E5] bg-white" : "border-white/20 bg-[#14161B]/50"
+      )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {onBack && (
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20" 
+                className={cn(
+                  "p-2 rounded-full backdrop-blur-xl border",
+                  isMatrimony ? "hover:bg-gray-50 bg-white border-[#E5E5E5]" : "hover:bg-white/10 bg-white/10 border-white/20"
+                )}
                 onClick={onBack}
               >
-                <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+                <ArrowLeft className={cn("w-5 h-5", isMatrimony ? "text-black" : "text-white")} />
               </Button>
             )}
 
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <Avatar className="w-12 h-12 border-2 border-white/30">
+                <Avatar className={cn("w-12 h-12 border-2", isMatrimony ? "border-[#E5E5E5]" : "border-white/30")}>
                   <AvatarImage src={chatUser.avatar || "/placeholder.svg"} alt={chatUser.name} />
-                  <AvatarFallback className="text-lg bg-white/20" style={{ color: '#FFFFFF' }}>{chatUser.name[0] || "U"}</AvatarFallback>
+                  <AvatarFallback className={cn("text-lg", isMatrimony ? "bg-gray-100 text-black" : "bg-white/20 text-white")}>
+                    {chatUser.name[0] || "U"}
+                  </AvatarFallback>
                 </Avatar>
                 {chatUser.isOnline && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-[#0E0F12] rounded-full" />
+                  <div className={cn("absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 rounded-full", isMatrimony ? "border-white" : "border-[#0E0F12]")} />
                 )}
               </div>
 
               <div>
                 <div className="flex items-center space-x-2">
-                  <h2 className="font-bold text-lg" style={{ color: '#FFFFFF' }}>{chatUser.name}</h2>
+                  <h2 className={cn("font-bold text-lg", isMatrimony ? "text-black" : "text-white")}>{chatUser.name}</h2>
                   {chatUser.isPremium && (
                     <Badge className="bg-[#97011A] text-white text-xs px-2 py-0">
                       Premium
@@ -856,7 +870,7 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <p className="text-sm" style={{ color: '#A1A1AA' }}>
+                  <p className={cn("text-sm", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")}>
                     {isTyping ? "typing..." : chatUser.isOnline ? "Online now" : ""}
                   </p>
                 </div>
@@ -881,7 +895,7 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                 variant="ghost"
                 size="sm"
                 onClick={toggleSelectMode}
-                className="mr-2"
+                className={cn("mr-2", isMatrimony ? "text-black" : "text-white")}
               >
                 Cancel
               </Button>
@@ -891,21 +905,24 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="p-2 hover:bg-white/10 rounded-full text-white"
+                  className={cn("p-2 rounded-full", isMatrimony ? "hover:bg-gray-50 text-black" : "hover:bg-white/10 text-white")}
                   onClick={() => setIsHeaderMenuOpen(!isHeaderMenuOpen)}
                 >
-                  <MoreVertical className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+                  <MoreVertical className={cn("w-5 h-5", isMatrimony ? "text-black" : "text-white")} />
                 </Button>
 
                 {/* Header Menu */}
                 {isHeaderMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 z-[9999] min-w-[160px] rounded-2xl border border-white/10 bg-black/90 text-sm text-white shadow-2xl backdrop-blur-lg pointer-events-auto">
+                  <div className={cn(
+                    "absolute right-0 top-full mt-2 z-[9999] min-w-[160px] rounded-2xl border text-sm shadow-2xl backdrop-blur-lg pointer-events-auto",
+                    isMatrimony ? "border-[#E5E5E5] bg-white text-black" : "border-white/10 bg-black/90 text-white"
+                  )}>
                     <div className="flex flex-col py-1">
                       <button
                         onClick={() => {
                           toggleSelectMode()
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
+                        className={cn("flex w-full items-center gap-3 px-4 py-2 text-left transition-colors pointer-events-auto", isMatrimony ? "hover:bg-gray-50 active:bg-gray-100" : "hover:bg-white/10 active:bg-white/20")}
                       >
                         <CheckSquare className="w-4 h-4" />
                         <span>Select</span>
@@ -917,7 +934,7 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                           setSelectedMessages(new Set(messages.map(m => m.id)))
                           setIsHeaderMenuOpen(false)
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
+                        className={cn("flex w-full items-center gap-3 px-4 py-2 text-left transition-colors pointer-events-auto", isMatrimony ? "hover:bg-gray-50 active:bg-gray-100" : "hover:bg-white/10 active:bg-white/20")}
                       >
                         <CheckSquare className="w-4 h-4" />
                         <span>Select all</span>
@@ -933,7 +950,7 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                             router.push(`/profile?userId=${chatUser.id}&mode=${matchType}`)
                           }
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
+                        className={cn("flex w-full items-center gap-3 px-4 py-2 text-left transition-colors pointer-events-auto", isMatrimony ? "hover:bg-gray-50 active:bg-gray-100" : "hover:bg-white/10 active:bg-white/20")}
                       >
                         <User className="w-4 h-4" />
                         <span>View profile</span>
@@ -943,7 +960,7 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                           setIsHeaderMenuOpen(false)
                           setShowBlockDialog(true)
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
+                        className={cn("flex w-full items-center gap-3 px-4 py-2 text-left transition-colors pointer-events-auto", isMatrimony ? "hover:bg-gray-50 active:bg-gray-100" : "hover:bg-white/10 active:bg-white/20")}
                       >
                         <Ban className="w-4 h-4" />
                         <span>Block</span>
@@ -953,7 +970,7 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                           setIsHeaderMenuOpen(false)
                           setShowReportDialog(true)
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/10 active:bg-white/20 pointer-events-auto"
+                        className={cn("flex w-full items-center gap-3 px-4 py-2 text-left transition-colors pointer-events-auto", isMatrimony ? "hover:bg-gray-50 active:bg-gray-100" : "hover:bg-white/10 active:bg-white/20")}
                       >
                         <Flag className="w-4 h-4" />
                         <span>Report</span>
@@ -983,11 +1000,11 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4">
-              <Heart className="w-8 h-8" style={{ color: '#A1A1AA' }} />
+            <div className={cn("w-16 h-16 rounded-full flex items-center justify-center mb-4", isMatrimony ? "bg-gray-100" : "bg-white/10")}>
+              <Heart className={cn("w-8 h-8", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")} />
             </div>
-            <h3 className="text-lg font-semibold mb-2" style={{ color: '#FFFFFF' }}>It's a Match!</h3>
-            <p className="text-sm" style={{ color: '#A1A1AA' }}>Start the conversation with {chatUser.name}</p>
+            <h3 className={cn("text-lg font-semibold mb-2", isMatrimony ? "text-black" : "text-white")}>It's a Match!</h3>
+            <p className={cn("text-sm", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")}>Start the conversation with {chatUser.name}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -1048,24 +1065,30 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                           "px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl backdrop-blur-sm border",
                           isSelectMode ? "cursor-pointer" : "cursor-pointer",
                           isOwn
-                            ? "bg-white/20 border-white/30 rounded-br-md"
-                            : "bg-white/15 border-white/20 rounded-bl-md",
-                          activeMenu?.messageId === message.id && !isSelectMode && "ring-2 ring-white/60",
+                            ? isMatrimony 
+                              ? "bg-[#97011A] border-[#97011A] rounded-br-md text-white"
+                              : "bg-white/20 border-white/30 rounded-br-md"
+                            : isMatrimony
+                              ? "bg-gray-100 border-[#E5E5E5] rounded-bl-md text-black"
+                              : "bg-white/15 border-white/20 rounded-bl-md",
+                          activeMenu?.messageId === message.id && !isSelectMode && (isMatrimony ? "ring-2 ring-[#97011A]/40" : "ring-2 ring-white/60"),
                           selectedMessages.has(message.id) && "ring-2 ring-primary",
                         )}
                       >
                         {repliedMessage && (
-                          <div className="mb-2 rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs">
-                            <p className="text-[11px] uppercase tracking-wide" style={{ color: '#A1A1AA' }}>
+                          <div className={cn("mb-2 rounded-xl border px-3 py-2 text-xs", isMatrimony ? "border-[#E5E5E5] bg-gray-50" : "border-white/10 bg-white/10")}>
+                            <p className={cn("text-[11px] uppercase tracking-wide", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")}>
                               Reply to {repliedMessage.sender_id === currentUserId ? "You" : chatUser.name}
                             </p>
-                            <p className="line-clamp-2" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                            <p className={cn("line-clamp-2", isMatrimony ? "text-black" : "text-white/90")}>
                               {repliedMessage.content || "Message deleted"}
                             </p>
                           </div>
                         )}
                         {message.content.trim() && (
-                          <p className="text-sm leading-relaxed whitespace-pre-line break-words" style={{ color: '#FFFFFF' }}>{message.content}</p>
+                          <p className={cn("text-sm leading-relaxed whitespace-pre-line break-words", isOwn ? (isMatrimony ? "text-white" : "text-white") : (isMatrimony ? "text-black" : "text-white"))}>
+                            {message.content}
+                          </p>
                         )}
                         <div
                           className={cn(
@@ -1074,11 +1097,11 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                           )}
                         >
                           {isOwn ? (
-                            <span className="text-xs font-medium transition-all duration-200" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                            <span className={cn("text-xs font-medium transition-all duration-200", isMatrimony ? "text-white/90" : "text-white/80")}>
                               {getMessageStatusText(message)}
                             </span>
                           ) : (
-                            <span className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{formatClockTime(message.created_at)}</span>
+                            <span className={cn("text-xs", isMatrimony ? "text-[#444444]" : "text-white/60")}>{formatClockTime(message.created_at)}</span>
                           )}
                         </div>
                       </div>
@@ -1186,12 +1209,15 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
         {/* Typing Indicator */}
         {otherUserTyping && (
           <div className="flex justify-start mb-3">
-            <div className="bg-white/15 border border-white/20 backdrop-blur-sm text-white rounded-2xl rounded-bl-md px-4 py-2 max-w-[85%] sm:max-w-[80%] shadow-lg">
+            <div className={cn(
+              "backdrop-blur-sm rounded-2xl rounded-bl-md px-4 py-2 max-w-[85%] sm:max-w-[80%] shadow-lg border",
+              isMatrimony ? "bg-gray-100 border-[#E5E5E5] text-black" : "bg-white/15 border-white/20 text-white"
+            )}>
               <div className="flex items-center space-x-1">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-white/70 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-white/70 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-white/70 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className={cn("w-2 h-2 rounded-full animate-bounce", isMatrimony ? "bg-[#444444]" : "bg-white/70")} style={{ animationDelay: '0ms' }} />
+                  <div className={cn("w-2 h-2 rounded-full animate-bounce", isMatrimony ? "bg-[#444444]" : "bg-white/70")} style={{ animationDelay: '150ms' }} />
+                  <div className={cn("w-2 h-2 rounded-full animate-bounce", isMatrimony ? "bg-[#444444]" : "bg-white/70")} style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </div>
@@ -1202,16 +1228,26 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
       </div>
 
       {/* Message Input */}
-      <div className="flex-shrink-0 p-4 border-t border-white/20 bg-[#14161B]/50 backdrop-blur-xl shadow-lg">
+      <div className={cn(
+        "flex-shrink-0 p-4 border-t backdrop-blur-xl shadow-lg",
+        isMatrimony ? "border-[#E5E5E5] bg-white" : "border-white/20 bg-[#14161B]/50"
+      )}>
         {replyPreview && (
-          <div className="mb-2 flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-sm" style={{ color: '#FFFFFF' }}>
+          <div className={cn(
+            "mb-2 flex items-center justify-between rounded-2xl border px-3 py-2 text-sm",
+            isMatrimony ? "border-[#E5E5E5] bg-gray-50 text-black" : "border-white/10 bg-white/10 text-white"
+          )}>
             <div>
-              <p className="text-xs uppercase tracking-wide" style={{ color: '#A1A1AA' }}>Replying to {replyPreview.senderLabel}</p>
-              <p className="line-clamp-2" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{replyPreview.text || "Media message"}</p>
+              <p className={cn("text-xs uppercase tracking-wide", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")}>
+                Replying to {replyPreview.senderLabel}
+              </p>
+              <p className={cn("line-clamp-2", isMatrimony ? "text-black" : "text-white/90")}>
+                {replyPreview.text || "Media message"}
+              </p>
             </div>
             <button
               type="button"
-              className="ml-3 rounded-full p-1 text-white/70 hover:bg-white/20"
+              className={cn("ml-3 rounded-full p-1", isMatrimony ? "text-[#444444] hover:bg-gray-200" : "text-white/70 hover:bg-white/20")}
               onClick={() => setReplyPreview(null)}
               aria-label="Cancel reply"
             >
@@ -1229,8 +1265,12 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                 handleTyping()
               }}
               onKeyPress={handleKeyPress}
-              className="pr-12 rounded-full text-sm border-2 border-white/20 bg-[#14161B] backdrop-blur-sm focus:border-[#97011A]/50 transition-colors"
-              style={{ color: '#FFFFFF' }}
+              className={cn(
+                "pr-12 rounded-full text-sm border-2 backdrop-blur-sm focus:border-[#97011A]/50 transition-colors",
+                isMatrimony 
+                  ? "border-[#E5E5E5] bg-white text-black placeholder:text-[#444444]"
+                  : "border-white/20 bg-[#14161B] text-white"
+              )}
               placeholder="Type a message..."
               disabled={uploading}
             />

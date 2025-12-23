@@ -31,6 +31,7 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
   const [error, setError] = useState<string | null>(null)
   const [likedBack, setLikedBack] = useState<Set<string>>(new Set())
   const [likingInProgress, setLikingInProgress] = useState<Set<string>>(new Set())
+  const isMatrimony = mode === 'matrimony'
 
   // Fetch activity data
   useEffect(() => {
@@ -169,25 +170,31 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
   ]
 
   return (
-    <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
+    <div className={cn("flex flex-col h-full relative", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
       {/* Static Background */}
       <StaticBackground />
       
       {/* Header with Back Button */}
-      <div className="flex-shrink-0 p-4 border-b border-white/20 bg-[#14161B]/50 backdrop-blur-xl shadow-lg">
+      <div className={cn(
+        "flex-shrink-0 p-4 border-b backdrop-blur-xl shadow-lg",
+        isMatrimony ? "border-[#E5E5E5] bg-white" : "border-white/20 bg-[#14161B]/50"
+      )}>
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             {onBack && (
                 <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20" 
+                className={cn(
+                  "p-2 rounded-full backdrop-blur-xl border",
+                  isMatrimony ? "hover:bg-gray-50 bg-white border-[#E5E5E5]" : "hover:bg-white/10 bg-white/10 border-white/20"
+                )}
                 onClick={onBack}
               >
-                <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+                <ArrowLeft className={cn("w-5 h-5", isMatrimony ? "text-black" : "text-white")} />
               </Button>
             )}
-            <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>Activity</h1>
+            <h1 className={cn("text-2xl font-bold", isMatrimony ? "text-black" : "text-white")}>Activity</h1>
           </div>
 
           {/* Tabs */}
@@ -199,14 +206,22 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
                   activeTab === tab.id
-                    ? "bg-[#97011A]"
-                    : "bg-white/10 hover:bg-white/20"
+                    ? "bg-[#97011A] text-white"
+                    : isMatrimony 
+                      ? "bg-gray-100 hover:bg-gray-200 text-black"
+                      : "bg-white/10 hover:bg-white/20 text-[#A1A1AA]"
                 )}
-                style={{ color: activeTab === tab.id ? '#FFFFFF' : '#A1A1AA' }}
               >
                 {tab.label}
                 {tab.count > 0 && (
-                  <Badge className="ml-2 bg-white/20 text-white text-xs">
+                  <Badge className={cn(
+                    "ml-2 text-xs",
+                    activeTab === tab.id 
+                      ? "bg-white/20 text-white"
+                      : isMatrimony
+                        ? "bg-gray-200 text-black"
+                        : "bg-white/20 text-white"
+                  )}>
                     {tab.count}
                   </Badge>
                 )}
@@ -216,20 +231,20 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
         </div>
       </div>
 
-      {/* Activity List */}
-      <div className="flex-1 overflow-y-auto p-4">
+        {/* Activity List */}
+        <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <Loader2 className="w-8 h-8 text-white animate-spin mb-4" />
-            <p className="text-sm" style={{ color: '#FFFFFF' }}>Loading activity...</p>
+            <Loader2 className={cn("w-8 h-8 animate-spin mb-4", isMatrimony ? "text-[#97011A]" : "text-white")} />
+            <p className={cn("text-sm", isMatrimony ? "text-black" : "text-white")}>Loading activity...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4">
-              <Heart className="w-8 h-8" style={{ color: '#A1A1AA' }} />
+            <div className={cn("w-16 h-16 rounded-full flex items-center justify-center mb-4", isMatrimony ? "bg-gray-100" : "bg-white/10")}>
+              <Heart className={cn("w-8 h-8", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")} />
             </div>
-            <h3 className="text-lg font-semibold mb-2" style={{ color: '#FFFFFF' }}>Error loading activity</h3>
-            <p className="text-sm mb-4" style={{ color: '#A1A1AA' }}>{error}</p>
+            <h3 className={cn("text-lg font-semibold mb-2", isMatrimony ? "text-black" : "text-white")}>Error loading activity</h3>
+            <p className={cn("text-sm mb-4", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")}>{error}</p>
             <Button
               onClick={async () => {
                 setError(null)
@@ -249,17 +264,18 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                 }
               }}
               variant="outline"
+              className={isMatrimony ? "border-[#E5E5E5] text-black" : ""}
             >
               Retry
             </Button>
           </div>
         ) : filteredActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4">
-              <Heart className="w-8 h-8" style={{ color: '#A1A1AA' }} />
+            <div className={cn("w-16 h-16 rounded-full flex items-center justify-center mb-4", isMatrimony ? "bg-gray-100" : "bg-white/10")}>
+              <Heart className={cn("w-8 h-8", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")} />
             </div>
-            <h3 className="text-lg font-semibold mb-2" style={{ color: '#FFFFFF' }}>No activity yet</h3>
-            <p className="text-sm" style={{ color: '#A1A1AA' }}>
+            <h3 className={cn("text-lg font-semibold mb-2", isMatrimony ? "text-black" : "text-white")}>No activity yet</h3>
+            <p className={cn("text-sm", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")}>
               Start swiping to see matches, likes, and views here!
             </p>
           </div>
@@ -268,7 +284,12 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
             {filteredActivities.map((activity) => (
               <div
                 key={activity.id}
-                className="bg-[#14161B] border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/10 transition-all duration-200 cursor-pointer"
+                className={cn(
+                  "border backdrop-blur-sm rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer",
+                  isMatrimony 
+                    ? "bg-white border-[#E5E5E5] hover:bg-gray-50"
+                    : "bg-[#14161B] border-white/20 hover:bg-white/10"
+                )}
                 onClick={() => {
                   // Always open profile when clicking on the card
                   onProfileClick?.(activity.userId)
@@ -277,9 +298,11 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                 <div className="flex items-center space-x-3">
                   {/* Avatar */}
                   <div className="relative flex-shrink-0">
-                    <Avatar className="w-12 h-12 border-2 border-white/30">
+                    <Avatar className={cn("w-12 h-12 border-2", isMatrimony ? "border-[#E5E5E5]" : "border-white/30")}>
                       <AvatarImage src={activity.avatar || "/placeholder.svg"} alt={activity.name} />
-                      <AvatarFallback className="bg-white/20" style={{ color: '#FFFFFF' }}>{activity.name[0]}</AvatarFallback>
+                      <AvatarFallback className={cn(isMatrimony ? "bg-gray-100 text-black" : "bg-white/20 text-white")}>
+                        {activity.name[0]}
+                      </AvatarFallback>
                     </Avatar>
                   </div>
 
@@ -287,20 +310,20 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       {getActivityIcon(activity.type)}
-                      <h3 className="font-semibold text-sm truncate" style={{ color: '#FFFFFF' }}>
+                      <h3 className={cn("font-semibold text-sm truncate", isMatrimony ? "text-black" : "text-white")}>
                         {activity.name}
-                        {activity.age && <span className="ml-1" style={{ color: '#A1A1AA' }}>, {activity.age}</span>}
+                        {activity.age && <span className={cn("ml-1", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")}>, {activity.age}</span>}
                       </h3>
                       {activity.isNew && (
-                        <Badge className="bg-[#97011A] text-white text-xs px-1.5 py-0.5 border border-white/20">
+                        <Badge className="bg-[#97011A] text-white text-xs px-1.5 py-0.5 border border-[#97011A]">
                           New
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm" style={{ color: '#A1A1AA' }}>
+                    <p className={cn("text-sm", isMatrimony ? "text-[#444444]" : "text-[#A1A1AA]")}>
                       {getActivityText(activity)}
                     </p>
-                    <p className="text-xs mt-1" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                    <p className={cn("text-xs mt-1", isMatrimony ? "text-[#444444]" : "text-white/60")}>
                       {activity.timestamp}
                     </p>
                   </div>
@@ -339,21 +362,25 @@ export function ActivityScreen({ onProfileClick, onMatchClick, mode = 'dating', 
                         onClick={(e) => handleLikeBack(activity, e)}
                         disabled={likingInProgress.has(activity.id) || likedBack.has(activity.id)}
                         className={cn(
-                          "rounded-full p-1.5 transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed",
+                          "rounded-full p-1.5 transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border-2",
                           likedBack.has(activity.id)
-                            ? "bg-red-500/20 border-2 border-red-500"
-                            : "bg-black/40 border-2 border-white/60 hover:border-white/80"
+                            ? "bg-red-500/20 border-red-500"
+                            : isMatrimony
+                              ? "bg-gray-100 border-[#E5E5E5] hover:border-[#97011A]"
+                              : "bg-black/40 border-white/60 hover:border-white/80"
                         )}
                       >
                         {likingInProgress.has(activity.id) ? (
-                          <Loader2 className="w-4 h-4 text-white animate-spin" />
+                          <Loader2 className={cn("w-4 h-4 animate-spin", isMatrimony ? "text-[#97011A]" : "text-white")} />
                         ) : (
                           <Heart
                             className={cn(
                               "w-4 h-4 transition-all duration-200",
                               likedBack.has(activity.id)
                                 ? "text-red-500 fill-red-500"
-                                : "text-white fill-white"
+                                : isMatrimony
+                                  ? "text-[#97011A] fill-[#97011A]"
+                                  : "text-white fill-white"
                             )}
                           />
                         )}

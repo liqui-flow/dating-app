@@ -539,6 +539,67 @@
     background-color: #7A010E !important;
     color: #FFFFFF !important;
   }
+
+  /* Matrimony Theme - White Theme for Matrimony Section */
+  .matrimony-theme {
+    --matrimony-bg: #FFFFFF;
+    --matrimony-text: #000000;
+    --matrimony-text-secondary: #444444;
+    --matrimony-border: #E5E5E5;
+    --matrimony-divider: #F0F0F0;
+    --matrimony-accent: #97011A;
+    background-color: #FFFFFF;
+    color: #000000;
+  }
+
+  .matrimony-theme .matrimony-bg {
+    background-color: #FFFFFF !important;
+  }
+
+  .matrimony-theme .matrimony-text {
+    color: #000000 !important;
+  }
+
+  .matrimony-theme .matrimony-text-secondary {
+    color: #444444 !important;
+  }
+
+  .matrimony-theme .matrimony-border {
+    border-color: #E5E5E5 !important;
+  }
+
+  .matrimony-theme .matrimony-divider {
+    border-color: #F0F0F0 !important;
+  }
+
+  /* Force white text on Matrimony profile card overlays - Override any inherited styles */
+  .matrimony-card-overlay-text,
+  .matrimony-card-overlay-text *,
+  .matrimony-card-name,
+  .matrimony-card-location,
+  .matrimony-card-location *,
+  .matrimony-card-profession,
+  .matrimony-card-profession * {
+    color: #FFFFFF !important;
+  }
+
+  /* Ensure text shadow for readability */
+  .matrimony-card-name,
+  .matrimony-card-location,
+  .matrimony-card-profession {
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+  }
+
+  /* Force black text for Matrimony Filter Sheet title */
+  .matrimony-filter-title {
+    color: #000000 !important;
+  }
+
+  /* Force black color for Matrimony Filter Sheet close button */
+  .matrimony-filter-sheet [data-slot="sheet-close"] svg,
+  .matrimony-filter-sheet button[class*="absolute top-5 right-5"] svg {
+    color: #000000 !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

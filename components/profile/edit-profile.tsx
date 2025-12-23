@@ -449,12 +449,14 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
     }
   }
 
+  const isMatrimony = mode === 'matrimony'
+
   if (loading) {
     return (
-      <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
+      <div className={cn("flex flex-col h-full relative min-h-screen", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
         <StaticBackground />
         <div className="flex items-center justify-center h-screen">
-          <p style={{ color: '#A1A1AA' }}>Loading...</p>
+          <p className={isMatrimony ? "text-black" : "text-[#A1A1AA]"}>Loading...</p>
         </div>
       </div>
     )
@@ -463,7 +465,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
   const currentPhotos = userPath === 'dating' ? datingPhotos : matrimonyPhotos
 
   return (
-    <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
+    <div className={cn("flex flex-col h-full relative min-h-screen", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
       <StaticBackground />
       <style dangerouslySetInnerHTML={{__html: `
         button[class*="bg-white/10"][class*="border-white/20"] {
@@ -479,17 +481,25 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
           color: #FFFFFF !important;
         }
       `}} />
-      <div className="flex-shrink-0 p-4 border-b border-white/20 bg-[#14161B]/50 backdrop-blur-xl shadow-lg">
+      <div className={cn(
+        "flex-shrink-0 p-4 border-b backdrop-blur-xl shadow-lg",
+        isMatrimony ? "border-[#E5E5E5] bg-white" : "border-white/20 bg-[#14161B]/50"
+      )}>
         <div className="flex items-center justify-between">
           <Button 
             variant="ghost" 
             size="sm" 
-            className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20"
+            className={cn(
+              "p-2 rounded-full backdrop-blur-xl border",
+              isMatrimony 
+                ? "hover:bg-gray-50 bg-white border-[#E5E5E5]"
+                : "hover:bg-white/10 bg-white/10 border-white/20"
+            )}
             onClick={onBack}
           >
-            <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+            <ArrowLeft className={cn("w-5 h-5", isMatrimony ? "text-black" : "text-white")} />
           </Button>
-          <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>Edit Profile</h1>
+          <h1 className={cn("text-2xl font-bold", isMatrimony ? "text-black" : "text-white")}>Edit Profile</h1>
           <Button 
             variant="default" 
             size="sm" 

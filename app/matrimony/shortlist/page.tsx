@@ -44,12 +44,16 @@ export default function MatrimonyShortlistPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0E0F12]">
-        <p className="text-white">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white matrimony-theme">
+        <p className="text-black">Loading...</p>
       </div>
     )
   }
 
-  return <MatrimonyMain initialScreen="shortlist" onExit={() => (window.location.href = "/")} />
+  return (
+    <div className="matrimony-theme">
+      <MatrimonyMain initialScreen="shortlist" onExit={() => (window.location.href = "/")} />
+    </div>
+  )
 }
 

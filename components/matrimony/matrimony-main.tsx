@@ -657,36 +657,36 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
       onSettingsClick={() => setCurrentScreen("app-settings")}
       showSettingsButton={true}
       currentScreen={currentScreen}
+      mode="matrimony"
     >
       {/* Floating header elements */}
       {currentScreen === "discover" && (
         <>
-          <div className="fixed top-3 left-4 z-40 text-xl font-semibold bg-white/10 backdrop-blur-xl border border-white/20 px-3 py-1.5 rounded-lg shadow-lg" style={{ color: '#FFFFFF' }}>Find your match</div>
+          <div className="fixed top-3 left-4 z-40 text-xl font-semibold bg-white backdrop-blur-xl border border-[#E5E5E5] px-3 py-1.5 rounded-lg shadow-lg text-black">Find your match</div>
           <div className="fixed top-3 right-3 z-40">
             <Button
               variant="secondary"
               size="default"
-              className="rounded-full px-5 py-4 shadow-md bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/20"
+              className="rounded-full px-5 py-4 shadow-md bg-white backdrop-blur-xl border border-[#E5E5E5] hover:bg-gray-50 text-black"
               onClick={() => setShowFilters(true)}
-              style={{ color: '#FFFFFF' }}
             >
-              <Filter className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+              <Filter className="w-5 h-5 text-black" />
             </Button>
           </div>
         </>
       )}
 
       {currentScreen === "discover" && (
-        <div className="fixed inset-0 h-screen w-screen overflow-hidden flex flex-col relative bg-[#0E0F12]">
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden flex flex-col relative bg-white">
           {/* Dynamic Background */}
           <DynamicBackground imageUrl={currentProfile?.photos?.[0] || null} />
           
           <div className="flex-1 overflow-hidden flex items-center justify-center p-4">
             {loading ? (
               <div className="flex items-center justify-center h-full w-full">
-                <div className="text-center space-y-4 bg-[#14161B] backdrop-blur-sm p-6 rounded-xl shadow-lg">
+                <div className="text-center space-y-4 bg-white backdrop-blur-sm p-6 rounded-xl shadow-lg border border-[#E5E5E5]">
                   <div className="w-12 h-12 mx-auto border-4 border-[#97011A] border-t-transparent rounded-full animate-spin" />
-                  <p className="text-sm text-white font-medium">Loading profiles...</p>
+                  <p className="text-sm text-black font-medium">Loading profiles...</p>
                 </div>
               </div>
             ) : (
@@ -727,21 +727,21 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
                         ))}
                     </div>
                   ) : (
-                    <Card className="w-full max-w-sm h-96 flex items-center justify-center bg-[#14161B]" style={{ color: '#FFFFFF' }}>
-                      <CardContent className="text-center space-y-4" style={{ color: '#FFFFFF' }}>
-                        <div className="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center">
+                    <Card className="w-full max-w-sm h-96 flex items-center justify-center bg-white border border-[#E5E5E5] shadow-sm">
+                      <CardContent className="text-center space-y-4">
+                        <div className="w-16 h-16 mx-auto bg-[#97011A]/10 rounded-full flex items-center justify-center">
                           <Heart className="w-8 h-8 text-[#97011A]" />
                         </div>
                         <div className="space-y-2">
-                          <h3 className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>No more profiles</h3>
-                          <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                          <h3 className="text-lg font-semibold text-black">No more profiles</h3>
+                          <p className="text-sm text-[#444444]">
                             {profiles.length === 0 
                               ? "No profiles available. Check back later!" 
                               : "Check back later for new matches"}
                           </p>
                         </div>
                         {profiles.length > 0 && (
-                          <Button onClick={() => setCurrentCardIndex(0)} className="bg-[#97011A] hover:bg-[#7A0115]" style={{ color: '#FFFFFF' }}>Start Over</Button>
+                          <Button onClick={() => setCurrentCardIndex(0)} className="bg-[#97011A] hover:bg-[#7A0115] text-white">Start Over</Button>
                         )}
                       </CardContent>
                     </Card>
@@ -754,7 +754,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
       )}
 
       {currentScreen === "messages" && (
-        <div className="p-4 pb-20 mt-2 w-full bg-[#0E0F12] min-h-screen">
+        <div className="fixed inset-0 flex flex-col bg-white h-screen overflow-hidden">
           <MatrimonyChatList onChatClick={(chatId) => {
             setSelectedChatId(chatId)
             setCurrentScreen("chat")
@@ -763,7 +763,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
       )}
 
       {currentScreen === "activity" && (
-        <div className="p-4 pb-20 mt-2 w-full bg-[#0E0F12] min-h-screen">
+        <div className="fixed inset-0 flex flex-col bg-white h-screen overflow-hidden">
           <ActivityScreen
             mode="matrimony"
             onProfileClick={(userId) => {
@@ -780,30 +780,30 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
       )}
 
       {currentScreen === "shortlist" && (
-        <div className="p-4 pb-20 mt-2 w-full bg-[#0E0F12] min-h-screen">
+        <div className="fixed inset-0 flex flex-col bg-white h-screen overflow-hidden">
           <div className="flex flex-col h-full relative">
             {/* Static Background */}
             <StaticBackground />
             
             {/* Header */}
-            <div className="flex-shrink-0 p-4 border-b border-white/20 bg-[#14161B]/50 backdrop-blur-sm">
+            <div className="flex-shrink-0 p-4 border-b border-[#E5E5E5] bg-white backdrop-blur-sm">
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="p-2 hover:bg-white/10 rounded-full text-white" 
+                    className="p-2 hover:bg-gray-50 rounded-full text-black" 
                     onClick={handleOpenDiscover}
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
-                  <h1 className="text-2xl font-bold text-white">Shortlist</h1>
+                  <h1 className="text-2xl font-bold text-black">Shortlist</h1>
                 </div>
               </div>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 min-h-0">
               <MatrimonyShortlistView
                 profiles={shortlistedProfiles}
                 loading={shortlistLoading}

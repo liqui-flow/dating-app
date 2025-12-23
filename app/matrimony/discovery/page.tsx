@@ -54,15 +54,19 @@ export default function MatrimonyDiscovery() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0E0F12]">
-        <p className="text-white">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white matrimony-theme">
+        <p className="text-black">Loading...</p>
       </div>
     )
   }
 
-  return <MatrimonyMain onExit={() => {
-    // Navigate back to home or dating mode
-    window.location.href = "/"
-  }} />
+  return (
+    <div className="matrimony-theme">
+      <MatrimonyMain onExit={() => {
+        // Navigate back to home or dating mode
+        window.location.href = "/"
+      }} />
+    </div>
+  )
 }
 

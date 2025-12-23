@@ -420,36 +420,71 @@ export function MatrimonySwipeCard({
       {/* Bottom profile information overlay - Simplified design */}
       {stackIndex === 0 && (
         <div className="absolute bottom-0 left-0 right-0 z-20">
-          {/* Dark gradient overlay */}
-          <div className="bg-gradient-to-t from-black/80 via-black/60 to-transparent h-40 rounded-b-3xl" />
+          {/* Dark gradient overlay - strengthened for better text readability */}
+          <div 
+            className="h-48 rounded-b-3xl" 
+            style={{ 
+              background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.40) 40%, rgba(0,0,0,0.20) 70%, transparent 100%)'
+            }} 
+          />
           
           {/* Profile information - positioned above the buttons */}
-          <div className="absolute bottom-20 left-4 right-4 z-10">
-            <h2 className="text-white text-xl sm:text-2xl font-bold drop-shadow-lg mb-1">
+          <div className="absolute bottom-20 left-4 right-4 z-10 matrimony-card-overlay-text">
+            <h2 
+              className="matrimony-card-name text-xl sm:text-2xl font-bold mb-1" 
+              style={{ 
+                color: '#FFFFFF',
+                textShadow: '0 1px 3px rgba(0,0,0,0.4)'
+              }}
+            >
               {cardInitial}, {age}
             </h2>
             {location && (
-              <div className="flex items-center space-x-1 text-white/90 mb-1">
-                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-sm sm:text-base">{location}</span>
+              <div 
+                className="matrimony-card-location flex items-center space-x-1 mb-1" 
+                style={{ 
+                  color: '#FFFFFF',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.4)'
+                }}
+              >
+                <MapPin 
+                  className="w-3 h-3 sm:w-4 sm:h-4" 
+                  style={{ 
+                    color: '#FFFFFF',
+                    filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.4))'
+                  }} 
+                />
+                <span className="text-sm sm:text-base" style={{ color: '#FFFFFF' }}>{location}</span>
               </div>
             )}
             {/* Religion/Caste and Profession */}
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               {(fullProfile?.cultural?.religion || fullProfile?.cultural?.community || community) && (
-                <div className="text-white/90 text-xs sm:text-sm">
+                <div 
+                  className="matrimony-card-profession text-xs sm:text-sm" 
+                  style={{ 
+                    color: '#FFFFFF',
+                    textShadow: '0 1px 3px rgba(0,0,0,0.4)'
+                  }}
+                >
                   {fullProfile?.cultural?.religion 
                     ? (fullProfile?.cultural?.community 
                         ? `${fullProfile.cultural.religion} / ${fullProfile.cultural.community}`
                         : fullProfile.cultural.religion)
                     : (fullProfile?.cultural?.community || community || 'N/A')}
                   {(profession || fullProfile?.career?.job_title) && (
-                    <span>, {fullProfile?.career?.job_title || profession}</span>
+                    <span style={{ color: '#FFFFFF' }}>, {fullProfile?.career?.job_title || profession}</span>
                   )}
                 </div>
               )}
               {!(fullProfile?.cultural?.religion || fullProfile?.cultural?.community || community) && (profession || fullProfile?.career?.job_title) && (
-                <div className="text-white/90 text-xs sm:text-sm">
+                <div 
+                  className="matrimony-card-profession text-xs sm:text-sm" 
+                  style={{ 
+                    color: '#FFFFFF',
+                    textShadow: '0 1px 3px rgba(0,0,0,0.4)'
+                  }}
+                >
                   {fullProfile?.career?.job_title || profession}
                 </div>
               )}
@@ -533,20 +568,20 @@ export function MatrimonySwipeCard({
               }}
             >
               {loadingProfile ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-                  <div className="text-white">Loading profile...</div>
+                <div className="absolute inset-0 flex items-center justify-center bg-white">
+                  <div className="text-black">Loading profile...</div>
                 </div>
               ) : (
                 <>
-                  {/* Black Overlay Header with Name and Age */}
-                  <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-sm border-b border-white/10 rounded-t-2xl sm:rounded-t-3xl">
+                  {/* White Header with Name and Age */}
+                  <div className="sticky top-0 z-40 bg-white backdrop-blur-sm border-b border-[#E5E5E5] rounded-t-2xl sm:rounded-t-3xl">
                     <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
                       <div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-white">
+                        <h1 className="text-xl sm:text-2xl font-bold text-black">
                           {fullProfile?.name || name}, {fullProfile?.age || age}
                         </h1>
                         {location && (
-                          <div className="flex items-center space-x-1 text-white/80 text-sm mt-1">
+                          <div className="flex items-center space-x-1 text-[#444444] text-sm mt-1">
                             <MapPin className="w-3 h-3" />
                             <span>{location}</span>
                           </div>
@@ -554,7 +589,7 @@ export function MatrimonySwipeCard({
                         {/* Religion/Caste and Profession */}
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                           {(fullProfile?.cultural?.religion || fullProfile?.cultural?.community || community) && (
-                            <div className="text-white/80 text-sm">
+                            <div className="text-[#444444] text-sm">
                               {fullProfile?.cultural?.religion 
                                 ? (fullProfile?.cultural?.community 
                                     ? `${fullProfile.cultural.religion} / ${fullProfile.cultural.community}`
@@ -566,7 +601,7 @@ export function MatrimonySwipeCard({
                             </div>
                           )}
                           {!(fullProfile?.cultural?.religion || fullProfile?.cultural?.community || community) && (profession || fullProfile?.career?.job_title) && (
-                            <div className="text-white/80 text-sm">
+                            <div className="text-[#444444] text-sm">
                               {fullProfile?.career?.job_title || profession}
                             </div>
                           )}
@@ -581,15 +616,15 @@ export function MatrimonySwipeCard({
                               type="button"
                               className={cn(
                                 "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
-                                "bg-white/20 backdrop-blur-md border border-white/30",
-                                "hover:bg-red-500 hover:border-red-500 hover:scale-110",
+                                "bg-gray-100 border border-[#E5E5E5]",
+                                "hover:bg-red-50 hover:border-red-500 hover:scale-110",
                                 "transition-all duration-200",
                                 "shadow-lg"
                               )}
                               onClick={handleReportClick}
                               aria-label="Report profile"
                             >
-                              <Flag className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
+                              <Flag className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="bg-red-500 text-white border-red-400">
@@ -602,24 +637,24 @@ export function MatrimonySwipeCard({
                           type="button"
                           className={cn(
                             "w-8 h-8 sm:w-9 sm:h-9 p-0 rounded-full",
-                            "bg-white/20 backdrop-blur-md border border-white/30",
-                            "hover:bg-white/30 hover:scale-110",
+                            "bg-gray-100 border border-[#E5E5E5]",
+                            "hover:bg-gray-200 hover:scale-110",
                             "transition-all duration-200",
                             "shadow-lg"
                           )}
                           onClick={handleInfoClick}
                           aria-label="Close profile"
                         >
-                          <X className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
+                          <X className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                         </Button>
                       </div>
                     </div>
                   </div>
 
                   {/* Scrollable Content */}
-                  <div className="relative bg-gradient-to-b from-black/95 via-black/90 to-black/95 overflow-hidden">
+                  <div className="relative bg-white overflow-hidden">
                     {/* Photo Gallery Section */}
-                    <div className="relative w-full bg-black px-4 sm:px-6 pt-6">
+                    <div className="relative w-full bg-white px-4 sm:px-6 pt-6">
                       <div className="relative w-full aspect-square mx-auto rounded-xl sm:rounded-2xl overflow-hidden">
                         {(() => {
                           const profilePhotos = fullProfile?.photos || photos
@@ -640,25 +675,25 @@ export function MatrimonySwipeCard({
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 border border-white/20 z-20"
+                                    className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white border border-[#E5E5E5] z-20 shadow-md"
                                     onClick={(e) => handlePhotoNavigation('prev', e)}
                                   >
-                                    <ChevronLeft className="w-5 h-5 text-white" />
+                                    <ChevronLeft className="w-5 h-5 text-black" />
                                   </Button>
                                 )}
                                 {expandedPhotoIndex < profilePhotos.length - 1 && (
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 border border-white/20 z-20"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white border border-[#E5E5E5] z-20 shadow-md"
                                     onClick={(e) => handlePhotoNavigation('next', e)}
                                   >
-                                    <ChevronRight className="w-5 h-5 text-white" />
+                                    <ChevronRight className="w-5 h-5 text-black" />
                                   </Button>
                                 )}
                                 
                                 {/* Photo Counter */}
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs z-20">
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-black text-xs z-20 border border-[#E5E5E5] shadow-md">
                                   {expandedPhotoIndex + 1} / {profilePhotos.length}
                                 </div>
                               </>
@@ -675,8 +710,8 @@ export function MatrimonySwipeCard({
                       {((fullProfile?.personal?.height_cm) || (fullProfile?.cultural?.religion)) && (
                         <div className="flex flex-wrap gap-4">
                           {fullProfile?.personal?.height_cm && (
-                            <div className="text-white/90 text-sm sm:text-base">
-                              <span className="text-white/60">Height: </span>
+                            <div className="text-black text-sm sm:text-base">
+                              <span className="text-[#444444]">Height: </span>
                               {fullProfile.personal.height_unit === 'ft' 
                                 ? (() => {
                                     const totalInches = Math.round(fullProfile.personal.height_cm! / 2.54)
@@ -688,8 +723,8 @@ export function MatrimonySwipeCard({
                             </div>
                           )}
                           {fullProfile?.cultural?.religion && (
-                            <div className="text-white/90 text-sm sm:text-base">
-                              <span className="text-white/60">Religion: </span>
+                            <div className="text-black text-sm sm:text-base">
+                              <span className="text-[#444444]">Religion: </span>
                               {fullProfile.cultural.religion}
                             </div>
                           )}
@@ -699,8 +734,8 @@ export function MatrimonySwipeCard({
                       {/* Bio Section */}
                       {(fullProfile?.bio || bio) && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-white text-base sm:text-lg">About</h3>
-                          <p className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
+                          <h3 className="font-semibold text-black text-base sm:text-lg">About</h3>
+                          <p className="text-black text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
                             {fullProfile?.bio || bio}
                           </p>
                         </div>
@@ -709,35 +744,35 @@ export function MatrimonySwipeCard({
                       {/* Personal Details Section */}
                       {fullProfile?.personal && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-white text-base sm:text-lg">Personal Details</h3>
+                          <h3 className="font-semibold text-black text-base sm:text-lg">Personal Details</h3>
                           <div className="space-y-2">
                             {fullProfile.personal.complexion && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Complexion: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Complexion: </span>
                                 {fullProfile.personal.complexion}
                               </div>
                             )}
                             {fullProfile.personal.body_type && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Body Type: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Body Type: </span>
                                 {fullProfile.personal.body_type}
                               </div>
                             )}
                             {fullProfile.personal.diet && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Diet: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Diet: </span>
                                 {fullProfile.personal.diet}
                               </div>
                             )}
                             {fullProfile.personal.marital_status && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Marital Status: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Marital Status: </span>
                                 {fullProfile.personal.marital_status}
                               </div>
                             )}
                             {(fullProfile.personal.smoker !== undefined || fullProfile.personal.drinker !== undefined) && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Lifestyle: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Lifestyle: </span>
                                 {[
                                   fullProfile.personal.smoker ? 'Smoker' : null,
                                   fullProfile.personal.drinker ? 'Drinker' : null
@@ -751,31 +786,31 @@ export function MatrimonySwipeCard({
                       {/* Career & Education Section */}
                       {fullProfile?.career && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-white text-base sm:text-lg">Career & Education</h3>
+                          <h3 className="font-semibold text-black text-base sm:text-lg">Career & Education</h3>
                           <div className="space-y-2">
                             {fullProfile.career.highest_education && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Education: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Education: </span>
                                 {fullProfile.career.highest_education}
                                 {fullProfile.career.college && `, ${fullProfile.career.college}`}
                               </div>
                             )}
                             {fullProfile.career.job_title && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Profession: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Profession: </span>
                                 {fullProfile.career.job_title}
                                 {fullProfile.career.company && ` at ${fullProfile.career.company}`}
                               </div>
                             )}
                             {fullProfile.career.annual_income && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Annual Income: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Annual Income: </span>
                                 {fullProfile.career.annual_income}
                               </div>
                             )}
                             {fullProfile.career.work_location && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Work Location: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Work Location: </span>
                                 {[
                                   fullProfile.career.work_location.city,
                                   fullProfile.career.work_location.state,
@@ -790,23 +825,23 @@ export function MatrimonySwipeCard({
                       {/* Family Information Section */}
                       {fullProfile?.family && fullProfile.family.show_on_profile && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-white text-base sm:text-lg">Family Information</h3>
+                          <h3 className="font-semibold text-black text-base sm:text-lg">Family Information</h3>
                           <div className="space-y-2">
                             {fullProfile.family.family_type && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Family Type: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Family Type: </span>
                                 {fullProfile.family.family_type}
                               </div>
                             )}
                             {fullProfile.family.family_values && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Family Values: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Family Values: </span>
                                 {fullProfile.family.family_values}
                               </div>
                             )}
                             {(fullProfile.family.father_occupation || fullProfile.family.mother_occupation) && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Parents: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Parents: </span>
                                 {[
                                   fullProfile.family.father_occupation && `Father - ${fullProfile.family.father_occupation}${fullProfile.family.father_company ? ` (${fullProfile.family.father_company})` : ''}`,
                                   fullProfile.family.mother_occupation && `Mother - ${fullProfile.family.mother_occupation}${fullProfile.family.mother_company ? ` (${fullProfile.family.mother_company})` : ''}`
@@ -814,8 +849,8 @@ export function MatrimonySwipeCard({
                               </div>
                             )}
                             {(fullProfile.family.brothers !== undefined || fullProfile.family.sisters !== undefined) && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Siblings: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Siblings: </span>
                                 {[
                                   fullProfile.family.brothers !== undefined && fullProfile.family.brothers > 0 && `${fullProfile.family.brothers} brother${fullProfile.family.brothers > 1 ? 's' : ''}`,
                                   fullProfile.family.sisters !== undefined && fullProfile.family.sisters > 0 && `${fullProfile.family.sisters} sister${fullProfile.family.sisters > 1 ? 's' : ''}`
@@ -823,8 +858,8 @@ export function MatrimonySwipeCard({
                               </div>
                             )}
                             {fullProfile.family.siblings_married && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Siblings Married: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Siblings Married: </span>
                                 {fullProfile.family.siblings_married}
                               </div>
                             )}
@@ -835,53 +870,53 @@ export function MatrimonySwipeCard({
                       {/* Cultural & Religious Section */}
                       {fullProfile?.cultural && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-white text-base sm:text-lg">Cultural & Religious</h3>
+                          <h3 className="font-semibold text-black text-base sm:text-lg">Cultural & Religious</h3>
                           <div className="space-y-2">
                             {fullProfile.cultural.mother_tongue && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Mother Tongue: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Mother Tongue: </span>
                                 {fullProfile.cultural.mother_tongue}
                               </div>
                             )}
                             {fullProfile.cultural.community && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Community: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Community: </span>
                                 {fullProfile.cultural.community}
                               </div>
                             )}
                             {fullProfile.cultural.sub_caste && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Sub-caste: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Sub-caste: </span>
                                 {fullProfile.cultural.sub_caste}
                               </div>
                             )}
                             {fullProfile.cultural.date_of_birth && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Date of Birth: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Date of Birth: </span>
                                 {new Date(fullProfile.cultural.date_of_birth).toLocaleDateString()}
                               </div>
                             )}
                             {fullProfile.cultural.time_of_birth && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Time of Birth: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Time of Birth: </span>
                                 {fullProfile.cultural.time_of_birth}
                               </div>
                             )}
                             {fullProfile.cultural.place_of_birth && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Place of Birth: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Place of Birth: </span>
                                 {fullProfile.cultural.place_of_birth}
                               </div>
                             )}
                             {fullProfile.cultural.star_raashi && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Star/Raashi: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Star/Raashi: </span>
                                 {fullProfile.cultural.star_raashi}
                               </div>
                             )}
                             {fullProfile.cultural.gotra && (
-                              <div className="text-white/90 text-sm sm:text-base">
-                                <span className="text-white/60">Gotra: </span>
+                              <div className="text-black text-sm sm:text-base">
+                                <span className="text-[#444444]">Gotra: </span>
                                 {fullProfile.cultural.gotra}
                               </div>
                             )}

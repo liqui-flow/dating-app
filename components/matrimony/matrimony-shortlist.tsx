@@ -34,7 +34,7 @@ export function MatrimonyShortlistView({
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
         <Loader2 className="w-8 h-8 animate-spin text-[#97011A]" />
-        <p className="text-white text-sm">Loading your shortlist...</p>
+        <p className="text-black text-sm">Loading your shortlist...</p>
       </div>
     )
   }
@@ -42,10 +42,10 @@ export function MatrimonyShortlistView({
   if (!profiles || profiles.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-        <Star className="w-10 h-10 text-white/60" />
+        <Star className="w-10 h-10 text-[#444444]" />
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-white">No shortlisted profiles yet</h3>
-          <p className="text-sm text-white/70 max-w-sm">
+          <h3 className="text-lg font-semibold text-black">No shortlisted profiles yet</h3>
+          <p className="text-sm text-[#444444] max-w-sm">
             Tap the star icon on profiles you like to add them to your shortlist and revisit them anytime.
           </p>
         </div>
@@ -58,7 +58,7 @@ export function MatrimonyShortlistView({
       {profiles.map((profile) => (
         <div
           key={profile.id}
-          className="bg-[#14161B] border border-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg hover:shadow-xl hover:bg-white/10 transition-all duration-200 cursor-pointer"
+          className="bg-white border border-[#E5E5E5] rounded-2xl p-4 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 cursor-pointer"
           onClick={() => onOpenProfile?.(profile)}
           role="button"
           tabIndex={0}
@@ -73,26 +73,26 @@ export function MatrimonyShortlistView({
           <div className="flex items-center space-x-3">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              <Avatar className="w-12 h-12 border-2 border-white/30">
+              <Avatar className="w-12 h-12 border-2 border-[#E5E5E5]">
                 <AvatarImage src={profile.photos?.[0] || "/placeholder.svg"} alt={profile.name} />
-                <AvatarFallback className="bg-white/20 text-white">{profile.name[0]}</AvatarFallback>
+                <AvatarFallback className="bg-gray-100 text-black">{profile.name[0]}</AvatarFallback>
               </Avatar>
             </div>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm text-white truncate">
+              <h3 className="font-semibold text-sm text-black truncate">
                 {profile.name}
-                {profile.age && <span className="text-white/70 ml-1">, {profile.age}</span>}
+                {profile.age && <span className="text-[#444444] ml-1">, {profile.age}</span>}
               </h3>
               {profile.location && (
-                <p className="text-sm text-white/70 flex items-center gap-1 mt-1">
+                <p className="text-sm text-[#444444] flex items-center gap-1 mt-1">
                   <MapPin className="w-3.5 h-3.5" />
                   {profile.location}
                 </p>
               )}
               {profile.education && (
-                <p className="text-sm text-white/70 mt-1">{profile.education}</p>
+                <p className="text-sm text-[#444444] mt-1">{profile.education}</p>
               )}
             </div>
 
@@ -101,7 +101,7 @@ export function MatrimonyShortlistView({
               variant="ghost"
               size="icon"
               className={cn(
-                "flex-shrink-0 rounded-full hover:bg-destructive/20 hover:text-destructive transition-all",
+                "flex-shrink-0 rounded-full hover:bg-red-50 hover:text-[#97011A] transition-all",
                 removingId === profile.id && "opacity-60 pointer-events-none",
               )}
               onClick={(event) => {
@@ -111,9 +111,9 @@ export function MatrimonyShortlistView({
               aria-label="Remove from shortlist"
             >
               {removingId === profile.id ? (
-                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                <Loader2 className="w-4 h-4 animate-spin text-[#97011A]" />
               ) : (
-                <Trash2 className="w-4 h-4 text-white" />
+                <Trash2 className="w-4 h-4 text-[#444444]" />
               )}
             </Button>
           </div>

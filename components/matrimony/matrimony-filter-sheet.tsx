@@ -131,21 +131,21 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[500px] overflow-y-auto flex flex-col">
+      <SheetContent side="right" className="w-full sm:w-[500px] overflow-y-auto flex flex-col bg-white matrimony-filter-sheet">
         <SheetHeader className="space-y-3">
           <div className="flex items-center justify-between pr-12">
-            <SheetTitle>Matrimony Filters</SheetTitle>
-            <Button variant="ghost" size="sm" onClick={handleReset} className="bg-white/10 hover:bg-white/20 border border-white/20" style={{ color: '#FFFFFF' }}>
+            <SheetTitle className="text-black matrimony-filter-title">Matrimony Filters</SheetTitle>
+            <Button variant="ghost" size="sm" onClick={handleReset} className="bg-gray-100 hover:bg-gray-200 border border-[#E5E5E5] text-black">
               Reset
             </Button>
           </div>
-          <SheetDescription>Customize your matrimony preferences to find your perfect life partner</SheetDescription>
+          <SheetDescription className="text-[#444444]">Customize your matrimony preferences to find your perfect life partner</SheetDescription>
         </SheetHeader>
 
         <div className="space-y-6 px-6 pb-6">
           {/* Age Range */}
           <div className="space-y-4">
-            <Label style={{ color: '#FFFFFF' }}>
+            <Label className="text-black">
               Age range: {filters.ageRange[0]} - {filters.ageRange[1]} years
             </Label>
             <Slider
@@ -158,11 +158,11 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
             />
           </div>
 
-          <Separator className="bg-white/10" />
+          <Separator className="bg-[#E5E5E5]" />
 
           {/* Height Range */}
           <div className="space-y-4">
-            <Label style={{ color: '#FFFFFF' }}>
+            <Label className="text-black">
               Height range: {filters.heightRange[0]} - {filters.heightRange[1]} cm
             </Label>
             <Slider
@@ -175,13 +175,13 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
             />
           </div>
 
-          <Separator className="bg-white/10" />
+          <Separator className="bg-[#E5E5E5]" />
 
           {/* Locations */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>Location Preferences</h3>
-              <span className="text-sm" style={{ color: '#A1A1AA' }}>{filters.locations.length} selected</span>
+              <h3 className="font-semibold text-black">Location Preferences</h3>
+              <span className="text-sm text-[#444444]">{filters.locations.length} selected</span>
             </div>
             <div className="flex flex-wrap gap-2.5">
               {locationOptions.map((location) => (
@@ -190,7 +190,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
                   variant={filters.locations.includes(location) ? "default" : "outline"}
                   className={filters.locations.includes(location) 
                     ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
                   onClick={() => handleArrayToggle(filters.locations, location, (value) => setFilters(prev => ({ ...prev, locations: value })))}
                 >
                   {location}
@@ -200,20 +200,20 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
             </div>
           </div>
 
-          <Separator className="bg-white/10" />
+          <Separator className="bg-[#E5E5E5]" />
 
           {/* Advanced Filters - Premium */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>Advanced Filters</h3>
-              <Badge variant="secondary" className="text-xs bg-white/20 text-white border-white/30">Premium</Badge>
+              <h3 className="font-semibold text-black">Advanced Filters</h3>
+              <Badge variant="secondary" className="text-xs bg-gray-100 text-black border-[#E5E5E5]">Premium</Badge>
             </div>
 
             {/* Education Preferences */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm" style={{ color: '#FFFFFF' }}>Education Preferences</h4>
-                <span className="text-sm" style={{ color: '#A1A1AA' }}>{filters.educationPrefs.length} selected</span>
+                <h4 className="font-medium text-sm text-black">Education Preferences</h4>
+                <span className="text-sm text-[#444444]">{filters.educationPrefs.length} selected</span>
               </div>
             <div className="flex flex-wrap gap-2.5">
               {educationOptions.map((education) => (
@@ -222,7 +222,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
                   variant={filters.educationPrefs.includes(education) ? "default" : "outline"}
                   className={filters.educationPrefs.includes(education) 
                     ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
                   onClick={() => handleArrayToggle(filters.educationPrefs, education, (value) => setFilters(prev => ({ ...prev, educationPrefs: value })))}
                 >
                   {education}
@@ -232,13 +232,13 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
             </div>
           </div>
 
-              <Separator className="bg-white/10" />
+              <Separator className="bg-[#E5E5E5]" />
 
               {/* Profession Preferences */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-sm" style={{ color: '#FFFFFF' }}>Profession Preferences</h4>
-                  <span className="text-sm" style={{ color: '#A1A1AA' }}>{filters.professionPrefs.length} selected</span>
+                  <h4 className="font-medium text-sm text-black">Profession Preferences</h4>
+                  <span className="text-sm text-[#444444]">{filters.professionPrefs.length} selected</span>
                 </div>
             <div className="flex flex-wrap gap-2.5">
               {professionOptions.map((profession) => (
@@ -247,7 +247,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
                   variant={filters.professionPrefs.includes(profession) ? "default" : "outline"}
                   className={filters.professionPrefs.includes(profession) 
                     ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
                   onClick={() => handleArrayToggle(filters.professionPrefs, profession, (value) => setFilters(prev => ({ ...prev, professionPrefs: value })))}
                 >
                   {profession}
@@ -257,13 +257,13 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
             </div>
           </div>
 
-                <Separator className="bg-white/10" />
+                <Separator className="bg-[#E5E5E5]" />
 
                 {/* Community Preferences */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-sm" style={{ color: '#FFFFFF' }}>Community/Caste Preferences</h4>
-                    <span className="text-sm" style={{ color: '#A1A1AA' }}>{filters.communities.length} selected</span>
+                    <h4 className="font-medium text-sm text-black">Community/Caste Preferences</h4>
+                    <span className="text-sm text-[#444444]">{filters.communities.length} selected</span>
                   </div>
             <div className="flex flex-wrap gap-2.5">
               {communityOptions.map((community) => (
@@ -272,7 +272,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
                   variant={filters.communities.includes(community) ? "default" : "outline"}
                   className={filters.communities.includes(community) 
                     ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
                   onClick={() => handleArrayToggle(filters.communities, community, (value) => setFilters(prev => ({ ...prev, communities: value })))}
                 >
                   {community}
@@ -282,13 +282,13 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
             </div>
           </div>
 
-                  <Separator className="bg-white/10" />
+                  <Separator className="bg-[#E5E5E5]" />
 
                   {/* Family Type Preferences */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-sm" style={{ color: '#FFFFFF' }}>Family Type Preferences</h4>
-                      <span className="text-sm" style={{ color: '#A1A1AA' }}>{filters.familyTypePrefs.length} selected</span>
+                      <h4 className="font-medium text-sm text-black">Family Type Preferences</h4>
+                      <span className="text-sm text-[#444444]">{filters.familyTypePrefs.length} selected</span>
                     </div>
             <div className="flex flex-wrap gap-2.5">
               {familyTypeOptions.map((familyType) => (
@@ -297,7 +297,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
                   variant={filters.familyTypePrefs.includes(familyType) ? "default" : "outline"}
                   className={filters.familyTypePrefs.includes(familyType) 
                     ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
                   onClick={() => handleArrayToggle(filters.familyTypePrefs, familyType, (value) => setFilters(prev => ({ ...prev, familyTypePrefs: value })))}
                 >
                   {familyType}
@@ -308,13 +308,13 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
                   </div>
             </div>
 
-          <Separator className="bg-white/10" />
+          <Separator className="bg-[#E5E5E5]" />
 
           {/* Dietary Preferences */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>Dietary Preferences</h3>
-              <span className="text-sm" style={{ color: '#A1A1AA' }}>{filters.dietPrefs.length} selected</span>
+              <h3 className="font-semibold text-black">Dietary Preferences</h3>
+              <span className="text-sm text-[#444444]">{filters.dietPrefs.length} selected</span>
             </div>
             <div className="flex flex-wrap gap-2.5">
               {dietOptions.map((diet) => (
@@ -323,7 +323,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
                   variant={filters.dietPrefs.includes(diet) ? "default" : "outline"}
                   className={filters.dietPrefs.includes(diet) 
                     ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
                   onClick={() => handleArrayToggle(filters.dietPrefs, diet, (value) => setFilters(prev => ({ ...prev, dietPrefs: value })))}
                 >
                   {diet}
@@ -333,13 +333,13 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
             </div>
           </div>
 
-          <Separator className="bg-white/10" />
+          <Separator className="bg-[#E5E5E5]" />
 
           {/* Lifestyle Preferences */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>Lifestyle Preferences</h3>
-              <span className="text-sm" style={{ color: '#A1A1AA' }}>{filters.lifestylePrefs.length} selected</span>
+              <h3 className="font-semibold text-black">Lifestyle Preferences</h3>
+              <span className="text-sm text-[#444444]">{filters.lifestylePrefs.length} selected</span>
             </div>
             <div className="flex flex-wrap gap-2.5">
               {lifestyleOptions.map((lifestyle) => (
@@ -348,7 +348,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
                   variant={filters.lifestylePrefs.includes(lifestyle) ? "default" : "outline"}
                   className={filters.lifestylePrefs.includes(lifestyle) 
                     ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
                   onClick={() => handleArrayToggle(filters.lifestylePrefs, lifestyle, (value) => setFilters(prev => ({ ...prev, lifestylePrefs: value })))}
                 >
                   {lifestyle}
@@ -358,14 +358,14 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
             </div>
           </div>
 
-          <Separator className="bg-white/10" />
+          <Separator className="bg-[#E5E5E5]" />
 
           {/* Account Type */}
           <div className="space-y-4">
-            <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>Account Type</h3>
+            <h3 className="font-semibold text-black">Account Type</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between py-1">
-                <Label htmlFor="verified-only" style={{ color: '#FFFFFF' }}>Verified profiles only</Label>
+                <Label htmlFor="verified-only" className="text-black">Verified profiles only</Label>
                 <Switch
                   id="verified-only"
                   checked={filters.verifiedOnly}
@@ -373,7 +373,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
                 />
               </div>
               <div className="flex items-center justify-between py-1">
-                <Label htmlFor="premium-only" style={{ color: '#FFFFFF' }}>Premium members only</Label>
+                <Label htmlFor="premium-only" className="text-black">Premium members only</Label>
                 <Switch
                   id="premium-only"
                   checked={filters.premiumOnly}
@@ -385,7 +385,7 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
         </div>
 
         {/* Apply Button */}
-        <div className="sticky bottom-0 bg-[#14161B] border-t border-white/20 px-6 py-5">
+        <div className="sticky bottom-0 bg-white border-t border-[#E5E5E5] px-6 py-5">
           <Button onClick={handleApply} className="w-full bg-[#97011A] hover:bg-[#7A0115] text-white" size="lg">
             Apply Matrimony Filters
           </Button>

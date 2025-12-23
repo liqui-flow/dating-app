@@ -48,6 +48,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
   const [isMatched, setIsMatched] = useState(false)
   const [canLikeBack, setCanLikeBack] = useState(false)
   const [isLiking, setIsLiking] = useState(false)
+  const isMatrimony = mode === 'matrimony'
 
   useEffect(() => {
     fetchProfile()
@@ -205,10 +206,10 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
   if (loading) {
     return (
-      <div className="min-h-screen relative bg-[#0E0F12]">
+      <div className={cn("min-h-screen relative", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
         <StaticBackground />
         <div className="flex items-center justify-center h-screen">
-          <p style={{ color: '#FFFFFF' }}>Loading profile...</p>
+          <p className={isMatrimony ? "text-black" : "text-white"}>Loading profile...</p>
         </div>
       </div>
     )
@@ -293,32 +294,61 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
   }
 
   return (
-    <div className="min-h-screen relative bg-[#0E0F12]">
+    <div className={cn("min-h-screen relative", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
       <StaticBackground />
       {/* Header */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-[#14161B]/80 via-[#14161B]/60 to-transparent border-b border-white/10">
+      <div className={cn(
+        "sticky top-0 z-50 backdrop-blur-xl border-b",
+        isMatrimony 
+          ? "bg-white border-[#E5E5E5]"
+          : "bg-gradient-to-b from-[#14161B]/80 via-[#14161B]/60 to-transparent border-white/10"
+      )}>
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-4">
             {!isOwnProfile && onBack && (
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-2 hover:bg-white/20 rounded-full bg-white/10 backdrop-blur-xl border border-white/20" 
+                className={cn(
+                  "p-2 rounded-full backdrop-blur-xl border",
+                  isMatrimony 
+                    ? "hover:bg-gray-50 bg-white border-[#E5E5E5]"
+                    : "hover:bg-white/20 bg-white/10 border-white/20"
+                )}
                 onClick={onBack}
               >
-                <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+                <ArrowLeft className={cn("w-5 h-5", isMatrimony ? "text-black" : "text-white")} />
               </Button>
             )}
-            <h1 className="text-xl font-bold text-white">{isOwnProfile ? "My Profile" : name}</h1>
+            <h1 className={cn("text-xl font-bold", isMatrimony ? "text-black" : "text-white")}>
+              {isOwnProfile ? "My Profile" : name}
+            </h1>
           </div>
           <div className="flex items-center space-x-2">
             {isOwnProfile && (
               <>
-                <Button variant="outline" size="sm" onClick={handleEdit} className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleEdit} 
+                  className={cn(
+                    isMatrimony 
+                      ? "bg-white border-[#E5E5E5] text-black hover:bg-gray-50"
+                      : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  )}
+                >
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
-                <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={cn(
+                    isMatrimony 
+                      ? "bg-white border-[#E5E5E5] text-black hover:bg-gray-50"
+                      : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  )}
+                >
                   <Share className="w-4 h-4" />
                 </Button>
               </>
@@ -418,12 +448,17 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
         )}
 
         {/* Basic Info */}
-        <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
+        <Card className={cn(
+          "backdrop-blur-xl shadow-xl",
+          isMatrimony 
+            ? "bg-white border-[#E5E5E5] text-black"
+            : "bg-[#14161B] border-white/20 text-white"
+        )}>
           <CardContent className="p-6 space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-3xl font-bold" style={{ color: '#FFFFFF' }}>
+                  <h2 className={cn("text-3xl font-bold", isMatrimony ? "text-black" : "text-white")}>
                     {name}{age ? `, ${age}` : ''}
                   </h2>
                   {verified && (
@@ -434,22 +469,38 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
                 {/* Quick Info Pills */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {userPath === 'dating' && datingProfile?.gender && (
-                    <Badge variant="secondary" className="bg-[#14161B] text-white border-white/20">
+                    <Badge variant="secondary" className={cn(
+                      isMatrimony 
+                        ? "bg-gray-100 text-black border-[#E5E5E5]"
+                        : "bg-[#14161B] text-white border-white/20"
+                    )}>
                       {datingProfile.gender}
                     </Badge>
                   )}
                   {userPath === 'dating' && datingProfile?.relationship_goals && (
-                    <Badge variant="secondary" className="bg-[#14161B] text-white border-white/20">
+                    <Badge variant="secondary" className={cn(
+                      isMatrimony 
+                        ? "bg-gray-100 text-black border-[#E5E5E5]"
+                        : "bg-[#14161B] text-white border-white/20"
+                    )}>
                       {datingProfile.relationship_goals}
                     </Badge>
                   )}
                   {userPath === 'matrimony' && matrimonyProfile?.gender && (
-                    <Badge variant="secondary" className="bg-[#14161B] text-white border-white/20">
+                    <Badge variant="secondary" className={cn(
+                      isMatrimony 
+                        ? "bg-gray-100 text-black border-[#E5E5E5]"
+                        : "bg-[#14161B] text-white border-white/20"
+                    )}>
                       {matrimonyProfile.gender}
                     </Badge>
                   )}
                   {userPath === 'matrimony' && matrimonyProfile?.personal?.height_cm && (
-                    <Badge variant="secondary" className="bg-[#14161B] text-white border-white/20">
+                    <Badge variant="secondary" className={cn(
+                      isMatrimony 
+                        ? "bg-gray-100 text-black border-[#E5E5E5]"
+                        : "bg-[#14161B] text-white border-white/20"
+                    )}>
                       {matrimonyProfile.personal.height_cm} cm
                     </Badge>
                   )}
