@@ -207,7 +207,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
   if (loading) {
     return (
       <div className={cn("min-h-screen relative", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
-        <StaticBackground />
+        {!isMatrimony && <StaticBackground />}
         <div className="flex items-center justify-center h-screen">
           <p className={isMatrimony ? "text-black" : "text-white"}>Loading profile...</p>
         </div>
@@ -295,7 +295,7 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
   return (
     <div className={cn("min-h-screen relative", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
-      <StaticBackground />
+      {!isMatrimony && <StaticBackground />}
       {/* Header */}
       <div className={cn(
         "sticky top-0 z-50 backdrop-blur-xl border-b",
@@ -541,13 +541,13 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {bio && (
               <>
-                <Separator className="bg-white/10" />
+                <Separator className={cn(isMatrimony ? "bg-[#E5E5E5]" : "bg-white/10")} />
                 <div className="space-y-2">
-                  <h3 className="font-semibold flex items-center gap-2" style={{ color: '#FFFFFF' }}>
+                  <h3 className={cn("font-semibold flex items-center gap-2", isMatrimony ? "text-black" : "text-white")}>
                     <Sparkles className="w-4 h-4" style={{ color: '#97011A' }} />
                     About Me
                   </h3>
-                  <p className="text-sm leading-relaxed" style={{ color: '#FFFFFF' }}>{bio}</p>
+                  <p className={cn("text-sm leading-relaxed", isMatrimony ? "text-[#666666]" : "text-white")}>{bio}</p>
                 </div>
               </>
             )}
@@ -657,35 +657,40 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
           <>
             {/* Career & Education */}
             {matrimonyProfile.career && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
+              <Card className={cn(
+                "shadow-sm",
+                isMatrimony 
+                  ? "bg-white border-[#E5E5E5]" 
+                  : "bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl"
+              )}>
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-lg flex items-center space-x-2 mb-4" style={{ color: '#FFFFFF' }}>
+                  <h3 className={cn("font-semibold text-lg flex items-center space-x-2 mb-4", isMatrimony ? "text-black" : "text-white")}>
                     <Briefcase className="w-5 h-5" style={{ color: '#97011A' }} />
                     <span>Career & Education</span>
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {matrimonyProfile.career.highest_education && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Education</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.career.highest_education}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Education</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.career.highest_education}</p>
                       </div>
                     )}
                     {matrimonyProfile.career.job_title && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Profession</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.career.job_title}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Profession</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.career.job_title}</p>
                       </div>
                     )}
                     {matrimonyProfile.career.company && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Company</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.career.company}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Company</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.career.company}</p>
                       </div>
                     )}
                     {matrimonyProfile.career.work_location && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Location</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Location</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>
                           {[
                             matrimonyProfile.career.work_location.city,
                             matrimonyProfile.career.work_location.state,
@@ -701,32 +706,37 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Personal Details */}
             {matrimonyProfile.personal && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
+              <Card className={cn(
+                "shadow-sm",
+                isMatrimony 
+                  ? "bg-white border-[#E5E5E5]" 
+                  : "bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl"
+              )}>
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-lg mb-4" style={{ color: '#FFFFFF' }}>Personal Details</h3>
+                  <h3 className={cn("font-semibold text-lg mb-4", isMatrimony ? "text-black" : "text-white")}>Personal Details</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {matrimonyProfile.personal.diet && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Diet</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.personal.diet}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Diet</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.personal.diet}</p>
                       </div>
                     )}
                     {matrimonyProfile.personal.smoker !== undefined && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Smoking</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.personal.smoker ? "Yes" : "No"}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Smoking</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.personal.smoker ? "Yes" : "No"}</p>
                       </div>
                     )}
                     {matrimonyProfile.personal.drinker !== undefined && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Drinking</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.personal.drinker ? "Yes" : "No"}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Drinking</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.personal.drinker ? "Yes" : "No"}</p>
                       </div>
                     )}
                     {matrimonyProfile.personal.complexion && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Complexion</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.personal.complexion}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Complexion</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.personal.complexion}</p>
                       </div>
                     )}
                   </div>
@@ -736,41 +746,46 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Family Information */}
             {matrimonyProfile.family && matrimonyProfile.family.show_on_profile && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
+              <Card className={cn(
+                "shadow-sm",
+                isMatrimony 
+                  ? "bg-white border-[#E5E5E5]" 
+                  : "bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl"
+              )}>
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-lg flex items-center space-x-2 mb-4" style={{ color: '#FFFFFF' }}>
+                  <h3 className={cn("font-semibold text-lg flex items-center space-x-2 mb-4", isMatrimony ? "text-black" : "text-white")}>
                     <Home className="w-5 h-5" style={{ color: '#97011A' }} />
                     <span>Family Information</span>
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {matrimonyProfile.family.family_type && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Family Type</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.family.family_type}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Family Type</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.family.family_type}</p>
                       </div>
                     )}
                     {matrimonyProfile.family.family_values && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Family Values</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.family.family_values}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Family Values</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.family.family_values}</p>
                       </div>
                     )}
                     {matrimonyProfile.family.father_occupation && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Father's Occupation</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.family.father_occupation}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Father's Occupation</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.family.father_occupation}</p>
                       </div>
                     )}
                     {matrimonyProfile.family.mother_occupation && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Mother's Occupation</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.family.mother_occupation}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Mother's Occupation</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.family.mother_occupation}</p>
                       </div>
                     )}
                     {(matrimonyProfile.family.brothers !== undefined || matrimonyProfile.family.sisters !== undefined) && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Siblings</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Siblings</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>
                           {[
                             matrimonyProfile.family.brothers ? `${matrimonyProfile.family.brothers} brother(s)` : null,
                             matrimonyProfile.family.sisters ? `${matrimonyProfile.family.sisters} sister(s)` : null
@@ -785,41 +800,46 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
 
             {/* Cultural Background */}
             {matrimonyProfile.cultural && (
-              <Card className="bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl !text-white">
+              <Card className={cn(
+                "shadow-sm",
+                isMatrimony 
+                  ? "bg-white border-[#E5E5E5]" 
+                  : "bg-[#14161B] backdrop-blur-xl border-white/20 shadow-xl"
+              )}>
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-lg flex items-center space-x-2 mb-4" style={{ color: '#FFFFFF' }}>
+                  <h3 className={cn("font-semibold text-lg flex items-center space-x-2 mb-4", isMatrimony ? "text-black" : "text-white")}>
                     <Users className="w-5 h-5" style={{ color: '#97011A' }} />
                     <span>Cultural Background</span>
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {matrimonyProfile.cultural.religion && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Religion</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.religion}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Religion</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.cultural.religion}</p>
                       </div>
                     )}
                     {matrimonyProfile.cultural.mother_tongue && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Mother Tongue</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.mother_tongue}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Mother Tongue</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.cultural.mother_tongue}</p>
                       </div>
                     )}
                     {matrimonyProfile.cultural.community && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Community</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.community}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Community</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.cultural.community}</p>
                       </div>
                     )}
                     {matrimonyProfile.cultural.star_raashi && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Star/Raashi</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.star_raashi}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Star/Raashi</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.cultural.star_raashi}</p>
                       </div>
                     )}
                     {matrimonyProfile.cultural.gotra && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium" style={{ color: '#A1A1AA' }}>Gotra</p>
-                        <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>{matrimonyProfile.cultural.gotra}</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Gotra</p>
+                        <p className={cn("text-sm font-medium", isMatrimony ? "text-black" : "text-white")}>{matrimonyProfile.cultural.gotra}</p>
                       </div>
                     )}
                   </div>
@@ -830,9 +850,14 @@ export function ProfileView({ isOwnProfile = false, onEdit, onBack, userId, mode
         )}
 
         {!profile && (
-          <Card className="bg-[#14161B]/50 backdrop-blur-xl border-white/20 shadow-xl !text-white">
+          <Card className={cn(
+            "shadow-sm",
+            isMatrimony 
+              ? "bg-white border-[#E5E5E5]" 
+              : "bg-[#14161B]/50 backdrop-blur-xl border-white/20 shadow-xl"
+          )}>
             <CardContent className="p-6">
-              <p className="text-center" style={{ color: '#FFFFFF' }}>No profile data available</p>
+              <p className={cn("text-center", isMatrimony ? "text-black" : "text-white")}>No profile data available</p>
             </CardContent>
           </Card>
         )}

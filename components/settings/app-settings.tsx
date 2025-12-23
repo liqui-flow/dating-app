@@ -27,6 +27,7 @@ import { supabase } from "@/lib/supabaseClient"
 import { useToast } from "@/hooks/use-toast"
 import { StaticBackground } from "@/components/discovery/static-background"
 import { handleLogout } from "@/lib/logout"
+import { cn } from "@/lib/utils"
 
 interface SettingsSection {
   title: string
@@ -156,9 +157,11 @@ interface AppSettingsProps {
   onNavigate?: SettingsNavigateHandler
   onLogout?: () => void
   onBack?: () => void
+  mode?: 'dating' | 'matrimony'
 }
 
-export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) {
+export function AppSettings({ onNavigate, onLogout, onBack, mode = 'dating' }: AppSettingsProps) {
+  const isMatrimony = mode === 'matrimony'
   const [settings, setSettings] = useState<Record<string, boolean>>({
     push_notifications: true,
     message_notifications: true,
@@ -249,22 +252,32 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
   }
 
   return (
-    <div className="flex flex-col h-full relative bg-[#0E0F12] min-h-screen">
-      <StaticBackground />
+    <div className={cn("flex flex-col h-full relative min-h-screen", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
+      {!isMatrimony && <StaticBackground />}
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-white/20 bg-[#14161B]/50 backdrop-blur-xl shadow-lg">
+      <div className={cn(
+        "flex-shrink-0 p-4 border-b shadow-lg",
+        isMatrimony 
+          ? "border-[#E5E5E5] bg-white" 
+          : "border-white/20 bg-[#14161B]/50 backdrop-blur-xl"
+      )}>
         <div className="flex items-center space-x-4">
           {onBack && (
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20" 
+              className={cn(
+                "p-2 rounded-full border",
+                isMatrimony
+                  ? "hover:bg-gray-50 bg-white border-[#E5E5E5]"
+                  : "hover:bg-white/10 bg-white/10 backdrop-blur-xl border-white/20"
+              )}
               onClick={onBack}
             >
-              <ArrowLeft className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+              <ArrowLeft className={cn("w-5 h-5", isMatrimony ? "text-black" : "text-white")} />
             </Button>
           )}
-          <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>Settings</h1>
+          <h1 className={cn("text-2xl font-bold", isMatrimony ? "text-black" : "text-white")}>Settings</h1>
         </div>
       </div>
 
@@ -273,16 +286,22 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
         <div className="p-6 space-y-6">
           {settingsSections.map((section) => (
             <div key={section.title} className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#FFFFFF' }}>{section.title}</h2>
+              <h2 className={cn("text-sm font-semibold uppercase tracking-wider", isMatrimony ? "text-black" : "text-white")}>{section.title}</h2>
 
-              <Card className="overflow-hidden bg-[#14161B]/50 border border-white/20">
+              <Card className={cn(
+                "overflow-hidden shadow-sm",
+                isMatrimony 
+                  ? "bg-white border-[#E5E5E5]" 
+                  : "bg-[#14161B]/50 border border-white/20"
+              )}>
                 <CardContent className="p-0">
                   {section.items.map((item, index) => (
                     <div key={item.id}>
                       <div
-                        className={`flex items-center justify-between p-4 ${
-                          item.type !== "toggle" ? "cursor-pointer hover:bg-white/10" : ""
-                        } transition-colors`}
+                        className={cn(
+                          "flex items-center justify-between p-4 transition-colors",
+                          item.type !== "toggle" && (isMatrimony ? "cursor-pointer hover:bg-gray-50" : "cursor-pointer hover:bg-white/10")
+                        )}
                         onClick={() => {
                           if (item.type === "navigation") handleNavigation(item.id)
                           if (item.type === "action") handleAction(item.id)
@@ -290,36 +309,54 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
                       >
                         <div className="flex items-center space-x-3">
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              item.destructive ? "bg-[#97011A]/10" : "bg-white/10"
-                            }`}
+                            className={cn(
+                              "w-10 h-10 rounded-full flex items-center justify-center",
+                              item.destructive 
+                                ? "bg-[#97011A]/10" 
+                                : isMatrimony 
+                                  ? "bg-gray-100" 
+                                  : "bg-white/10"
+                            )}
                           >
                             <item.icon
-                              className="w-5 h-5"
-                              style={{ 
-                                color: item.destructive ? '#97011A' : '#FFFFFF' 
-                              }}
+                              className={cn(
+                                "w-5 h-5",
+                                item.destructive 
+                                  ? "text-[#97011A]" 
+                                  : isMatrimony 
+                                    ? "text-black" 
+                                    : "text-white"
+                              )}
                             />
                           </div>
 
                           <div className="space-y-1">
                             <div className="flex items-center space-x-2">
                               <span 
-                                className="font-medium"
-                                style={{ 
-                                  color: item.destructive ? '#97011A' : '#FFFFFF' 
-                                }}
+                                className={cn(
+                                  "font-medium",
+                                  item.destructive 
+                                    ? "text-[#97011A]" 
+                                    : isMatrimony 
+                                      ? "text-black" 
+                                      : "text-white"
+                                )}
                               >
                                 {item.label}
                               </span>
                               {item.badge && (
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge variant="secondary" className={cn(
+                                  "text-xs",
+                                  isMatrimony 
+                                    ? "bg-[#97011A] text-white border-0" 
+                                    : ""
+                                )}>
                                   {item.badge}
                                 </Badge>
                               )}
                             </div>
                             {item.description && (
-                              <p className="text-sm" style={{ color: '#A1A1AA' }}>
+                              <p className={cn("text-sm", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>
                                 {item.description}
                               </p>
                             )}
@@ -335,15 +372,14 @@ export function AppSettings({ onNavigate, onLogout, onBack }: AppSettingsProps) 
                           )}
                           {item.type === "navigation" && (
                             <ChevronRight 
-                              className="w-5 h-5" 
-                              style={{ color: '#FFFFFF' }} 
+                              className={cn("w-5 h-5", isMatrimony ? "text-[#666666]" : "text-white")} 
                             />
                           )}
                         </div>
                       </div>
 
                       {index < section.items.length - 1 && (
-                        <Separator className="ml-16 mr-4 bg-white/20" />
+                        <Separator className={cn("ml-16 mr-4", isMatrimony ? "bg-[#E5E5E5]" : "bg-white/20")} />
                       )}
                     </div>
                   ))}

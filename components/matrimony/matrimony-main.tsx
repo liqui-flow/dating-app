@@ -871,6 +871,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
       {currentScreen === "premium" && (
         <div className="p-0 pb-0 mt-0">
           <PremiumScreen
+            mode="matrimony"
             onPlanSelect={(planId) => setSelectedPlanId(planId)}
             onSubscribe={(planId) => {
               setSelectedPlanId(planId)
@@ -899,7 +900,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
 
       {currentScreen === "verification-status" && (
         <div className="p-0 pb-0 mt-0">
-          <VerificationStatus onBack={() => setCurrentScreen("profile")} />
+          <VerificationStatus mode="matrimony" onBack={() => setCurrentScreen("profile")} />
         </div>
       )}
 
@@ -977,6 +978,7 @@ export function MatrimonyMain({ onExit, initialScreen = "discover" }: MatrimonyM
       {currentScreen === "app-settings" && (
         <div className="p-0 pb-0 mt-0">
           <AppSettings
+            mode="matrimony"
             onNavigate={(id) => {
               if (id === "help_faq") window.alert("FAQ coming soon")
               else if (id === "help_contact") window.alert("Contact us at support@example.com")

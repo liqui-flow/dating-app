@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Crown, Eye, MessageCircle, Zap, Star, Check, ArrowLeft } from "lucide-react"
 import { StaticBackground } from "@/components/discovery/static-background"
+import { cn } from "@/lib/utils"
 
 interface PremiumPlan {
   id: string
@@ -100,35 +101,49 @@ const premiumFeatures = [
   },
 ]
 
-export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSelect?: (planId: string) => void; onSubscribe?: (planId: string) => void; onBack?: () => void }) {
+export function PremiumScreen({ onPlanSelect, onSubscribe, onBack, mode = 'dating' }: { onPlanSelect?: (planId: string) => void; onSubscribe?: (planId: string) => void; onBack?: () => void; mode?: 'dating' | 'matrimony' }) {
   const [selectedPlan, setSelectedPlan] = useState<string>("quarterly")
+  const isMatrimony = mode === 'matrimony'
 
   return (
-    <div className="min-h-screen relative bg-[#0E0F12]">
-      <StaticBackground />
+    <div className={cn("min-h-screen relative", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
+      {!isMatrimony && <StaticBackground />}
       {/* Header */}
-      <div className="sticky top-0 backdrop-blur-xl border-b border-white/20 bg-[#14161B]/50 shadow-lg z-10">
+      <div className={cn(
+        "sticky top-0 border-b shadow-lg z-10",
+        isMatrimony 
+          ? "border-[#E5E5E5] bg-white" 
+          : "backdrop-blur-xl border-white/20 bg-[#14161B]/50"
+      )}>
         <div className="flex items-center justify-between p-4">
           {onBack && (
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-2 hover:bg-white/10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20"
+              className={cn(
+                "p-2 rounded-full border",
+                isMatrimony
+                  ? "hover:bg-gray-50 bg-white border-[#E5E5E5]"
+                  : "hover:bg-white/10 bg-white/10 backdrop-blur-xl border-white/20"
+              )}
               onClick={onBack}
             >
-              <ArrowLeft className="w-4 h-4 mr-2" style={{ color: '#FFFFFF' }} />
-              <span style={{ color: '#FFFFFF' }}>Back</span>
+              <ArrowLeft className={cn("w-4 h-4 mr-2", isMatrimony ? "text-black" : "text-white")} />
+              <span className={cn(isMatrimony ? "text-black" : "text-white")}>Back</span>
             </Button>
           )}
           {!onBack && <div className="w-16"></div>}
-          <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>Go Premium</h1>
+          <h1 className={cn("text-2xl font-bold", isMatrimony ? "text-black" : "text-white")}>Go Premium</h1>
           <div className="w-16"></div>
         </div>
       </div>
 
       <div className="overflow-y-auto">
         {/* Hero Section */}
-        <div className="glass-apple bg-gradient-to-br from-[#97011A] via-[#7A0115] to-[#97011A] text-white p-6">
+        <div className={cn(
+          "bg-gradient-to-br from-[#97011A] via-[#7A0115] to-[#97011A] text-white p-6",
+          isMatrimony ? "" : "glass-apple"
+        )}>
           <div className="text-center space-y-4">
             <div className="flex justify-center">
               <Crown className="w-16 h-16 fill-current" />
@@ -140,36 +155,52 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
           </div>
         </div>
         {/* Features Section */}
-        <div className="p-6 space-y-6">
+        <div className={cn("p-6 space-y-6", isMatrimony ? "bg-white" : "")}>
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-center" style={{ color: '#FFFFFF' }}>Premium Features</h2>
+            <h2 className={cn("text-xl font-semibold text-center", isMatrimony ? "text-black" : "text-white")}>Premium Features</h2>
             <div className="grid gap-4">
-              {premiumFeatures.map((feature) => (
-                <div key={feature.title} className="flex items-start space-x-4">
-                  <div className="w-10 h-10 bg-[#97011A]/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="w-5 h-5" style={{ color: '#97011A' }} />
+              {premiumFeatures.map((feature, index) => (
+                <div key={feature.title}>
+                  <div className="flex items-start space-x-4">
+                    <div className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
+                      isMatrimony ? "bg-[#97011A]/10" : "bg-[#97011A]/10"
+                    )}>
+                      <feature.icon className="w-5 h-5" style={{ color: '#97011A' }} />
+                    </div>
+                    <div className="space-y-1 flex-1">
+                      <h3 className={cn("font-semibold", isMatrimony ? "text-black" : "text-white")}>{feature.title}</h3>
+                      <p className={cn("text-sm", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>{feature.description}</p>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <h3 className="font-semibold" style={{ color: '#FFFFFF' }}>{feature.title}</h3>
-                    <p className="text-sm" style={{ color: '#A1A1AA' }}>{feature.description}</p>
-                  </div>
+                  {isMatrimony && index < premiumFeatures.length - 1 && (
+                    <Separator className="bg-[#E5E5E5] mt-4" />
+                  )}
                 </div>
               ))}
             </div>
           </div>
 
-          <Separator className="bg-white/20" />
+          <Separator className={cn(isMatrimony ? "bg-[#E5E5E5]" : "bg-white/20")} />
 
           {/* Plans Section */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-center" style={{ color: '#FFFFFF' }}>Choose Your Plan</h2>
+            <h2 className={cn("text-xl font-semibold text-center", isMatrimony ? "text-black" : "text-white")}>Choose Your Plan</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {premiumPlans.map((plan) => (
                 <Card
                   key={plan.id}
-                  className={`cursor-pointer transition-all h-full flex flex-col bg-[#14161B]/50 border ${
-                    selectedPlan === plan.id ? "ring-2 ring-[#97011A] border-[#97011A]" : "border-white/20 hover:border-[#97011A]/50"
-                  } ${plan.isPopular ? "relative" : ""}`}
+                  className={cn(
+                    "cursor-pointer transition-all h-full flex flex-col border",
+                    isMatrimony
+                      ? selectedPlan === plan.id
+                        ? "ring-2 ring-[#97011A] border-[#97011A] bg-white"
+                        : "border-[#E5E5E5] bg-white hover:border-[#97011A]/50"
+                      : selectedPlan === plan.id
+                        ? "ring-2 ring-[#97011A] border-[#97011A] bg-[#14161B]/50"
+                        : "border-white/20 bg-[#14161B]/50 hover:border-[#97011A]/50",
+                    plan.isPopular ? "relative" : ""
+                  )}
                   onClick={() => setSelectedPlan(plan.id)}
                 >
                   {plan.isPopular && (
@@ -181,14 +212,14 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className="text-lg" style={{ color: '#FFFFFF' }}>{plan.name}</CardTitle>
-                        <p className="text-sm" style={{ color: '#A1A1AA' }}>{plan.duration}</p>
+                        <CardTitle className={cn("text-lg", isMatrimony ? "text-black" : "text-white")}>{plan.name}</CardTitle>
+                        <p className={cn("text-sm", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>{plan.duration}</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>{plan.price}</div>
+                        <div className={cn("text-2xl font-bold", isMatrimony ? "text-black" : "text-white")}>{plan.price}</div>
                         {plan.originalPrice && (
                           <div className="space-y-1">
-                            <div className="text-sm line-through" style={{ color: '#A1A1AA' }}>{plan.originalPrice}</div>
+                            <div className={cn("text-sm line-through", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>{plan.originalPrice}</div>
                             <Badge variant="secondary" className="text-xs bg-[#97011A]/10 text-[#97011A] border-[#97011A]/20">
                               {plan.discount}
                             </Badge>
@@ -203,18 +234,21 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
                       {plan.features.map((feature) => (
                         <div key={feature} className="flex items-center space-x-2">
                           <Check className="w-4 h-4 flex-shrink-0" style={{ color: '#97011A' }} />
-                          <span className="text-sm" style={{ color: '#FFFFFF' }}>{feature}</span>
+                          <span className={cn("text-sm", isMatrimony ? "text-black" : "text-white")}>{feature}</span>
                         </div>
                       ))}
                       <div className="pt-2 mt-auto">
                         <Button
                           variant={selectedPlan === plan.id ? "default" : "outline"}
                           size="sm"
-                          className={`w-full ${
-                            selectedPlan === plan.id 
-                              ? "bg-[#97011A] hover:bg-[#7A0115] text-white border-[#97011A]" 
-                              : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
-                          }`}
+                          className={cn(
+                            "w-full",
+                            selectedPlan === plan.id
+                              ? "bg-[#97011A] hover:bg-[#7A0115] text-white border-[#97011A]"
+                              : isMatrimony
+                                ? "bg-white border-[#E5E5E5] hover:bg-gray-50 text-black"
+                                : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
+                          )}
                           onClick={(e) => {
                             e.stopPropagation()
                             setSelectedPlan(plan.id)
@@ -233,7 +267,12 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
         </div>
 
         {/* Bottom Action */}
-        <div className="p-6 border-t border-white/20 bg-[#14161B]/50 backdrop-blur-xl">
+        <div className={cn(
+          "p-6 border-t",
+          isMatrimony
+            ? "border-[#E5E5E5] bg-white"
+            : "border-white/20 bg-[#14161B]/50 backdrop-blur-xl"
+        )}>
           <div className="space-y-4">
             <Button 
               size="lg" 
@@ -245,10 +284,10 @@ export function PremiumScreen({ onPlanSelect, onSubscribe, onBack }: { onPlanSel
             </Button>
 
             <div className="text-center space-y-2">
-              <p className="text-xs" style={{ color: '#A1A1AA' }}>Cancel anytime. Terms and conditions apply.</p>
-              <div className="flex items-center justify-center space-x-4 text-xs" style={{ color: '#A1A1AA' }}>
-                <button className="underline hover:text-white transition-colors">Terms of Service</button>
-                <button className="underline hover:text-white transition-colors">Privacy Policy</button>
+              <p className={cn("text-xs", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Cancel anytime. Terms and conditions apply.</p>
+              <div className={cn("flex items-center justify-center space-x-4 text-xs", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>
+                <button className={cn("underline transition-colors", isMatrimony ? "hover:text-black" : "hover:text-white")}>Terms of Service</button>
+                <button className={cn("underline transition-colors", isMatrimony ? "hover:text-black" : "hover:text-white")}>Privacy Policy</button>
               </div>
             </div>
           </div>

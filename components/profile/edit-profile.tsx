@@ -454,7 +454,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
   if (loading) {
     return (
       <div className={cn("flex flex-col h-full relative min-h-screen", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
-        <StaticBackground />
+        {!isMatrimony && <StaticBackground />}
         <div className="flex items-center justify-center h-screen">
           <p className={isMatrimony ? "text-black" : "text-[#A1A1AA]"}>Loading...</p>
         </div>
@@ -466,7 +466,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
 
   return (
     <div className={cn("flex flex-col h-full relative min-h-screen", isMatrimony ? "bg-white" : "bg-[#0E0F12]")}>
-      <StaticBackground />
+      {!isMatrimony && <StaticBackground />}
       <style dangerouslySetInnerHTML={{__html: `
         button[class*="bg-white/10"][class*="border-white/20"] {
           color: #FFFFFF !important;
@@ -482,18 +482,18 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
         }
       `}} />
       <div className={cn(
-        "flex-shrink-0 p-4 border-b backdrop-blur-xl shadow-lg",
-        isMatrimony ? "border-[#E5E5E5] bg-white" : "border-white/20 bg-[#14161B]/50"
+        "flex-shrink-0 p-4 border-b shadow-lg",
+        isMatrimony ? "border-[#E5E5E5] bg-white" : "border-white/20 bg-[#14161B]/50 backdrop-blur-xl"
       )}>
         <div className="flex items-center justify-between">
           <Button 
             variant="ghost" 
             size="sm" 
             className={cn(
-              "p-2 rounded-full backdrop-blur-xl border",
+              "p-2 rounded-full border",
               isMatrimony 
                 ? "hover:bg-gray-50 bg-white border-[#E5E5E5]"
-                : "hover:bg-white/10 bg-white/10 border-white/20"
+                : "hover:bg-white/10 bg-white/10 border-white/20 backdrop-blur-xl"
             )}
             onClick={onBack}
           >
@@ -522,10 +522,12 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-1",
                 activeTab === "photos"
-                  ? "bg-[#97011A]"
-                  : "bg-white/10 hover:bg-white/20"
+                  ? "bg-[#97011A] text-white"
+                  : isMatrimony
+                    ? "bg-white border border-[#E5E5E5] text-[#666666] hover:bg-gray-50"
+                    : "bg-white/10 hover:bg-white/20"
               )}
-              style={{ color: activeTab === "photos" ? '#FFFFFF' : '#A1A1AA' }}
+              style={!isMatrimony && activeTab !== "photos" ? { color: '#A1A1AA' } : undefined}
             >
               Edit Photos
             </button>
@@ -534,10 +536,12 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-1",
                 activeTab === "about"
-                  ? "bg-[#97011A]"
-                  : "bg-white/10 hover:bg-white/20"
+                  ? "bg-[#97011A] text-white"
+                  : isMatrimony
+                    ? "bg-white border border-[#E5E5E5] text-[#666666] hover:bg-gray-50"
+                    : "bg-white/10 hover:bg-white/20"
               )}
-              style={{ color: activeTab === "about" ? '#FFFFFF' : '#A1A1AA' }}
+              style={!isMatrimony && activeTab !== "about" ? { color: '#A1A1AA' } : undefined}
             >
               Edit About Myself
             </button>
@@ -546,8 +550,8 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
           <TabsContent value="photos" className="space-y-6">
             <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-semibold mb-1" style={{ color: '#FFFFFF' }}>Your Photos</h2>
-                <p className="text-sm" style={{ color: '#A1A1AA' }}>
+                <h2 className={cn("text-lg font-semibold mb-1", isMatrimony ? "text-black" : "text-white")}>Your Photos</h2>
+                <p className={cn("text-sm", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>
                   Add up to 6 photos to showcase yourself ({currentPhotos.length}/6)
                 </p>
               </div>
@@ -555,13 +559,21 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {currentPhotos.map((photo, index) => (
                   <div key={index} className="relative group">
-                    <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-white/20 bg-[#14161B]">
+                    <div className={cn(
+                      "relative aspect-square rounded-xl overflow-hidden border-2",
+                      isMatrimony 
+                        ? "border-[#E5E5E5] bg-white" 
+                        : "border-white/20 bg-[#14161B]"
+                    )}>
                       <img
                         src={photo.url}
                         alt={`Photo ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      <div className={cn(
+                        "absolute inset-0 transition-colors",
+                        isMatrimony ? "bg-black/0 group-hover:bg-black/10" : "bg-black/0 group-hover:bg-black/20"
+                      )} />
                       <Button
                         size="sm"
                         className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg bg-[#97011A] hover:bg-[#7A0115]"
@@ -569,7 +581,10 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                       >
                         <X className="w-4 h-4" style={{ color: '#FFFFFF' }} />
                       </Button>
-                      <div className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                      <div className={cn(
+                        "absolute bottom-1.5 left-1.5 text-xs px-2 py-0.5 rounded-full",
+                        isMatrimony ? "bg-black/60 text-white" : "bg-black/60 text-white"
+                      )}>
                         {index + 1}
                       </div>
                     </div>
@@ -578,8 +593,11 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                         placeholder={photoPrompts[index] || "Caption (optional)"}
                         value={photo.caption || ""}
                         onChange={(e) => updatePhotoCaption(index, e.target.value)}
-                        className="text-xs mt-2 bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                        style={{ color: '#FFFFFF' }}
+                        className={cn(
+                          "text-xs mt-2",
+                          isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
+                        )}
+                        style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                       />
                     )}
                   </div>
@@ -588,12 +606,17 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 {currentPhotos.length < 6 && (
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed border-white/20 bg-[#14161B] hover:bg-white/5 transition-colors flex flex-col items-center justify-center gap-2 group"
+                    className={cn(
+                      "relative aspect-square rounded-xl overflow-hidden border-2 border-dashed transition-colors flex flex-col items-center justify-center gap-2 group",
+                      isMatrimony
+                        ? "border-[#E5E5E5] bg-white hover:bg-gray-50"
+                        : "border-white/20 bg-[#14161B] hover:bg-white/5"
+                    )}
                   >
                     <div className="w-10 h-10 rounded-full bg-[#97011A]/20 flex items-center justify-center group-hover:bg-[#97011A]/30 transition-colors">
                       <Plus className="w-5 h-5" style={{ color: '#97011A' }} />
                     </div>
-                    <span className="text-xs font-medium" style={{ color: '#A1A1AA' }}>Add Photo</span>
+                    <span className={cn("text-xs font-medium", isMatrimony ? "text-[#666666]" : "text-[#A1A1AA]")}>Add Photo</span>
                   </button>
                 )}
               </div>
@@ -998,9 +1021,9 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
             ) : (
               <>
                 {/* Bio */}
-                <Card className="bg-[#14161B]/50 border border-white/20">
+                <Card className={cn(isMatrimony ? "bg-white border-[#E5E5E5]" : "bg-[#14161B]/50 border border-white/20")}>
                   <CardHeader>
-                    <CardTitle style={{ color: '#FFFFFF' }}>About Me</CardTitle>
+                    <CardTitle className={cn(isMatrimony ? "text-black" : "text-white")}>About Me</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Textarea
@@ -1008,54 +1031,54 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                       value={matrimonyBio}
                       onChange={(e) => setMatrimonyBio(e.target.value)}
                       rows={4}
-                      className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                      style={{ color: '#FFFFFF' }}
+                      className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                      style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                     />
                   </CardContent>
                 </Card>
 
                 {/* Personal Details */}
-                <Card className="bg-[#14161B]/50 border border-white/20">
+                <Card className={cn(isMatrimony ? "bg-white border-[#E5E5E5]" : "bg-[#14161B]/50 border border-white/20")}>
                   <CardHeader>
-                    <CardTitle style={{ color: '#FFFFFF' }}>Personal Details</CardTitle>
+                    <CardTitle className={cn(isMatrimony ? "text-black" : "text-white")}>Personal Details</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Height (cm)</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Height (cm)</Label>
                         <Input
                           type="number"
                           value={matrimonyPersonal.height_cm || ""}
                           onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, height_cm: parseInt(e.target.value) || 0 })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Complexion</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Complexion</Label>
                         <Input
                           value={matrimonyPersonal.complexion || ""}
                           onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, complexion: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Diet</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Diet</Label>
                         <Input
                           value={matrimonyPersonal.diet || ""}
                           onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, diet: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Body Type</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Body Type</Label>
                         <Input
                           value={matrimonyPersonal.body_type || ""}
                           onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, body_type: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                     </div>
@@ -1063,46 +1086,46 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Career */}
-                <Card className="bg-[#14161B]/50 border border-white/20">
+                <Card className={cn(isMatrimony ? "bg-white border-[#E5E5E5]" : "bg-[#14161B]/50 border border-white/20")}>
                   <CardHeader>
-                    <CardTitle style={{ color: '#FFFFFF' }}>Career & Education</CardTitle>
+                    <CardTitle className={cn(isMatrimony ? "text-black" : "text-white")}>Career & Education</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Highest Education</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Highest Education</Label>
                         <Input
                           value={matrimonyCareer.highest_education || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, highest_education: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Job Title</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Job Title</Label>
                         <Input
                           value={matrimonyCareer.job_title || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, job_title: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Company</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Company</Label>
                         <Input
                           value={matrimonyCareer.company || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, company: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Annual Income</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Annual Income</Label>
                         <Input
                           value={matrimonyCareer.annual_income || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, annual_income: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                     </div>
@@ -1110,57 +1133,57 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Family */}
-                <Card className="bg-[#14161B]/50 border border-white/20">
+                <Card className={cn(isMatrimony ? "bg-white border-[#E5E5E5]" : "bg-[#14161B]/50 border border-white/20")}>
                   <CardHeader>
-                    <CardTitle style={{ color: '#FFFFFF' }}>Family Information</CardTitle>
+                    <CardTitle className={cn(isMatrimony ? "text-black" : "text-white")}>Family Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Family Type</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Family Type</Label>
                         <Input
                           value={matrimonyFamily.family_type || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, family_type: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Father's Occupation</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Father's Occupation</Label>
                         <Input
                           value={matrimonyFamily.father_occupation || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, father_occupation: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Mother's Occupation</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Mother's Occupation</Label>
                         <Input
                           value={matrimonyFamily.mother_occupation || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, mother_occupation: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Brothers</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Brothers</Label>
                         <Input
                           type="number"
                           value={matrimonyFamily.brothers || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, brothers: parseInt(e.target.value) || 0 })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Sisters</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Sisters</Label>
                         <Input
                           type="number"
                           value={matrimonyFamily.sisters || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, sisters: parseInt(e.target.value) || 0 })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                     </div>
@@ -1168,46 +1191,46 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Cultural */}
-                <Card className="bg-[#14161B]/50 border border-white/20">
+                <Card className={cn(isMatrimony ? "bg-white border-[#E5E5E5]" : "bg-[#14161B]/50 border border-white/20")}>
                   <CardHeader>
-                    <CardTitle style={{ color: '#FFFFFF' }}>Cultural Background</CardTitle>
+                    <CardTitle className={cn(isMatrimony ? "text-black" : "text-white")}>Cultural Background</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Religion</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Religion</Label>
                         <Input
                           value={matrimonyCultural.religion || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, religion: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Mother Tongue</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Mother Tongue</Label>
                         <Input
                           value={matrimonyCultural.mother_tongue || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, mother_tongue: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Community</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Community</Label>
                         <Input
                           value={matrimonyCultural.community || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, community: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Gotra</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Gotra</Label>
                         <Input
                           value={matrimonyCultural.gotra || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, gotra: e.target.value })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                     </div>
@@ -1215,50 +1238,50 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                 </Card>
 
                 {/* Partner Preferences */}
-                <Card className="bg-[#14161B]/50 border border-white/20">
+                <Card className={cn(isMatrimony ? "bg-white border-[#E5E5E5]" : "bg-[#14161B]/50 border border-white/20")}>
                   <CardHeader>
-                    <CardTitle style={{ color: '#FFFFFF' }}>Partner Preferences</CardTitle>
+                    <CardTitle className={cn(isMatrimony ? "text-black" : "text-white")}>Partner Preferences</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Min Age</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Min Age</Label>
                         <Input
                           type="number"
                           value={matrimonyPreferences.min_age || ""}
                           onChange={(e) => setMatrimonyPreferences({ ...matrimonyPreferences, min_age: parseInt(e.target.value) || 0 })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Max Age</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Max Age</Label>
                         <Input
                           type="number"
                           value={matrimonyPreferences.max_age || ""}
                           onChange={(e) => setMatrimonyPreferences({ ...matrimonyPreferences, max_age: parseInt(e.target.value) || 0 })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Min Height (cm)</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Min Height (cm)</Label>
                         <Input
                           type="number"
                           value={matrimonyPreferences.min_height_cm || ""}
                           onChange={(e) => setMatrimonyPreferences({ ...matrimonyPreferences, min_height_cm: parseInt(e.target.value) || 0 })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label style={{ color: '#FFFFFF' }}>Max Height (cm)</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Max Height (cm)</Label>
                         <Input
                           type="number"
                           value={matrimonyPreferences.max_height_cm || ""}
                           onChange={(e) => setMatrimonyPreferences({ ...matrimonyPreferences, max_height_cm: parseInt(e.target.value) || 0 })}
-                          className="bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"
-                          style={{ color: '#FFFFFF' }}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                     </div>

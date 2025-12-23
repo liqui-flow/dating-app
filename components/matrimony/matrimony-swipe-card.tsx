@@ -310,10 +310,15 @@ export function MatrimonySwipeCard({
           // Base height for card expansion calculation
           stackIndex === 0 && isFlipped ? "h-[77vh] sm:h-[84vh] md:h-[672px]" : "h-[60vh] md:h-[480px]",
           // Enhanced shadows for realistic depth
-          stackIndex === 0 && "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)]",
+          // Full-view shadow for Matrimony: soft black shadow when flipped
+          stackIndex === 0 && isFlipped && "shadow-[0_12px_40px_rgba(0,0,0,0.25)]",
+          // Regular stack shadows when not flipped
+          stackIndex === 0 && !isFlipped && "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)]",
           stackIndex === 1 && "shadow-[0_15px_45px_-12px_rgba(0,0,0,0.35),0_8px_25px_-8px_rgba(0,0,0,0.25)]",
           stackIndex === 2 && "shadow-[0_12px_35px_-10px_rgba(0,0,0,0.3),0_6px_20px_-6px_rgba(0,0,0,0.2)]",
           stackIndex > 2 && "shadow-[0_8px_25px_-8px_rgba(0,0,0,0.25),0_4px_15px_-4px_rgba(0,0,0,0.15)]",
+          // Smooth transition for shadow changes
+          "transition-shadow duration-300 ease-in-out",
         )}
         style={{
           x,

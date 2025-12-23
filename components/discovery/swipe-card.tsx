@@ -267,12 +267,17 @@ export function SwipeCard({ profile, onLike, onPass, onProfileClick, stackIndex 
           // 3D perspective container
           "perspective-[1200px]",
           // Enhanced shadows for realistic depth
-          stackIndex === 0 && "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)]",
+          // Full-view shadow for Dating: soft white glow when flipped
+          stackIndex === 0 && isFlipped && "shadow-[0_0_30px_rgba(255,255,255,0.25)]",
+          // Regular stack shadows when not flipped
+          stackIndex === 0 && !isFlipped && "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_10px_30px_-10px_rgba(0,0,0,0.3)]",
           stackIndex === 1 && "shadow-[0_15px_45px_-12px_rgba(0,0,0,0.35),0_8px_25px_-8px_rgba(0,0,0,0.25)]",
           stackIndex === 2 && "shadow-[0_12px_35px_-10px_rgba(0,0,0,0.3),0_6px_20px_-6px_rgba(0,0,0,0.2)]",
           stackIndex > 2 && "shadow-[0_8px_25px_-8px_rgba(0,0,0,0.25),0_4px_15px_-4px_rgba(0,0,0,0.15)]",
           // Height expansion when flipped: +10% top, +30% bottom = 1.4x total
-          stackIndex === 0 && isFlipped ? "h-[77vh] sm:h-[84vh] md:h-[672px]" : baseHeight
+          stackIndex === 0 && isFlipped ? "h-[77vh] sm:h-[84vh] md:h-[672px]" : baseHeight,
+          // Smooth transition for shadow changes
+          "transition-shadow duration-300 ease-in-out",
         )}
         style={{
           x,
