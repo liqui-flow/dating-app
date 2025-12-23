@@ -368,6 +368,7 @@ export function AppSettings({ onNavigate, onLogout, onBack, mode = 'dating' }: A
                             <Switch
                               checked={settings[item.id] || false}
                               onCheckedChange={() => handleToggle(item.id)}
+                              mode={mode}
                             />
                           )}
                           {item.type === "navigation" && (

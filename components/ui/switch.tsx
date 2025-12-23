@@ -5,15 +5,26 @@ import * as SwitchPrimitive from '@radix-ui/react-switch'
 
 import { cn } from '@/lib/utils'
 
+interface SwitchProps extends React.ComponentProps<typeof SwitchPrimitive.Root> {
+  mode?: 'dating' | 'matrimony'
+}
+
 function Switch({
   className,
+  mode,
   ...props
-}: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+}: SwitchProps) {
+  const isDating = mode === 'dating'
+  
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
       className={cn(
-        'peer data-[state=checked]:bg-[#97011A] data-[state=unchecked]:bg-white data-[state=unchecked]:border-black/20 inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 shadow-sm transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-[#97011A]/30 disabled:cursor-not-allowed disabled:opacity-50',
+        'peer inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 shadow-sm transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-[#97011A]/30 disabled:cursor-not-allowed disabled:opacity-50',
+        // Matrimony (default): red when checked, white when unchecked
+        !isDating && 'data-[state=checked]:bg-[#97011A] data-[state=unchecked]:bg-white data-[state=unchecked]:border-black/20',
+        // Dating: black when checked, dark grey when unchecked
+        isDating && 'data-[state=checked]:bg-[#000000] data-[state=unchecked]:bg-[#3A3A3A] data-[state=unchecked]:border-white/20',
         className,
       )}
       {...props}

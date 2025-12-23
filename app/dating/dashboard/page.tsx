@@ -50,12 +50,16 @@ export default function DatingDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0E0F12]">
+      <div className="dating-theme min-h-screen flex items-center justify-center bg-[#0E0F12]">
         <p className="text-white">Loading...</p>
       </div>
     )
   }
 
-  return <AppMain />
+  return (
+    <div className="dating-theme">
+      <AppMain />
+    </div>
+  )
 }
 

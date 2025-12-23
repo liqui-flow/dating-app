@@ -52,7 +52,7 @@ export default function DatingBasicDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="dating-theme min-h-screen flex items-center justify-center">
         <p>Loading...</p>
       </div>
     )
@@ -60,43 +60,51 @@ export default function DatingBasicDetailsPage() {
 
   if (currentStep === "profile-setup") {
     return (
-      <ProfileSetup 
-        onComplete={() => setCurrentStep("dating-preferences")} 
-        onBack={() => router.push('/select-path')} 
-      />
+      <div className="dating-theme">
+        <ProfileSetup 
+          onComplete={() => setCurrentStep("dating-preferences")} 
+          onBack={() => router.push('/select-path')} 
+        />
+      </div>
     )
   }
 
   if (currentStep === "dating-preferences") {
     return (
-      <DatingPreferences 
-        onComplete={() => setCurrentStep("about-myself")} 
-        onBack={() => setCurrentStep("profile-setup")} 
-      />
+      <div className="dating-theme">
+        <DatingPreferences 
+          onComplete={() => setCurrentStep("about-myself")} 
+          onBack={() => setCurrentStep("profile-setup")} 
+        />
+      </div>
     )
   }
 
   if (currentStep === "about-myself") {
     return (
-      <AboutMyself 
-        onComplete={() => setCurrentStep("questionnaire")} 
-        onBack={() => setCurrentStep("dating-preferences")} 
-      />
+      <div className="dating-theme">
+        <AboutMyself 
+          onComplete={() => setCurrentStep("questionnaire")} 
+          onBack={() => setCurrentStep("dating-preferences")} 
+        />
+      </div>
     )
   }
 
   if (currentStep === "questionnaire") {
     return (
-      <InterestQuestionnaire 
-        onComplete={async () => {
-          // Mark onboarding as completed and redirect to dating dashboard
-          const { data: { user } } = await supabase.auth.getUser()
-          if (user) {
-            await completeOnboarding(user.id, "dating")
-          }
-          router.push("/dating/dashboard")
-        }} 
-      />
+      <div className="dating-theme">
+        <InterestQuestionnaire 
+          onComplete={async () => {
+            // Mark onboarding as completed and redirect to dating dashboard
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+              await completeOnboarding(user.id, "dating")
+            }
+            router.push("/dating/dashboard")
+          }} 
+        />
+      </div>
     )
   }
 
