@@ -296,6 +296,45 @@
   .dating-theme [class*="text-muted"] {
     color: rgba(255, 255, 255, 0.75) !important;
   }
+
+  /* Override AlertDialog overlay for Dating theme - force black background */
+  .dating-theme [data-slot="alert-dialog-overlay"],
+  [data-slot="alert-dialog-overlay"][data-dating-overlay="true"],
+  .dating-report-overlay {
+    background-color: #000000 !important;
+  }
+
+  /* Force white text in dating report dialog */
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="alert-dialog-title"],
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="alert-dialog-description"],
+  .dating-theme [data-slot="alert-dialog-content"] label,
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="label"],
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="select-value"],
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="select-trigger"] [data-slot="select-value"],
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="select-trigger"] [data-placeholder],
+  .dating-theme [data-slot="alert-dialog-content"] textarea,
+  .dating-theme [data-slot="alert-dialog-content"] textarea::placeholder,
+  .dating-theme [data-slot="alert-dialog-content"] p {
+    color: #FFFFFF !important;
+  }
+
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="alert-dialog-description"] {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="select-value"][data-placeholder],
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="select-trigger"][data-placeholder] [data-slot="select-value"],
+  .dating-theme [data-slot="alert-dialog-content"] [data-slot="select-trigger"] [data-slot="select-value"][data-placeholder] {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .dating-theme [data-slot="alert-dialog-content"] textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+
+  .dating-theme [data-slot="alert-dialog-content"] p.text-xs {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
 }
 
 @layer components {

@@ -46,10 +46,14 @@ const datingPrompts = [
 ]
 
 const interestCategories = {
-  Art: ["Painting", "Photography", "Digital Art"],
-  Food: ["Foodie", "Cooking", "Trying new restaurants"],
-  Entertainment: ["Binge-watching", "Podcasts", "Stand-up comedy", "Live music"],
+  Art: ["Painting", "Photography", "Digital Art", "Sculpture", "Sketching"],
+  Food: ["Foodie", "Cooking", "Trying new restaurants", "Baking", "Food photography"],
+  Entertainment: ["Netflix nights", "YouTube rabbit holes", "Podcasts", "Reels & TikTok", "Live shows"],
   Lifestyle: ["Thrifting", "DIY Projects", "Volunteering", "Wellness", "Homebody"],
+  "Weekend mood": ["Chill & recharge", "Spontaneous plans", "Friends & fun", "Solo reset", "Mix of everything"],
+  "Dating vibes": ["Quality time", "Deep conversations", "Casual coffee dates", "Slow burn", "Romantic dates"],
+  "Dating energy": ["Golden retriever energy", "Calm & grounded", "Introvert at first", "Extrovert energy", "Depends on the vibe"],
+  "Travel style": ["Road trips", "Beach person", "Mountains > beaches", "City explorer", "Staycations"],
 }
 
 const thisOrThatPairs = [
@@ -99,6 +103,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
   const [matrimonyFamily, setMatrimonyFamily] = useState<any>({})
   const [matrimonyCultural, setMatrimonyCultural] = useState<any>({})
   const [matrimonyPreferences, setMatrimonyPreferences] = useState<any>({})
+  const [matrimonyHeightUnit, setMatrimonyHeightUnit] = useState<"cm" | "ftin">("cm")
 
   useEffect(() => {
     fetchProfile()
@@ -171,6 +176,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
           setMatrimonyFamily(data.family || {})
           setMatrimonyCultural(data.cultural || {})
           setMatrimonyPreferences(data.partner_preferences || {})
+          setMatrimonyHeightUnit((data.personal as any)?.heightUnit || "cm")
         }
       }
     } catch (error) {
@@ -405,7 +411,7 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
           created_by: existing?.created_by,
           photos: photoUrls,
           bio: matrimonyBio,
-          personal: matrimonyPersonal,
+          personal: { ...matrimonyPersonal, heightUnit: matrimonyHeightUnit },
           career: matrimonyCareer,
           family: matrimonyFamily,
           cultural: matrimonyCultural,
@@ -1045,41 +1051,172 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Height (cm)</Label>
-                        <Input
-                          type="number"
-                          value={matrimonyPersonal.height_cm || ""}
-                          onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, height_cm: parseInt(e.target.value) || 0 })}
-                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
-                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
-                        />
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Height unit</Label>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant={matrimonyHeightUnit === "cm" ? "default" : "outline"}
+                            onClick={() => setMatrimonyHeightUnit("cm")}
+                            className={matrimonyHeightUnit === "cm" ? "bg-[#97011A] hover:bg-[#7A010E] text-white" : ""}
+                            size="sm"
+                          >
+                            cm
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={matrimonyHeightUnit === "ftin" ? "default" : "outline"}
+                            onClick={() => setMatrimonyHeightUnit("ftin")}
+                            className={matrimonyHeightUnit === "ftin" ? "bg-[#97011A] hover:bg-[#7A010E] text-white" : ""}
+                            size="sm"
+                          >
+                            ft/in
+                          </Button>
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Complexion</Label>
-                        <Input
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Height</Label>
+                        {matrimonyHeightUnit === "cm" ? (
+                          <Input
+                            type="number"
+                            min={90}
+                            max={250}
+                            value={matrimonyPersonal.height_cm || ""}
+                            onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, height_cm: parseInt(e.target.value) || 0 })}
+                            className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                            style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                          />
+                        ) : (
+                          <div className="flex gap-2">
+                            <Input
+                              type="number"
+                              placeholder="ft"
+                              value={matrimonyPersonal.height_ft || ""}
+                              onChange={(e) => {
+                                const ft = parseInt(e.target.value) || 0
+                                const inch = matrimonyPersonal.height_inch || 0
+                                const cm = Math.round((ft * 12 + inch) * 2.54)
+                                setMatrimonyPersonal({ ...matrimonyPersonal, height_ft: ft, height_cm: cm })
+                              }}
+                              className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                              style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                            />
+                            <Input
+                              type="number"
+                              placeholder="in"
+                              value={matrimonyPersonal.height_inch || ""}
+                              onChange={(e) => {
+                                const inch = parseInt(e.target.value) || 0
+                                const ft = matrimonyPersonal.height_ft || 0
+                                const cm = Math.round((ft * 12 + inch) * 2.54)
+                                setMatrimonyPersonal({ ...matrimonyPersonal, height_inch: inch, height_cm: cm })
+                              }}
+                              className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                              style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Complexion / Skin tone</Label>
+                        <Select
                           value={matrimonyPersonal.complexion || ""}
-                          onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, complexion: e.target.value })}
-                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
-                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Diet</Label>
-                        <Input
-                          value={matrimonyPersonal.diet || ""}
-                          onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, diet: e.target.value })}
-                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
-                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
-                        />
+                          onValueChange={(value) => setMatrimonyPersonal({ ...matrimonyPersonal, complexion: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select complexion" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Fair", "Wheatish", "Dusky", "Dark"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Body Type</Label>
-                        <Input
+                        <Select
                           value={matrimonyPersonal.body_type || ""}
-                          onChange={(e) => setMatrimonyPersonal({ ...matrimonyPersonal, body_type: e.target.value })}
-                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
-                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
-                        />
+                          onValueChange={(value) => setMatrimonyPersonal({ ...matrimonyPersonal, body_type: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select body type" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Slim", "Athletic", "Average", "Plus-size"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Dietary Habits</Label>
+                        <Select
+                          value={matrimonyPersonal.diet || ""}
+                          onValueChange={(value) => setMatrimonyPersonal({ ...matrimonyPersonal, diet: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select dietary preference" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Vegetarian", "Eggetarian", "Non-vegetarian", "Pescatarian", "Vegan", "Jain", "Other"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Marital Status</Label>
+                        <Select
+                          value={matrimonyPersonal.marital_status || ""}
+                          onValueChange={(value) => setMatrimonyPersonal({ ...matrimonyPersonal, marital_status: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select marital status" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Never Married", "Divorced", "Widowed", "Annulled", "Separated"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Smoker</Label>
+                        <Button
+                          type="button"
+                          variant={matrimonyPersonal.smoker ? "default" : "outline"}
+                          onClick={() => setMatrimonyPersonal({ ...matrimonyPersonal, smoker: !matrimonyPersonal.smoker })}
+                          className={matrimonyPersonal.smoker ? "bg-[#97011A] hover:bg-[#7A010E] text-white" : ""}
+                          size="sm"
+                        >
+                          {matrimonyPersonal.smoker ? "Yes" : "No"}
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Drinker</Label>
+                        <Button
+                          type="button"
+                          variant={matrimonyPersonal.drinker ? "default" : "outline"}
+                          onClick={() => setMatrimonyPersonal({ ...matrimonyPersonal, drinker: !matrimonyPersonal.drinker })}
+                          className={matrimonyPersonal.drinker ? "bg-[#97011A] hover:bg-[#7A010E] text-white" : ""}
+                          size="sm"
+                        >
+                          {matrimonyPersonal.drinker ? "Yes" : "No"}
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -1091,28 +1228,57 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                     <CardTitle className={cn(isMatrimony ? "text-black" : "text-white")}>Career & Education</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Highest Education</Label>
-                        <Input
+                        <Select
                           value={matrimonyCareer.highest_education || ""}
-                          onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, highest_education: e.target.value })}
+                          onValueChange={(value) => setMatrimonyCareer({ ...matrimonyCareer, highest_education: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select highest education" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["High School", "Diploma", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "MBA", "PhD", "MD", "JD", "Other"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>College / University</Label>
+                        <Input
+                          placeholder="e.g., Stanford University"
+                          value={matrimonyCareer.college || ""}
+                          onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, college: e.target.value })}
                           className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
                           style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Job Title</Label>
-                        <Input
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Current Profession / Job Title</Label>
+                        <Select
                           value={matrimonyCareer.job_title || ""}
-                          onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, job_title: e.target.value })}
-                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
-                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
-                        />
+                          onValueChange={(value) => setMatrimonyCareer({ ...matrimonyCareer, job_title: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select job title" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Software Engineer", "Data Scientist", "Product Manager", "Business Analyst", "Consultant", "Doctor", "Engineer", "Teacher", "Professor", "Lawyer", "Accountant", "Architect", "Designer", "Marketing Manager", "Sales Manager", "HR Manager", "Operations Manager", "Financial Analyst", "Investment Banker", "Entrepreneur", "Business Owner", "Nurse", "Pharmacist", "Dentist", "Veterinarian", "Scientist", "Researcher", "Journalist", "Writer", "Artist", "Musician", "Chef", "Pilot", "Civil Servant", "Government Employee", "Student", "Unemployed", "Retired", "Other"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Company</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Company Name</Label>
                         <Input
+                          placeholder="e.g., Google"
                           value={matrimonyCareer.company || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, company: e.target.value })}
                           className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
@@ -1122,8 +1288,59 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                       <div className="space-y-2">
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Annual Income</Label>
                         <Input
+                          placeholder="e.g., 10–15 LPA / Prefer not to say"
                           value={matrimonyCareer.annual_income || ""}
                           onChange={(e) => setMatrimonyCareer({ ...matrimonyCareer, annual_income: e.target.value })}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Work Location - City</Label>
+                        <Input
+                          placeholder="City"
+                          value={matrimonyCareer.work_location?.city || ""}
+                          onChange={(e) => setMatrimonyCareer({ 
+                            ...matrimonyCareer, 
+                            work_location: { 
+                              ...matrimonyCareer.work_location, 
+                              city: e.target.value 
+                            } 
+                          })}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Work Location - State</Label>
+                        <Input
+                          placeholder="State"
+                          value={matrimonyCareer.work_location?.state || ""}
+                          onChange={(e) => setMatrimonyCareer({ 
+                            ...matrimonyCareer, 
+                            work_location: { 
+                              ...matrimonyCareer.work_location, 
+                              state: e.target.value 
+                            } 
+                          })}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Work Location - Country</Label>
+                        <Input
+                          placeholder="Country"
+                          value={matrimonyCareer.work_location?.country || ""}
+                          onChange={(e) => setMatrimonyCareer({ 
+                            ...matrimonyCareer, 
+                            work_location: { 
+                              ...matrimonyCareer.work_location, 
+                              country: e.target.value 
+                            } 
+                          })}
                           className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
                           style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
@@ -1138,38 +1355,106 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                     <CardTitle className={cn(isMatrimony ? "text-black" : "text-white")}>Family Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Family Type</Label>
-                        <Input
+                        <Select
                           value={matrimonyFamily.family_type || ""}
-                          onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, family_type: e.target.value })}
-                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
-                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
-                        />
+                          onValueChange={(value) => setMatrimonyFamily({ ...matrimonyFamily, family_type: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select family type" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Joint", "Nuclear", "Extended", "Single Parent"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Family Values</Label>
+                        <Select
+                          value={matrimonyFamily.family_values || ""}
+                          onValueChange={(value) => setMatrimonyFamily({ ...matrimonyFamily, family_values: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select values" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Traditional", "Moderate", "Modern", "Progressive"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Father's Occupation</Label>
-                        <Input
+                        <Select
                           value={matrimonyFamily.father_occupation || ""}
-                          onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, father_occupation: e.target.value })}
+                          onValueChange={(value) => setMatrimonyFamily({ ...matrimonyFamily, father_occupation: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select occupation" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Software Engineer", "Data Scientist", "Product Manager", "Business Analyst", "Consultant", "Doctor", "Engineer", "Teacher", "Professor", "Lawyer", "Accountant", "Architect", "Designer", "Marketing Manager", "Sales Manager", "HR Manager", "Operations Manager", "Financial Analyst", "Investment Banker", "Entrepreneur", "Business Owner", "Nurse", "Pharmacist", "Dentist", "Veterinarian", "Scientist", "Researcher", "Journalist", "Writer", "Artist", "Musician", "Chef", "Pilot", "Civil Servant", "Government Employee", "Student", "Unemployed", "Retired", "Homemaker", "Other"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Father's Company</Label>
+                        <Input
+                          value={matrimonyFamily.father_company || ""}
+                          onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, father_company: e.target.value })}
                           className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
                           style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
                       <div className="space-y-2">
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Mother's Occupation</Label>
-                        <Input
+                        <Select
                           value={matrimonyFamily.mother_occupation || ""}
-                          onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, mother_occupation: e.target.value })}
+                          onValueChange={(value) => setMatrimonyFamily({ ...matrimonyFamily, mother_occupation: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select occupation" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Software Engineer", "Data Scientist", "Product Manager", "Business Analyst", "Consultant", "Doctor", "Engineer", "Teacher", "Professor", "Lawyer", "Accountant", "Architect", "Designer", "Marketing Manager", "Sales Manager", "HR Manager", "Operations Manager", "Financial Analyst", "Investment Banker", "Entrepreneur", "Business Owner", "Nurse", "Pharmacist", "Dentist", "Veterinarian", "Scientist", "Researcher", "Journalist", "Writer", "Artist", "Musician", "Chef", "Pilot", "Civil Servant", "Government Employee", "Student", "Unemployed", "Retired", "Homemaker", "Other"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Mother's Company</Label>
+                        <Input
+                          value={matrimonyFamily.mother_company || ""}
+                          onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, mother_company: e.target.value })}
                           className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
                           style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Brothers</Label>
                         <Input
                           type="number"
+                          min={0}
                           value={matrimonyFamily.brothers || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, brothers: parseInt(e.target.value) || 0 })}
                           className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
@@ -1180,12 +1465,43 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Sisters</Label>
                         <Input
                           type="number"
+                          min={0}
                           value={matrimonyFamily.sisters || ""}
                           onChange={(e) => setMatrimonyFamily({ ...matrimonyFamily, sisters: parseInt(e.target.value) || 0 })}
                           className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
                           style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
                         />
                       </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Marital Status of Siblings</Label>
+                        <Select
+                          value={matrimonyFamily.siblings_married || ""}
+                          onValueChange={(value) => setMatrimonyFamily({ ...matrimonyFamily, siblings_married: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["None", "Some", "All", "Mostly Married", "Mostly Single"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Show family information on profile</Label>
+                      <Button
+                        type="button"
+                        variant={matrimonyFamily.show_on_profile ? "default" : "outline"}
+                        onClick={() => setMatrimonyFamily({ ...matrimonyFamily, show_on_profile: !matrimonyFamily.show_on_profile })}
+                        className={matrimonyFamily.show_on_profile ? "bg-[#97011A] hover:bg-[#7A010E] text-white" : ""}
+                        size="sm"
+                      >
+                        {matrimonyFamily.show_on_profile ? "Yes" : "No"}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -1196,27 +1512,45 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                     <CardTitle className={cn(isMatrimony ? "text-black" : "text-white")}>Cultural Background</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Religion</Label>
-                        <Input
+                        <Select
                           value={matrimonyCultural.religion || ""}
-                          onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, religion: e.target.value })}
-                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
-                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
-                        />
+                          onValueChange={(value) => setMatrimonyCultural({ ...matrimonyCultural, religion: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select religion" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Hinduism", "Islam", "Christianity", "Sikhism", "Buddhism", "Jainism", "Judaism", "Zoroastrianism", "Bahá'í", "Atheist", "Agnostic", "Spiritual", "Other"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Mother Tongue</Label>
-                        <Input
+                        <Select
                           value={matrimonyCultural.mother_tongue || ""}
-                          onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, mother_tongue: e.target.value })}
-                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
-                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
-                        />
+                          onValueChange={(value) => setMatrimonyCultural({ ...matrimonyCultural, mother_tongue: value })}
+                        >
+                          <SelectTrigger className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            <SelectValue placeholder="Select mother tongue" />
+                          </SelectTrigger>
+                          <SelectContent className={isMatrimony ? "" : "bg-[#14161B] border-white/20"}>
+                            {["Hindi", "English", "Bengali", "Telugu", "Marathi", "Tamil", "Gujarati", "Urdu", "Kannada", "Odia", "Malayalam", "Punjabi", "Assamese", "Sanskrit", "Kashmiri", "Sindhi", "Konkani", "Manipuri", "Nepali", "Bodo", "Santhali", "Maithili", "Dogri", "Other"].map((option) => (
+                              <SelectItem key={option} value={option} className={isMatrimony ? "" : "text-white"}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Community</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Community / Caste</Label>
                         <Input
                           value={matrimonyCultural.community || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, community: e.target.value })}
@@ -1225,7 +1559,59 @@ export function EditProfile({ onBack, onSave, mode }: EditProfileProps) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Gotra</Label>
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Sub-caste (optional)</Label>
+                        <Input
+                          value={matrimonyCultural.sub_caste || ""}
+                          onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, sub_caste: e.target.value })}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Date of Birth</Label>
+                        <Input
+                          type="date"
+                          value={matrimonyCultural.dob || ""}
+                          onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, dob: e.target.value })}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Time of Birth</Label>
+                        <Input
+                          type="time"
+                          value={matrimonyCultural.tob || ""}
+                          onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, tob: e.target.value })}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Place of Birth</Label>
+                        <Input
+                          placeholder="City, Country"
+                          value={matrimonyCultural.pob || ""}
+                          onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, pob: e.target.value })}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Star / Raashi (optional)</Label>
+                        <Input
+                          value={matrimonyCultural.star || ""}
+                          onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, star: e.target.value })}
+                          className={isMatrimony ? "" : "bg-[#14161B] border-white/20 placeholder:text-[#A1A1AA]"}
+                          style={!isMatrimony ? { color: '#FFFFFF' } : undefined}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={cn(isMatrimony ? "text-black" : "text-white")}>Gotra (optional)</Label>
                         <Input
                           value={matrimonyCultural.gotra || ""}
                           onChange={(e) => setMatrimonyCultural({ ...matrimonyCultural, gotra: e.target.value })}

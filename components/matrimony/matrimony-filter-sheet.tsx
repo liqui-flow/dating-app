@@ -70,31 +70,24 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
     }
   }, [open])
 
-  const educationOptions = [
-    "Any professional degree", "MBA", "B.Tech", "MBBS", "CA", "CS", 
-    "Ph.D", "Masters", "Bachelors", "Diploma", "Any"
-  ]
-
-  const professionOptions = [
-    "IT background", "Same profession", "Business", "Doctor", "Engineer", 
-    "Teacher", "Government job", "Private sector", "Entrepreneur", "Any"
-  ]
-
+  // Community/Caste options from matrimony onboarding (matrimony-preferences.tsx)
   const communityOptions = [
-    "Any", "Brahmin", "Kshatriya", "Vaishya", "Shudra", "Jain", 
-    "Sikh", "Muslim", "Christian", "Buddhist", "Other"
+    "Any", "Brahmin", "Kshatriya", "Vaishya", "Shudra", "Other"
   ]
 
+  // Family Type options from matrimony onboarding (matrimony-preferences.tsx)
   const familyTypeOptions = [
-    "Nuclear", "Joint", "Any"
+    "Any", "Nuclear Family", "Joint Family", "Extended Family"
   ]
 
+  // Dietary options from matrimony onboarding (Step2PersonalPhysical.tsx)
   const dietOptions = [
-    "Open to both", "Strictly vegetarian", "Non-vegetarian", "Jain vegetarian", "Any"
+    "Any", "Vegetarian", "Eggetarian", "Non-vegetarian", "Pescatarian", "Vegan", "Jain", "Other"
   ]
 
+  // Lifestyle options based on matrimony onboarding (Step2PersonalPhysical.tsx - smoker/drinker)
   const lifestyleOptions = [
-    "Non-smoker", "Non-drinker", "Occasional drinker", "Social drinker", "Any"
+    "Any", "Non-smoker", "Non-drinker", "Smoker", "Drinker"
   ]
 
   const handleArrayToggle = (array: string[], item: string, setter: (value: string[]) => void) => {
@@ -209,104 +202,54 @@ export function MatrimonyFilterSheet({ open, onOpenChange, onApplyFilters }: Mat
               <Badge variant="secondary" className="text-xs bg-gray-100 text-black border-[#E5E5E5]">Premium</Badge>
             </div>
 
-            {/* Education Preferences */}
+            {/* Community Preferences */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm text-black">Education Preferences</h4>
-                <span className="text-sm text-[#444444]">{filters.educationPrefs.length} selected</span>
+                <h4 className="font-medium text-sm text-black">Community/Caste Preferences</h4>
+                <span className="text-sm text-[#444444]">{filters.communities.length} selected</span>
               </div>
-            <div className="flex flex-wrap gap-2.5">
-              {educationOptions.map((education) => (
-                <Badge
-                  key={education}
-                  variant={filters.educationPrefs.includes(education) ? "default" : "outline"}
-                  className={filters.educationPrefs.includes(education) 
-                    ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
-                  onClick={() => handleArrayToggle(filters.educationPrefs, education, (value) => setFilters(prev => ({ ...prev, educationPrefs: value })))}
-                >
-                  {education}
-                  {filters.educationPrefs.includes(education) && <X className="w-3 h-3 ml-1" />}
-                </Badge>
-              ))}
+              <div className="flex flex-wrap gap-2.5">
+                {communityOptions.map((community) => (
+                  <Badge
+                    key={community}
+                    variant={filters.communities.includes(community) ? "default" : "outline"}
+                    className={filters.communities.includes(community) 
+                      ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
+                      : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
+                    onClick={() => handleArrayToggle(filters.communities, community, (value) => setFilters(prev => ({ ...prev, communities: value })))}
+                  >
+                    {community}
+                    {filters.communities.includes(community) && <X className="w-3 h-3 ml-1" />}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <Separator className="bg-[#E5E5E5]" />
+
+            {/* Family Type Preferences */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-sm text-black">Family Type Preferences</h4>
+                <span className="text-sm text-[#444444]">{filters.familyTypePrefs.length} selected</span>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {familyTypeOptions.map((familyType) => (
+                  <Badge
+                    key={familyType}
+                    variant={filters.familyTypePrefs.includes(familyType) ? "default" : "outline"}
+                    className={filters.familyTypePrefs.includes(familyType) 
+                      ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
+                      : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
+                    onClick={() => handleArrayToggle(filters.familyTypePrefs, familyType, (value) => setFilters(prev => ({ ...prev, familyTypePrefs: value })))}
+                  >
+                    {familyType}
+                    {filters.familyTypePrefs.includes(familyType) && <X className="w-3 h-3 ml-1" />}
+                  </Badge>
+                ))}
+              </div>
             </div>
           </div>
-
-              <Separator className="bg-[#E5E5E5]" />
-
-              {/* Profession Preferences */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-sm text-black">Profession Preferences</h4>
-                  <span className="text-sm text-[#444444]">{filters.professionPrefs.length} selected</span>
-                </div>
-            <div className="flex flex-wrap gap-2.5">
-              {professionOptions.map((profession) => (
-                <Badge
-                  key={profession}
-                  variant={filters.professionPrefs.includes(profession) ? "default" : "outline"}
-                  className={filters.professionPrefs.includes(profession) 
-                    ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
-                  onClick={() => handleArrayToggle(filters.professionPrefs, profession, (value) => setFilters(prev => ({ ...prev, professionPrefs: value })))}
-                >
-                  {profession}
-                  {filters.professionPrefs.includes(profession) && <X className="w-3 h-3 ml-1" />}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-                <Separator className="bg-[#E5E5E5]" />
-
-                {/* Community Preferences */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-sm text-black">Community/Caste Preferences</h4>
-                    <span className="text-sm text-[#444444]">{filters.communities.length} selected</span>
-                  </div>
-            <div className="flex flex-wrap gap-2.5">
-              {communityOptions.map((community) => (
-                <Badge
-                  key={community}
-                  variant={filters.communities.includes(community) ? "default" : "outline"}
-                  className={filters.communities.includes(community) 
-                    ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
-                  onClick={() => handleArrayToggle(filters.communities, community, (value) => setFilters(prev => ({ ...prev, communities: value })))}
-                >
-                  {community}
-                  {filters.communities.includes(community) && <X className="w-3 h-3 ml-1" />}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-                  <Separator className="bg-[#E5E5E5]" />
-
-                  {/* Family Type Preferences */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-sm text-black">Family Type Preferences</h4>
-                      <span className="text-sm text-[#444444]">{filters.familyTypePrefs.length} selected</span>
-                    </div>
-            <div className="flex flex-wrap gap-2.5">
-              {familyTypeOptions.map((familyType) => (
-                <Badge
-                  key={familyType}
-                  variant={filters.familyTypePrefs.includes(familyType) ? "default" : "outline"}
-                  className={filters.familyTypePrefs.includes(familyType) 
-                    ? "cursor-pointer bg-[#97011A] text-white border-[#97011A]/50 hover:bg-[#7A0115]" 
-                    : "cursor-pointer bg-gray-100 border-[#E5E5E5] text-black hover:bg-gray-200"}
-                  onClick={() => handleArrayToggle(filters.familyTypePrefs, familyType, (value) => setFilters(prev => ({ ...prev, familyTypePrefs: value })))}
-                >
-                  {familyType}
-                  {filters.familyTypePrefs.includes(familyType) && <X className="w-3 h-3 ml-1" />}
-                </Badge>
-              ))}
-                    </div>
-                  </div>
-            </div>
 
           <Separator className="bg-[#E5E5E5]" />
 
