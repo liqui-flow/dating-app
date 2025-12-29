@@ -189,6 +189,51 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
     }
   }
 
+  const formatDateSeparator = (timestamp: string): string => {
+    if (!timestamp) return ""
+    try {
+      const messageDate = new Date(timestamp)
+      const today = new Date()
+      const yesterday = new Date(today)
+      yesterday.setDate(yesterday.getDate() - 1)
+
+      // Reset time to compare only dates
+      const messageDateOnly = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate())
+      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      const yesterdayOnly = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate())
+
+      if (messageDateOnly.getTime() === todayOnly.getTime()) {
+        return "Today"
+      } else if (messageDateOnly.getTime() === yesterdayOnly.getTime()) {
+        return "Yesterday"
+      } else {
+        // Format as "DD/MM/YYYY" or use locale-specific format
+        return messageDate.toLocaleDateString('en-GB', { 
+          day: '2-digit', 
+          month: '2-digit', 
+          year: 'numeric' 
+        })
+      }
+    } catch {
+      return ""
+    }
+  }
+
+  const isDifferentDate = (date1: string, date2: string): boolean => {
+    if (!date1 || !date2) return true
+    try {
+      const d1 = new Date(date1)
+      const d2 = new Date(date2)
+      return (
+        d1.getFullYear() !== d2.getFullYear() ||
+        d1.getMonth() !== d2.getMonth() ||
+        d1.getDate() !== d2.getDate()
+      )
+    } catch {
+      return true
+    }
+  }
+
   const getMessageStatusText = (message: Message): string => {
     const normalizedStatus = message.status ?? (message.seen_at ? 'seen' : message.delivered_at ? 'delivered' : 'sent')
 
@@ -1008,20 +1053,44 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
           </div>
         ) : (
           <div className="space-y-3">
-            {messages.map((message, index) => {
-              if (shouldHideMessage(message.content)) {
-                return null
-              }
-              if (hideMessageForCurrentUser(message)) {
-                return null
-              }
-              const isOwn = message.sender_id === currentUserId
-              const shouldTrackVisibility = !isOwn && message.receiver_id === currentUserId && !message.seen_at
-              const repliedMessage = message.reply_to_message_id
-                ? messages.find((m) => m.id === message.reply_to_message_id)
-                : null
-              return (
-                <div key={message.id} className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+            {(() => {
+              // Filter visible messages first
+              const visibleMessages = messages.filter((msg) => {
+                if (shouldHideMessage(msg.content)) return false
+                if (hideMessageForCurrentUser(msg)) return false
+                return true
+              })
+
+              return visibleMessages.map((message, visibleIndex) => {
+                const originalIndex = messages.findIndex((m) => m.id === message.id)
+                const isOwn = message.sender_id === currentUserId
+                const shouldTrackVisibility = !isOwn && message.receiver_id === currentUserId && !message.seen_at
+                const repliedMessage = message.reply_to_message_id
+                  ? messages.find((m) => m.id === message.reply_to_message_id)
+                  : null
+                
+                // Check if we need to show a date separator
+                const previousVisibleMessage = visibleIndex > 0 ? visibleMessages[visibleIndex - 1] : null
+                const showDateSeparator = !previousVisibleMessage || 
+                  isDifferentDate(message.created_at, previousVisibleMessage.created_at)
+
+                return (
+                  <div key={message.id}>
+                    {/* Date Separator */}
+                    {showDateSeparator && (
+                      <div className="flex items-center justify-center my-4">
+                        <div className={cn(
+                          "px-3 py-1 rounded-full text-xs font-medium",
+                          isMatrimony 
+                            ? "bg-gray-200 text-[#444444]" 
+                            : "bg-white/10 text-white/80 backdrop-blur-sm"
+                        )}>
+                          {formatDateSeparator(message.created_at)}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${originalIndex * 50}ms` }}>
                   <div className={cn("flex mb-3 items-start gap-2", isOwn ? "justify-end" : "justify-start")}>
                     {/* Checkbox for received messages (left side) */}
                     {isSelectMode && !isOwn && (
@@ -1200,9 +1269,11 @@ export function ChatScreen({ matchId, onBack, onViewProfile }: ChatScreenProps) 
                       </div>
                     )}
                   </div>
-                </div>
-              )
-            })}
+                    </div>
+                  </div>
+                )
+              })
+            })()}
           </div>
         )}
         
